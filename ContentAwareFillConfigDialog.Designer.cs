@@ -76,7 +76,7 @@
             this.okButton.Location = new System.Drawing.Point(167, 210);
             this.okButton.Name = "okButton";
             this.okButton.Size = new System.Drawing.Size(75, 23);
-            this.okButton.TabIndex = 1;
+            this.okButton.TabIndex = 6;
             this.okButton.Text = "Ok";
             this.okButton.UseVisualStyleBackColor = true;
             this.okButton.Click += new System.EventHandler(this.okButton_Click);
@@ -92,7 +92,7 @@
             this.sampleFromCombo.Location = new System.Drawing.Point(12, 88);
             this.sampleFromCombo.Name = "sampleFromCombo";
             this.sampleFromCombo.Size = new System.Drawing.Size(152, 21);
-            this.sampleFromCombo.TabIndex = 2;
+            this.sampleFromCombo.TabIndex = 4;
             this.sampleFromCombo.SelectedIndexChanged += new System.EventHandler(this.sampleFromCombo_SelectedIndexChanged);
             // 
             // fillDirectionCombo
@@ -106,7 +106,7 @@
             this.fillDirectionCombo.Location = new System.Drawing.Point(12, 135);
             this.fillDirectionCombo.Name = "fillDirectionCombo";
             this.fillDirectionCombo.Size = new System.Drawing.Size(152, 21);
-            this.fillDirectionCombo.TabIndex = 4;
+            this.fillDirectionCombo.TabIndex = 5;
             this.fillDirectionCombo.SelectedIndexChanged += new System.EventHandler(this.fillDirectionCombo_SelectedIndexChanged);
             // 
             // sampleSizeTrackBar
@@ -116,7 +116,7 @@
             this.sampleSizeTrackBar.Minimum = 1;
             this.sampleSizeTrackBar.Name = "sampleSizeTrackBar";
             this.sampleSizeTrackBar.Size = new System.Drawing.Size(215, 45);
-            this.sampleSizeTrackBar.TabIndex = 6;
+            this.sampleSizeTrackBar.TabIndex = 1;
             this.sampleSizeTrackBar.TickFrequency = 5;
             this.sampleSizeTrackBar.TickStyle = System.Windows.Forms.TickStyle.None;
             this.sampleSizeTrackBar.Value = 50;
@@ -132,7 +132,7 @@
             0});
             this.sampleSizeUpDown.Name = "sampleSizeUpDown";
             this.sampleSizeUpDown.Size = new System.Drawing.Size(61, 20);
-            this.sampleSizeUpDown.TabIndex = 7;
+            this.sampleSizeUpDown.TabIndex = 2;
             this.sampleSizeUpDown.Value = new decimal(new int[] {
             50,
             0,
@@ -161,7 +161,7 @@
             this.resetButton.Location = new System.Drawing.Point(300, 37);
             this.resetButton.Name = "resetButton";
             this.resetButton.Size = new System.Drawing.Size(22, 20);
-            this.resetButton.TabIndex = 9;
+            this.resetButton.TabIndex = 3;
             this.resetButton.UseVisualStyleBackColor = true;
             this.resetButton.Click += new System.EventHandler(this.resetButton_Click);
             // 
