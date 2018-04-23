@@ -480,7 +480,7 @@ namespace ContentAwareFill
                 }
             }
 
-            while (point.Y >= image.Width)
+            while (point.Y >= image.Height)
             {
                 if (parameters.TileVertical)
                 {
