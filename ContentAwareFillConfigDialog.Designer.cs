@@ -57,6 +57,7 @@
             this.sampleSizeHeader = new ContentAwareFill.HeaderLabel();
             this.sampleFromHeader = new ContentAwareFill.HeaderLabel();
             this.fillDirectionHeader = new ContentAwareFill.HeaderLabel();
+            this.donateLabel = new System.Windows.Forms.LinkLabel();
             ((System.ComponentModel.ISupportInitialize)(this.sampleSizeTrackBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.sampleSizeUpDown)).BeginInit();
             this.SuspendLayout();
@@ -76,7 +77,7 @@
             this.okButton.Location = new System.Drawing.Point(167, 210);
             this.okButton.Name = "okButton";
             this.okButton.Size = new System.Drawing.Size(75, 23);
-            this.okButton.TabIndex = 6;
+            this.okButton.TabIndex = 7;
             this.okButton.Text = "Ok";
             this.okButton.UseVisualStyleBackColor = true;
             this.okButton.Click += new System.EventHandler(this.okButton_Click);
@@ -195,11 +196,23 @@
             this.fillDirectionHeader.TabStop = false;
             this.fillDirectionHeader.Text = "Fill direction:";
             // 
+            // donateLabel
+            // 
+            this.donateLabel.AutoSize = true;
+            this.donateLabel.Location = new System.Drawing.Point(9, 215);
+            this.donateLabel.Name = "donateLabel";
+            this.donateLabel.Size = new System.Drawing.Size(45, 13);
+            this.donateLabel.TabIndex = 6;
+            this.donateLabel.TabStop = true;
+            this.donateLabel.Text = "Donate!";
+            this.donateLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.donateLabel_LinkClicked);
+            // 
             // ContentAwareFillConfigDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.ClientSize = new System.Drawing.Size(337, 244);
+            this.Controls.Add(this.donateLabel);
             this.Controls.Add(this.fillDirectionHeader);
             this.Controls.Add(this.sampleFromHeader);
             this.Controls.Add(this.sampleSizeHeader);
@@ -225,6 +238,7 @@
             this.Controls.SetChildIndex(this.sampleSizeHeader, 0);
             this.Controls.SetChildIndex(this.sampleFromHeader, 0);
             this.Controls.SetChildIndex(this.fillDirectionHeader, 0);
+            this.Controls.SetChildIndex(this.donateLabel, 0);
             ((System.ComponentModel.ISupportInitialize)(this.sampleSizeTrackBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.sampleSizeUpDown)).EndInit();
             this.ResumeLayout(false);
@@ -246,5 +260,6 @@
         private HeaderLabel sampleSizeHeader;
         private HeaderLabel sampleFromHeader;
         private HeaderLabel fillDirectionHeader;
+        private System.Windows.Forms.LinkLabel donateLabel;
     }
 }
