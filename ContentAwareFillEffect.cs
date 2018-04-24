@@ -256,13 +256,10 @@ namespace ContentAwareFill
                     {
                         try
                         {
-                            synth.ContentAwareFill(() => IsCancelRequested);
-
-                            token.Destination = synth.Target.Clone();
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            // Ignored because it indicates that the user canceled rendering.
+                            if (synth.ContentAwareFill(() => IsCancelRequested))
+                            {
+                                token.Destination = synth.Target.Clone();
+                            }
                         }
                         catch (ResynthizerException ex)
                         {

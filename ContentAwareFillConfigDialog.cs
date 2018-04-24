@@ -290,25 +290,21 @@ namespace ContentAwareFill
                 using (Resynthesizer synth = new Resynthesizer(parameters, EffectSourceSurface, destinationMask, sourceMask,
                     expandedBounds, croppedSourceSize, worker.ReportProgress))
                 {
-                    try
-                    {
-                        synth.ContentAwareFill(() => worker.CancellationPending);
-
-#if DEBUG
-                        using (Bitmap image = synth.Target.CreateAliasedBitmap())
-                        {
-                        }
-#endif
-                        if (destination != null)
-                        {
-                            destination.Dispose();
-                        }
-                        this.destination = synth.Target.Clone();
-                    }
-                    catch (OperationCanceledException)
+                    if (!synth.ContentAwareFill(() => worker.CancellationPending))
                     {
                         e.Cancel = true;
+                        return;
                     }
+#if DEBUG
+                    using (Bitmap image = synth.Target.CreateAliasedBitmap())
+                    {
+                    }
+#endif
+                    if (destination != null)
+                    {
+                        destination.Dispose();
+                    }
+                    this.destination = synth.Target.Clone();
                 }
             }
         }

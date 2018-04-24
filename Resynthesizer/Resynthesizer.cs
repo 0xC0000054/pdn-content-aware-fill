@@ -183,14 +183,14 @@ namespace ContentAwareFill
         /// Performs the content the aware fill.
         /// </summary>
         /// <param name="abortCallback">The abort callback.</param>
+        /// <returns><c>true</c> on success; otherwise <c>false</c> if the user canceled rendering.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="abortCallback"/> is null.</exception>
-        /// <exception cref="OperationCanceledException">The operation has been canceled by the <paramref name="abortCallback"/>.</exception>
         /// <exception cref="ResynthizerException">
         /// The source selection is empty.
         /// or
         /// The destination layer is empty.
         /// </exception>
-        public void ContentAwareFill(Func<bool> abortCallback)
+        public bool ContentAwareFill(Func<bool> abortCallback)
         {
             if (abortCallback == null)
             {
@@ -218,13 +218,20 @@ namespace ContentAwareFill
 
             for (int i = 0; i < ResynthesizerConstants.MaxPasses; i++)
             {
-                int betters = Synthesize(i, abortCallback);
+                int? betters = Synthesize(i, abortCallback);
 
-                if (((float)betters / (float)targetPoints.Count) < ResynthesizerConstants.TerminateFraction)
+                if (!betters.HasValue)
+                {
+                    return false;
+                }
+
+                if (((float)betters.Value / (float)targetPoints.Count) < ResynthesizerConstants.TerminateFraction)
                 {
                     break;
                 }
             }
+
+            return true;
         }
 
         private bool ClippedOrMaskedSource(Point point)
@@ -500,9 +507,8 @@ namespace ContentAwareFill
         /// </summary>
         /// <param name="pass">The pass.</param>
         /// <param name="abortCallback">The abort callback.</param>
-        /// <returns></returns>
-        /// <exception cref="OperationCanceledException">The <paramref name="abortCallback"/> returned <c>true</c>.</exception>
-        private int Synthesize(int pass, Func<bool> abortCallback)
+        /// <returns>The match count of the image synthesis; or <c>null</c> if the user canceled the operation.</returns>
+        private int? Synthesize(int pass, Func<bool> abortCallback)
         {
             int length = repetitionParameters[pass].end;
             int repeatCountBetters = 0;
@@ -517,9 +523,7 @@ namespace ContentAwareFill
                 {
                     if (abortCallback())
                     {
-                        // Throwing an OperationCanceledException is simpler than requiring callers to
-                        // check if a cancel has been requested after each call.
-                        throw new OperationCanceledException();
+                        return null;
                     }
                     if (progressCallback != null)
                     {
