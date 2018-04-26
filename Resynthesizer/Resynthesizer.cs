@@ -74,7 +74,7 @@ namespace ContentAwareFill
         private PointIndexedArray<Point> sourceOf;
         private List<Point> sortedOffsets;
         private List<Point> targetPoints;
-        private List<Point> sourcePoints;
+        private ReadOnlyList<Point> sourcePoints;
         private int targetTriesCount;
         private int totalTargets;
         private uint best;
@@ -382,7 +382,7 @@ namespace ContentAwareFill
 
         private void PrepareSourcePoints()
         {
-            sourcePoints = new List<Point>(source.Width * source.Height);
+            List<Point> points = new List<Point>(source.Width * source.Height);
 
             for (int y = 0; y < source.Height; y++)
             {
@@ -390,10 +390,12 @@ namespace ContentAwareFill
                 {
                     if (IsSelectedSource(x, y) && NotTransparentSource(x, y))
                     {
-                        sourcePoints.Add(new Point(x, y));
+                        points.Add(new Point(x, y));
                     }
                 }
             }
+
+            sourcePoints = new ReadOnlyList<Point>(points);
         }
 
         private Point RandomSourcePoint()
