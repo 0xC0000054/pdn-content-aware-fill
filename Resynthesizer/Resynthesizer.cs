@@ -212,7 +212,6 @@ namespace ContentAwareFill
 
             PrepareSortedOffsets();
             MakeDiffTable();
-            OrderTargetPoints();
             // The constructor handles the setup performed by prepare_tried.
             PrepareRepetitionParameters();
 
@@ -280,11 +279,6 @@ namespace ContentAwareFill
         private bool NotTransparentSource(int x, int y)
         {
             return (source.GetPoint(x, y).A > 0);
-        }
-
-        private void OrderTargetPoints()
-        {
-            targetPoints = TargetPointSorter.Sort(targetPoints, random, parameters.MatchContext);
         }
 
         private void PrepareNeighbors(Point position)
@@ -379,6 +373,8 @@ namespace ContentAwareFill
                         }
                     }
                 }
+
+                targetPoints = TargetPointSorter.Sort(targetPoints, random, parameters.MatchContext);
             }
         }
 
