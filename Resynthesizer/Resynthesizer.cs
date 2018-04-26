@@ -72,7 +72,7 @@ namespace ContentAwareFill
         private PointIndexedArray<int> tried;
         private PointIndexedArray<bool> hasValue;
         private PointIndexedArray<Point> sourceOf;
-        private List<Point> sortedOffsets;
+        private ReadOnlyList<Point> sortedOffsets;
         private List<Point> targetPoints;
         private ReadOnlyList<Point> sourcePoints;
         private int targetTriesCount;
@@ -331,17 +331,19 @@ namespace ContentAwareFill
 
             int length = (2 * width - 1) * (2 * height - 1);
 
-            sortedOffsets = new List<Point>(length);
+            List<Point> offsets = new List<Point>(length);
 
             for (int y = -height + 1; y < height; y++)
             {
                 for (int x = -width + 1; x < width; x++)
                 {
-                    sortedOffsets.Add(new Point(x, y));
+                    offsets.Add(new Point(x, y));
                 }
             }
 
-            sortedOffsets.Sort(PointComparer.LessCartesian);
+            offsets.Sort(PointComparer.LessCartesian);
+
+            sortedOffsets = new ReadOnlyList<Point>(offsets);
         }
 
         private void PrepareTargetPoints(bool useContext)
