@@ -516,8 +516,6 @@ namespace ContentAwareFill
 
             for (int targetIndex = 0; targetIndex < length; targetIndex++)
             {
-                targetTriesCount++;
-
                 // Report progress in increments of 4096.
                 if ((targetIndex & 4095) == 0)
                 {
@@ -527,6 +525,8 @@ namespace ContentAwareFill
                     }
                     if (progressCallback != null)
                     {
+                        targetTriesCount += 4096;
+
                         double value = ((double)targetTriesCount / (double)totalTargets) * 100.0;
 
                         progressCallback((int)value.Clamp(0.0, 100.0));
