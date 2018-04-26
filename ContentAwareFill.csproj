@@ -95,6 +95,7 @@
     <Compile Include="Resynthesizer\PointCollectionUtil.cs" />
     <Compile Include="Resynthesizer\PointExtensions.cs" />
     <Compile Include="Resynthesizer\PointIndexedArray.cs" />
+    <Compile Include="Resynthesizer\ReadOnlyList.cs" />
     <Compile Include="Resynthesizer\ResynthesizerConstants.cs" />
     <Compile Include="Resynthesizer\ResynthesizerParameters.cs" />
     <Compile Include="Resynthesizer\Resynthesizer.cs" />
