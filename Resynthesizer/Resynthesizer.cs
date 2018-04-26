@@ -359,10 +359,10 @@ namespace ContentAwareFill
                 }
             }
 
+            targetPoints = new List<Point>(targetPointsSize);
+
             if (targetPointsSize > 0)
             {
-                targetPoints = new List<Point>(targetPointsSize);
-
                 for (int y = 0; y < target.Height; y++)
                 {
                     for (int x = 0; x < target.Width; x++)
