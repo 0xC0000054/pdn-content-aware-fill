@@ -73,7 +73,7 @@ namespace ContentAwareFill
         private PointIndexedArray<bool> hasValue;
         private PointIndexedArray<Point> sourceOf;
         private ReadOnlyList<Point> sortedOffsets;
-        private List<Point> targetPoints;
+        private ReadOnlyList<Point> targetPoints;
         private ReadOnlyList<Point> sourcePoints;
         private int targetTriesCount;
         private int totalTargets;
@@ -355,7 +355,7 @@ namespace ContentAwareFill
                 }
             }
 
-            targetPoints = new List<Point>(targetPointsSize);
+            List<Point> points = new List<Point>(targetPointsSize);
 
             if (targetPointsSize > 0)
             {
@@ -369,13 +369,15 @@ namespace ContentAwareFill
 
                         if (isSelectedTarget)
                         {
-                            targetPoints.Add(new Point(x, y));
+                            points.Add(new Point(x, y));
                         }
                     }
                 }
 
-                targetPoints = TargetPointSorter.Sort(targetPoints, random, parameters.MatchContext);
+                points = TargetPointSorter.Sort(points, random, parameters.MatchContext);
             }
+
+            targetPoints = new ReadOnlyList<Point>(points);
         }
 
         private void PrepareSourcePoints()
