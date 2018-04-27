@@ -64,7 +64,7 @@ namespace ContentAwareFill
         {
             get
             {
-                return new Uri("https://www.getpaint.net/redirect/plugins.html");
+                return new Uri("https://forums.getpaint.net/index.php?showtopic=112730");
             }
         }
     }
