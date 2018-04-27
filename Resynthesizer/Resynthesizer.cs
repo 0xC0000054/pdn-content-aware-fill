@@ -55,6 +55,8 @@ namespace ContentAwareFill
     internal sealed class Resynthesizer : IDisposable
     {
         private const int ColorChannelCount = 3;
+        private const byte MaskUnselected = 0;
+        private const byte MaskFullySelected = 255;
 
         private readonly ResynthesizerParameters parameters;
         private readonly Random random;
@@ -239,17 +241,7 @@ namespace ContentAwareFill
                     point.Y < 0 ||
                     point.X >= source.Width ||
                     point.Y >= source.Height ||
-                    !IsSelectedSource(point.X, point.Y));
-        }
-
-        private bool IsSelectedTarget(int x, int y)
-        {
-            return (targetMask.GetPoint(x, y) != 0);
-        }
-
-        private bool IsSelectedSource(int x, int y)
-        {
-            return (sourceMask.GetPoint(x, y) == 255);
+                    sourceMask.GetPointUnchecked(point.X, point.Y) != MaskFullySelected);
         }
 
         private void MakeDiffTable()
@@ -269,16 +261,6 @@ namespace ContentAwareFill
         private static double NegLogCauchy(double d)
         {
             return Math.Log(d * d + 1.0);
-        }
-
-        private bool NotTransparentTarget(int x, int y)
-        {
-            return (target.GetPoint(x, y).A > 0);
-        }
-
-        private bool NotTransparentSource(int x, int y)
-        {
-            return (source.GetPoint(x, y).A > 0);
         }
 
         private void PrepareNeighbors(Point position)
@@ -340,18 +322,22 @@ namespace ContentAwareFill
             sortedOffsets = new ReadOnlyList<Point>(offsets);
         }
 
-        private void PrepareTargetPoints(bool useContext)
+        private unsafe void PrepareTargetPoints(bool useContext)
         {
             int targetPointsSize = 0;
 
             for (int y = 0; y < target.Height; y++)
             {
+                byte* mask = targetMask.GetRowAddressUnchecked(y);
+
                 for (int x = 0; x < target.Width; x++)
                 {
-                    if (IsSelectedTarget(x, y))
+                    if (*mask != MaskUnselected)
                     {
                         targetPointsSize++;
                     }
+
+                    mask++;
                 }
             }
 
@@ -361,16 +347,22 @@ namespace ContentAwareFill
             {
                 for (int y = 0; y < target.Height; y++)
                 {
+                    ColorBgra* src = target.GetRowAddressUnchecked(y);
+                    byte* mask = targetMask.GetRowAddressUnchecked(y);
+
                     for (int x = 0; x < target.Width; x++)
                     {
-                        bool isSelectedTarget = IsSelectedTarget(x, y);
+                        bool isSelectedTarget = *mask != MaskUnselected;
 
-                        hasValue.SetValue(x, y, useContext && !isSelectedTarget && NotTransparentTarget(x, y));
+                        hasValue.SetValue(x, y, useContext && !isSelectedTarget && src->A > 0);
 
                         if (isSelectedTarget)
                         {
                             points.Add(new Point(x, y));
                         }
+
+                        src++;
+                        mask++;
                     }
                 }
 
@@ -380,18 +372,24 @@ namespace ContentAwareFill
             targetPoints = new ReadOnlyList<Point>(points);
         }
 
-        private void PrepareSourcePoints()
+        private unsafe void PrepareSourcePoints()
         {
             List<Point> points = new List<Point>(source.Width * source.Height);
 
             for (int y = 0; y < source.Height; y++)
             {
+                ColorBgra* src = source.GetRowAddressUnchecked(y);
+                byte* mask = sourceMask.GetRowAddressUnchecked(y);
+
                 for (int x = 0; x < source.Width; x++)
                 {
-                    if (IsSelectedSource(x, y) && NotTransparentSource(x, y))
+                    if (*mask == MaskFullySelected && src->A > 0)
                     {
                         points.Add(new Point(x, y));
                     }
+
+                    src++;
+                    mask++;
                 }
             }
 
