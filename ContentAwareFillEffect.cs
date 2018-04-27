@@ -50,7 +50,7 @@ namespace ContentAwareFill
             }
         }
 
-        public ContentAwareFillEffect() : base(StaticName, StaticImage, SubmenuNames.Photo, EffectFlags.Configurable)
+        public ContentAwareFillEffect() : base(StaticName, StaticImage, "Selection", EffectFlags.Configurable)
         {
             this.repeatEffect = true;
         }
