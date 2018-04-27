@@ -18,7 +18,7 @@ Some icons are from or based on those in the [Fugue](http://p.yusukekamiyamane.c
   Microsoft Store | My Documents\paint.net App Files\Effects
 
 3. Restart Paint.NET.
-4. The plug-in will now be available as the Content Aware Fill menu item in the Photo category of the Paint.NET Effects menu.
+4. The plug-in will now be available as the Content Aware Fill menu item in the Selection category of the Paint.NET Effects menu.
 
 ## License
 
