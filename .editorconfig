@@ -17,3 +17,14 @@ csharp_new_line_before_finally = true
 csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_members_in_anonymous_types = true
 csharp_new_line_between_query_expression_clauses = true
+
+# Expression-bodied member settings
+csharp_style_expression_bodied_methods = false:none
+csharp_style_expression_bodied_constructors = false:none
+csharp_style_expression_bodied_operators = false:none
+csharp_style_expression_bodied_properties = false:none
+csharp_style_expression_bodied_indexers = false:none
+csharp_style_expression_bodied_accessors = false:none
+
+# Code block settings
+csharp_prefer_braces = true:warning
