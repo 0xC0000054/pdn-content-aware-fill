@@ -121,6 +121,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(TargetPath)" "D:\Program Files\paint.net\Effects" /y</PostBuildEvent>
+    <PostBuildEvent>copy "$(TargetPath)" "D:\Program Files\paint.net\Effects" /y
+if "$(ConfigurationName)" == "Debug" copy "$(TargetDir)$(TargetName).pdb" "D:\Program Files\Paint.NET\Effects" /y</PostBuildEvent>
   </PropertyGroup>
 </Project>
