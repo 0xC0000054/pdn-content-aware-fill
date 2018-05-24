@@ -32,7 +32,7 @@ namespace ContentAwareFill
         {
             get
             {
-                return this.parentBlock;
+                return parentBlock;
             }
         }
 
@@ -121,7 +121,7 @@ namespace ContentAwareFill
                 throw new ObjectDisposedException("MemoryBlock");
             }
 
-            MemoryBlock dupe = new MemoryBlock(this.length);
+            MemoryBlock dupe = new MemoryBlock(length);
             CopyBlock(dupe, 0, this, 0, length);
             return dupe;
         }
@@ -137,10 +137,10 @@ namespace ContentAwareFill
                 throw new ArgumentOutOfRangeException("bytes", bytes, "Bytes must be greater than zero");
             }
 
-            this.length = bytes;
-            this.parentBlock = null;
-            this.voidStar = Allocate(bytes).ToPointer();
-            this.valid = true;
+            length = bytes;
+            parentBlock = null;
+            voidStar = Allocate(bytes).ToPointer();
+            valid = true;
         }
 
         /// <summary>
@@ -157,8 +157,8 @@ namespace ContentAwareFill
             this.parentBlock = parentBlock;
             byte* bytePointer = (byte*)parentBlock.VoidStar;
             bytePointer += offset;
-            this.voidStar = (void*)bytePointer;
-            this.valid = true;
+            voidStar = (void*)bytePointer;
+            valid = true;
             this.length = length;
         }
 
@@ -183,11 +183,11 @@ namespace ContentAwareFill
                 {
                 }
 
-                if (this.valid && parentBlock == null)
+                if (valid && parentBlock == null)
                 {
-                    if (this.length >= largeBlockThreshold)
+                    if (length >= largeBlockThreshold)
                     {
-                        Memory.FreeLarge(new IntPtr(voidStar), (ulong)this.length);
+                        Memory.FreeLarge(new IntPtr(voidStar), (ulong)length);
                     }
                     else
                     {
@@ -197,7 +197,7 @@ namespace ContentAwareFill
 
                 parentBlock = null;
                 voidStar = null;
-                this.valid = false;
+                valid = false;
             }
         }
 

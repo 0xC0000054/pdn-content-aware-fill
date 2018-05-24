@@ -124,20 +124,20 @@ namespace ContentAwareFill
             }
 
             this.parameters = parameters;
-            this.target = source.Clone();
+            target = source.Clone();
             this.source = new Surface(croppedSourceSize.Width, croppedSourceSize.Height);
             this.source.CopySurface(source, sourceROI);
             this.targetMask = targetMask.Clone();
             this.sourceMask = new MaskSurface(croppedSourceSize.Width, croppedSourceSize.Height);
             this.sourceMask.CopySurface(sourceMask, sourceROI);
 
-            this.random = new Random(1198472);
-            this.diffTable = new ushort[512];
-            this.neighbors = new Neighbor[parameters.Neighbors];
-            this.repetitionParameters = new RepetitionParameter[ResynthesizerConstants.MaxPasses];
-            this.tried = new PointIndexedArray<int>(target.Width, target.Height, -1);
-            this.hasValue = new PointIndexedArray<bool>(target.Width, target.Height, false);
-            this.sourceOf = new PointIndexedArray<Point>(target.Width, target.Height, new Point(-1, -1));
+            random = new Random(1198472);
+            diffTable = new ushort[512];
+            neighbors = new Neighbor[parameters.Neighbors];
+            repetitionParameters = new RepetitionParameter[ResynthesizerConstants.MaxPasses];
+            tried = new PointIndexedArray<int>(target.Width, target.Height, -1);
+            hasValue = new PointIndexedArray<bool>(target.Width, target.Height, false);
+            sourceOf = new PointIndexedArray<Point>(target.Width, target.Height, new Point(-1, -1));
             this.progressCallback = progressCallback;
         }
 

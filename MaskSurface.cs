@@ -72,22 +72,22 @@ namespace ContentAwareFill
 		{
 			get
 			{
-				return new Rectangle(0, 0, this.width, this.height);
+				return new Rectangle(0, 0, width, height);
 			}
 		}
 
 		public MaskSurface(int width, int height)
 		{
-			this.disposed = false;
+			disposed = false;
 			this.width = width;
 			this.height = height;
-			this.stride = width;
-			this.scan0 = new MemoryBlock(width * height);
+			stride = width;
+			scan0 = new MemoryBlock(width * height);
 		}
 
 		private MaskSurface(int width, int height, int stride, MemoryBlock scan0)
 		{
-			this.disposed = false;
+			disposed = false;
 			this.width = width;
 			this.height = height;
 			this.stride = stride;
@@ -99,13 +99,13 @@ namespace ContentAwareFill
 		/// </summary>
 		public unsafe void Clear()
 		{
-			Memory.SetToZero(this.scan0.VoidStar, (ulong)this.scan0.Length);
+			Memory.SetToZero(scan0.VoidStar, (ulong)scan0.Length);
 		}
 
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
 		public MaskSurface Clone()
 		{
-			MaskSurface surface = new MaskSurface(this.width, this.height);
+			MaskSurface surface = new MaskSurface(width, height);
 			surface.CopySurface(this);
 			return surface;
 		}
@@ -125,13 +125,13 @@ namespace ContentAwareFill
 				throw new ObjectDisposedException("Surface");
 			}
 
-			if (this.stride == source.stride &&
-				this.width == source.width &&
-				this.height == source.height)
+			if (stride == source.stride &&
+				width == source.width &&
+				height == source.height)
 			{
 				unsafe
 				{
-					Memory.Copy(this.scan0.VoidStar,
+					Memory.Copy(scan0.VoidStar,
 								source.scan0.VoidStar,
 								((ulong)(height - 1) * (ulong)stride) + (ulong)width);
 				}
@@ -169,8 +169,8 @@ namespace ContentAwareFill
 			}
 
 			sourceRoi.Intersect(source.Bounds);
-			int copiedWidth = Math.Min(this.width, sourceRoi.Width);
-			int copiedHeight = Math.Min(this.Height, sourceRoi.Height);
+			int copiedWidth = Math.Min(width, sourceRoi.Width);
+			int copiedHeight = Math.Min(Height, sourceRoi.Height);
 
 			if (copiedWidth == 0 || copiedHeight == 0)
 			{
@@ -209,7 +209,7 @@ namespace ContentAwareFill
 				throw new ArgumentOutOfRangeException("windowHeight", "must be greater than zero");
 			}
 
-			Rectangle original = this.Bounds;
+			Rectangle original = Bounds;
 			Rectangle sub = new Rectangle(x, y, windowWidth, windowHeight);
 			Rectangle clipped = Rectangle.Intersect(original, sub);
 
@@ -221,14 +221,14 @@ namespace ContentAwareFill
 
 			long offset = ((long)stride * (long)y) + ((long)x);
 			long length = ((windowHeight - 1) * (long)stride) + (long)windowWidth;
-			MemoryBlock block = new MemoryBlock(this.scan0, offset, length);
+			MemoryBlock block = new MemoryBlock(scan0, offset, length);
 
-			return new MaskSurface(windowWidth, windowHeight, this.stride, block);
+			return new MaskSurface(windowWidth, windowHeight, stride, block);
 		}
 
 		public byte GetPoint(int x, int y)
 		{
-			if (x < 0 || y < 0 || x >= this.width || y >= this.height)
+			if (x < 0 || y < 0 || x >= width || y >= height)
 			{
 				throw new ArgumentOutOfRangeException("(x,y)", new Point(x, y), "Coordinates out of range, max=" + new Size(width - 1, height - 1).ToString());
 			}
@@ -258,11 +258,11 @@ namespace ContentAwareFill
 		{
 			if (!disposed && disposing)
 			{
-				this.disposed = true;
+				disposed = true;
 				if (scan0 != null)
 				{
-					this.scan0.Dispose();
-					this.scan0 = null;
+					scan0.Dispose();
+					scan0 = null;
 				}
 			}
 		}

@@ -63,7 +63,7 @@ namespace ContentAwareFill
                 throw new ArgumentNullException(nameof(targetPoints));
             }
 
-            this.maxCartesianAlongRay = new uint[401];
+            maxCartesianAlongRay = new uint[401];
 
             Point center = PointCollectionUtil.GetCenter(targetPoints);
 

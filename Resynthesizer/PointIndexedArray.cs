@@ -31,12 +31,12 @@ namespace ContentAwareFill
 
         public PointIndexedArray(int width, int height, T defaultValue)
         {
-            this.items = new T[width * height];
-            this.stride = width;
+            items = new T[width * height];
+            stride = width;
 
             for (int i = 0; i < items.Length; i++)
             {
-                this.items[i] = defaultValue;
+                items[i] = defaultValue;
             }
         }
 
@@ -56,14 +56,14 @@ namespace ContentAwareFill
         {
             int index = (y * stride) + x;
 
-            return this.items[index];
+            return items[index];
         }
 
         public void SetValue(int x, int y, T value)
         {
             int index = (y * stride) + x;
 
-            this.items[index] = value;
+            items[index] = value;
         }
     }
 }

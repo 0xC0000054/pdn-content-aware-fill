@@ -53,18 +53,18 @@ namespace ContentAwareFill
 
         public ContentAwareFillConfigToken(Surface destination, int sampleSize, SampleSource sampleFrom, FillDirection fillDirection)
         {
-            this.Destination = destination;
-            this.SampleSize = sampleSize;
-            this.SampleFrom = sampleFrom;
-            this.FillDirection = fillDirection;
+            Destination = destination;
+            SampleSize = sampleSize;
+            SampleFrom = sampleFrom;
+            FillDirection = fillDirection;
         }
 
         private ContentAwareFillConfigToken(ContentAwareFillConfigToken cloneMe)
         {
-            this.Destination = cloneMe.Destination;
-            this.SampleSize = cloneMe.SampleSize;
-            this.SampleFrom = cloneMe.SampleFrom;
-            this.FillDirection = cloneMe.FillDirection;
+            Destination = cloneMe.Destination;
+            SampleSize = cloneMe.SampleSize;
+            SampleFrom = cloneMe.SampleFrom;
+            FillDirection = cloneMe.FillDirection;
         }
 
         public override object Clone()

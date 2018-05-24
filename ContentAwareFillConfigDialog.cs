@@ -41,7 +41,7 @@ namespace ContentAwareFill
         {
             InitializeComponent();
             UI.InitScaling(this);
-            this.formClosePending = false;
+            formClosePending = false;
             PluginThemingUtil.EnableEffectDialogTheme(this);
         }
 
@@ -92,8 +92,8 @@ namespace ContentAwareFill
                 int width = EffectSourceSurface.Width;
                 int height = EffectSourceSurface.Height;
 
-                this.sourceMask = new MaskSurface(width, height);
-                this.destinationMask = ContentAwareFillEffect.CreateMask(Selection, width, height);
+                sourceMask = new MaskSurface(width, height);
+                destinationMask = ContentAwareFillEffect.CreateMask(Selection, width, height);
 
                 // Render the filled selection after the mask surfaces are initialized.
                 FillSelection();
@@ -102,16 +102,16 @@ namespace ContentAwareFill
 
         protected override void InitialInitToken()
         {
-            this.theEffectToken = new ContentAwareFillConfigToken(null, 50, SampleSource.Sides, FillDirection.InwardToCenter);
+            theEffectToken = new ContentAwareFillConfigToken(null, 50, SampleSource.Sides, FillDirection.InwardToCenter);
         }
 
         protected override void InitDialogFromToken(EffectConfigToken effectTokenCopy)
         {
             ContentAwareFillConfigToken token = (ContentAwareFillConfigToken)effectTokenCopy;
 
-            this.sampleSizeTrackBar.Value = token.SampleSize;
-            this.sampleFromCombo.SelectedIndex = (int)token.SampleFrom;
-            this.fillDirectionCombo.SelectedIndex = (int)token.FillDirection;
+            sampleSizeTrackBar.Value = token.SampleSize;
+            sampleFromCombo.SelectedIndex = (int)token.SampleFrom;
+            fillDirectionCombo.SelectedIndex = (int)token.FillDirection;
         }
 
         private DialogResult ShowMessage(string message, MessageBoxIcon icon)
@@ -125,30 +125,30 @@ namespace ContentAwareFill
         {
             ContentAwareFillConfigToken token = (ContentAwareFillConfigToken)theEffectToken;
 
-            token.Destination = this.destination;
-            token.SampleSize = this.sampleSizeTrackBar.Value;
-            token.SampleFrom =  (SampleSource)this.sampleFromCombo.SelectedIndex;
-            token.FillDirection = (FillDirection)this.fillDirectionCombo.SelectedIndex;
+            token.Destination = destination;
+            token.SampleSize = sampleSizeTrackBar.Value;
+            token.SampleFrom =  (SampleSource)sampleFromCombo.SelectedIndex;
+            token.FillDirection = (FillDirection)fillDirectionCombo.SelectedIndex;
         }
 
         private void okButton_Click(object sender, EventArgs e)
         {
-            this.DialogResult = DialogResult.OK;
+            DialogResult = DialogResult.OK;
             FinishTokenUpdate();
             Close();
         }
 
         private void cancelButton_Click(object sender, EventArgs e)
         {
-            this.DialogResult = DialogResult.Cancel;
+            DialogResult = DialogResult.Cancel;
             Close();
         }
 
         private void sampleSizeTrackBar_ValueChanged(object sender, EventArgs e)
         {
-            if (this.sampleSizeTrackBar.Value != (int)this.sampleSizeUpDown.Value)
+            if (sampleSizeTrackBar.Value != (int)sampleSizeUpDown.Value)
             {
-                this.sampleSizeUpDown.Value = this.sampleSizeTrackBar.Value;
+                sampleSizeUpDown.Value = sampleSizeTrackBar.Value;
 
                 FillSelection();
             }
@@ -156,9 +156,9 @@ namespace ContentAwareFill
 
         private void sampleSizeUpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (this.sampleSizeUpDown.Value != this.sampleSizeTrackBar.Value)
+            if (sampleSizeUpDown.Value != sampleSizeTrackBar.Value)
             {
-                this.sampleSizeTrackBar.Value = (int)this.sampleSizeUpDown.Value;
+                sampleSizeTrackBar.Value = (int)sampleSizeUpDown.Value;
 
                 FillSelection();
             }
@@ -176,20 +176,20 @@ namespace ContentAwareFill
 
         private void resetButton_Click(object sender, EventArgs e)
         {
-            this.sampleSizeTrackBar.Value = 50;
+            sampleSizeTrackBar.Value = 50;
         }
 
         private void FillSelection()
         {
-            if (this.sampleFromCombo.SelectedIndex != -1 &&
-                this.fillDirectionCombo.SelectedIndex != -1 &&
-                this.destinationMask != null)
+            if (sampleFromCombo.SelectedIndex != -1 &&
+                fillDirectionCombo.SelectedIndex != -1 &&
+                destinationMask != null)
             {
                 if (!backgroundWorker1.IsBusy)
                 {
-                    int sampleSize = this.sampleSizeTrackBar.Value;
-                    SampleSource sampleFrom = (SampleSource)this.sampleFromCombo.SelectedIndex;
-                    FillDirection fillDirection = (FillDirection)this.fillDirectionCombo.SelectedIndex;
+                    int sampleSize = sampleSizeTrackBar.Value;
+                    SampleSource sampleFrom = (SampleSource)sampleFromCombo.SelectedIndex;
+                    FillDirection fillDirection = (FillDirection)fillDirectionCombo.SelectedIndex;
 
                     backgroundWorker1.RunWorkerAsync(new WorkerArgs(sampleSize, sampleFrom, fillDirection));
                 }
@@ -199,7 +199,7 @@ namespace ContentAwareFill
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         private unsafe void RenderSourceMask(PdnRegion region)
         {
-            this.sourceMask.Clear();
+            sourceMask.Clear();
 
             Rectangle[] scans = region.GetRegionScansReadOnlyInt();
 
@@ -209,7 +209,7 @@ namespace ContentAwareFill
 
                 for (int y = rect.Top; y < rect.Bottom; y++)
                 {
-                    byte* ptr = this.sourceMask.GetPointAddressUnchecked(rect.Left, y);
+                    byte* ptr = sourceMask.GetPointAddressUnchecked(rect.Left, y);
 
                     for (int x = rect.Left; x < rect.Right; x++)
                     {
@@ -220,7 +220,7 @@ namespace ContentAwareFill
             }
 
 #if DEBUG
-            using (Bitmap image = new Bitmap(this.sourceMask.Width, this.sourceMask.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
+            using (Bitmap image = new Bitmap(sourceMask.Width, sourceMask.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
             {
                 System.Drawing.Imaging.BitmapData data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height),
                                                                         System.Drawing.Imaging.ImageLockMode.WriteOnly, image.PixelFormat);
@@ -302,19 +302,19 @@ namespace ContentAwareFill
                     {
                         destination.Dispose();
                     }
-                    this.destination = synth.Target.Clone();
+                    destination = synth.Target.Clone();
                 }
             }
         }
 
         private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            this.progressBar1.Value = e.ProgressPercentage.Clamp(0, 100);
+            progressBar1.Value = e.ProgressPercentage.Clamp(0, 100);
         }
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            this.progressBar1.Value = 0;
+            progressBar1.Value = 0;
 
             if (!e.Cancelled)
             {

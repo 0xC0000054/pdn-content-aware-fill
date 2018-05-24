@@ -52,12 +52,12 @@ namespace ContentAwareFill
 
         public ContentAwareFillEffect() : base(StaticName, StaticImage, "Selection", EffectFlags.Configurable)
         {
-            this.repeatEffect = true;
+            repeatEffect = true;
         }
 
         public override EffectConfigDialog CreateConfigDialog()
         {
-            this.repeatEffect = false;
+            repeatEffect = false;
 
             return new ContentAwareFillConfigDialog();
         }
