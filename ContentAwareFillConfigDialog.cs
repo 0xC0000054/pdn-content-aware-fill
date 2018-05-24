@@ -45,7 +45,6 @@ namespace ContentAwareFill
             PluginThemingUtil.EnableEffectDialogTheme(this);
         }
 
-
         protected override void OnBackColorChanged(EventArgs e)
         {
             base.OnBackColorChanged(e);
@@ -99,7 +98,6 @@ namespace ContentAwareFill
                 // Render the filled selection after the mask surfaces are initialized.
                 FillSelection();
             }
-
         }
 
         protected override void InitialInitToken()
