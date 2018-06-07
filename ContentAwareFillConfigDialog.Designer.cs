@@ -21,18 +21,6 @@
                     components.Dispose();
                     components = null;
                 }
-
-                if (destinationMask != null)
-                {
-                    destinationMask.Dispose();
-                    destinationMask = null;
-                }
-
-                if (sourceMask != null)
-                {
-                    sourceMask.Dispose();
-                    sourceMask = null;
-                }
             }
             base.Dispose(disposing);
         }
@@ -52,7 +40,6 @@
             this.sampleSizeTrackBar = new System.Windows.Forms.TrackBar();
             this.sampleSizeUpDown = new System.Windows.Forms.NumericUpDown();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
-            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.resetButton = new System.Windows.Forms.Button();
             this.sampleSizeHeader = new ContentAwareFill.HeaderLabel();
             this.sampleFromHeader = new ContentAwareFill.HeaderLabel();
@@ -147,14 +134,6 @@
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(310, 23);
             this.progressBar1.TabIndex = 8;
-            // 
-            // backgroundWorker1
-            // 
-            this.backgroundWorker1.WorkerReportsProgress = true;
-            this.backgroundWorker1.WorkerSupportsCancellation = true;
-            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
-            this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
-            this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
             // 
             // resetButton
             // 
@@ -255,7 +234,6 @@
         private System.Windows.Forms.TrackBar sampleSizeTrackBar;
         private System.Windows.Forms.NumericUpDown sampleSizeUpDown;
         private System.Windows.Forms.ProgressBar progressBar1;
-        private System.ComponentModel.BackgroundWorker backgroundWorker1;
         private System.Windows.Forms.Button resetButton;
         private HeaderLabel sampleSizeHeader;
         private HeaderLabel sampleFromHeader;

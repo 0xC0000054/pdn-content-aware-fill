@@ -33,6 +33,9 @@ namespace ContentAwareFill
     public sealed class ContentAwareFillEffect : Effect
     {
         private bool repeatEffect;
+        private Surface destination;
+        private MaskSurface sourceMask;
+        private MaskSurface destinationMask;
 
         internal static string StaticName
         {
@@ -53,6 +56,23 @@ namespace ContentAwareFill
         public ContentAwareFillEffect() : base(StaticName, StaticImage, "Selection", EffectFlags.Configurable)
         {
             repeatEffect = true;
+            destination = null;
+            sourceMask = null;
+            destinationMask = null;
+        }
+
+        internal EventHandler<ConfigDialogProgressEventArgs> ConfigDialogProgress;
+
+        protected override void OnDispose(bool disposing)
+        {
+            if (disposing)
+            {
+                destination?.Dispose();
+                destinationMask?.Dispose();
+                sourceMask?.Dispose();
+            }
+
+            base.OnDispose(disposing);
         }
 
         public override EffectConfigDialog CreateConfigDialog()
@@ -74,7 +94,7 @@ namespace ContentAwareFill
         /// </exception>
         /// <exception cref="ArgumentOutOfRangeException"><paramref name="sampleSize"/> cannot be negative.</exception>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
-        internal static PdnRegion CreateSampleRegion(Rectangle surfaceBounds, PdnRegion selection, int sampleSize)
+        private static PdnRegion CreateSampleRegion(Rectangle surfaceBounds, PdnRegion selection, int sampleSize)
         {
             if (selection == null)
             {
@@ -124,7 +144,7 @@ namespace ContentAwareFill
         /// or
         /// <paramref name="fillDirection"/> is not a valid <see cref="FillDirection"/> value.
         /// </exception>
-        internal static MatchContextType GetMatchContextType(SampleSource sampleFrom, FillDirection fillDirection)
+        private static MatchContextType GetMatchContextType(SampleSource sampleFrom, FillDirection fillDirection)
         {
             if (sampleFrom < SampleSource.AllAround || sampleFrom > SampleSource.TopAndBottom)
             {
@@ -168,22 +188,46 @@ namespace ContentAwareFill
         }
 
         /// <summary>
-        /// Creates a <see cref="MaskSurface"/> for the specified region.
+        /// Creates a <see cref="MaskSurface"/> for the destination.
         /// </summary>
-        /// <param name="region">The region.</param>
-        /// <param name="width">The width of the mask surface.</param>
-        /// <param name="height">The height of the mask surface.</param>
-        /// <returns>The mask for the specified region.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="width"/> is null.</exception>
+        /// <returns>The mask for the destination.</returns>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
-        internal static unsafe MaskSurface CreateMask(PdnRegion region, int width, int height)
+        private unsafe void CreateDestinationMask()
         {
-            if (region == null)
-            {
-                throw new ArgumentNullException(nameof(region));
-            }
+            Surface sourceSurface = EnvironmentParameters.SourceSurface;
 
-            MaskSurface surface = new MaskSurface(width, height);
+            destinationMask = new MaskSurface(sourceSurface.Width, sourceSurface.Height);
+
+            Rectangle[] scans = EnvironmentParameters.GetSelection(sourceSurface.Bounds).GetRegionScansReadOnlyInt();
+
+            for (int i = 0; i < scans.Length; i++)
+            {
+                Rectangle rect = scans[i];
+
+                for (int y = rect.Top; y < rect.Bottom; y++)
+                {
+                    byte* ptr = destinationMask.GetPointAddressUnchecked(rect.Left, y);
+
+                    for (int x = rect.Left; x < rect.Right; x++)
+                    {
+                        *ptr = 255;
+                        ptr++;
+                    }
+                }
+            }
+        }
+
+        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
+        private unsafe void RenderSourceMask(PdnRegion region)
+        {
+#pragma warning disable RCS1180 // Inline lazy initialization.
+            if (sourceMask == null)
+            {
+                sourceMask = new MaskSurface(EnvironmentParameters.SourceSurface.Width, EnvironmentParameters.SourceSurface.Height);
+            }
+#pragma warning restore RCS1180 // Inline lazy initialization.
+
+            sourceMask.Clear();
 
             Rectangle[] scans = region.GetRegionScansReadOnlyInt();
 
@@ -193,7 +237,7 @@ namespace ContentAwareFill
 
                 for (int y = rect.Top; y < rect.Bottom; y++)
                 {
-                    byte* ptr = surface.GetPointAddressUnchecked(rect.Left, y);
+                    byte* ptr = sourceMask.GetPointAddressUnchecked(rect.Left, y);
 
                     for (int x = rect.Left; x < rect.Right; x++)
                     {
@@ -203,29 +247,61 @@ namespace ContentAwareFill
                 }
             }
 
-            return surface;
+#if DEBUG
+            using (Bitmap image = new Bitmap(sourceMask.Width, sourceMask.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
+            {
+                System.Drawing.Imaging.BitmapData data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height),
+                                                                        System.Drawing.Imaging.ImageLockMode.WriteOnly, image.PixelFormat);
+
+                try
+                {
+                    for (int y = 0; y < image.Height; y++)
+                    {
+                        byte* src = sourceMask.GetRowAddressUnchecked(y);
+                        byte* dst = (byte*)data.Scan0 + (y * data.Stride);
+
+                        for (int x = 0; x < image.Width; x++)
+                        {
+                            dst[0] = dst[1] = dst[2] = *src;
+                            dst[3] = 255;
+
+                            src++;
+                            dst += 4;
+                        }
+                    }
+                }
+                finally
+                {
+                    image.UnlockBits(data);
+                }
+            }
+#endif
+        }
+
+        private void OnConfigDialogProgress(int value)
+        {
+            ConfigDialogProgress.Invoke(this, new ConfigDialogProgressEventArgs(value));
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")]
         protected override void OnSetRenderInfo(EffectConfigToken parameters, RenderArgs dstArgs, RenderArgs srcArgs)
         {
-            if (repeatEffect)
+            ContentAwareFillConfigToken token = (ContentAwareFillConfigToken)parameters;
+
+            Surface source = srcArgs.Surface;
+            Rectangle sourceBounds = source.Bounds;
+            PdnRegion selection = EnvironmentParameters.GetSelection(sourceBounds);
+
+            if (selection.GetBoundsInt() != sourceBounds)
             {
-                ContentAwareFillConfigToken token = (ContentAwareFillConfigToken)parameters;
-                if (token.Destination != null)
-                {
-                    token.Destination.Dispose();
-                    token.Destination = null;
-                }
-
-                Surface source = srcArgs.Surface;
-                Rectangle sourceBounds = source.Bounds;
-                PdnRegion selection = EnvironmentParameters.GetSelection(sourceBounds);
-
                 using (PdnRegion sampleArea = CreateSampleRegion(sourceBounds, selection, token.SampleSize))
-                using (MaskSurface sourceMask = CreateMask(sampleArea, source.Width, source.Height))
-                using (MaskSurface destinationMask = CreateMask(selection, source.Width, source.Height))
                 {
+                    RenderSourceMask(sampleArea);
+                    if (destinationMask == null)
+                    {
+                        CreateDestinationMask();
+                    }
+
                     SampleSource sampleFrom = token.SampleFrom;
                     FillDirection fillDirection = token.FillDirection;
 
@@ -252,13 +328,16 @@ namespace ContentAwareFill
 
                     ResynthesizerParameters resynthesizerParameters = new ResynthesizerParameters(false, false, matchContext, 0.0, 0.117, 16, 500);
 
-                    using (Resynthesizer synth = new Resynthesizer(resynthesizerParameters, source, destinationMask, sourceMask, expandedBounds, croppedSourceSize, null))
+                    using (Resynthesizer synth = new Resynthesizer(resynthesizerParameters, source, destinationMask, sourceMask, expandedBounds,
+                        croppedSourceSize, repeatEffect ? null : (Action<int>)OnConfigDialogProgress))
                     {
                         try
                         {
                             if (synth.ContentAwareFill(() => IsCancelRequested))
                             {
-                                token.Destination = synth.Target.Clone();
+                                destination?.Dispose();
+
+                                destination = synth.Target.Clone();
                             }
                         }
                         catch (ResynthizerException ex)
@@ -266,6 +345,12 @@ namespace ContentAwareFill
                             MessageBox.Show(ex.Message, Name, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, 0);
                         }
                     }
+                }
+
+                if (!repeatEffect)
+                {
+                    // Reset the configuration dialog progress bar to 0.
+                    OnConfigDialogProgress(0);
                 }
             }
 
@@ -276,11 +361,9 @@ namespace ContentAwareFill
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "1")]
         public override void Render(EffectConfigToken parameters, RenderArgs dstArgs, RenderArgs srcArgs, Rectangle[] rois, int startIndex, int length)
         {
-            ContentAwareFillConfigToken token = (ContentAwareFillConfigToken)parameters;
-
-            if (token.Destination != null)
+            if (destination != null)
             {
-                dstArgs.Surface.CopySurface(token.Destination, rois, startIndex, length);
+                dstArgs.Surface.CopySurface(destination, rois, startIndex, length);
             }
             else
             {

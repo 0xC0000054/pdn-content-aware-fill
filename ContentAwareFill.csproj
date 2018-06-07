@@ -55,6 +55,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConfigDialogProgressEventArgs.cs" />
     <Compile Include="FillDirection.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="MaskSurface.cs" />

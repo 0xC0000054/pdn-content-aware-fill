@@ -20,47 +20,24 @@
 *
 */
 
-using PaintDotNet.Effects;
+using System;
 
 namespace ContentAwareFill
 {
-    public sealed class ContentAwareFillConfigToken : EffectConfigToken
+    internal sealed class ConfigDialogProgressEventArgs : EventArgs
     {
-        public int SampleSize
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConfigDialogProgressEventArgs"/> class.
+        /// </summary>
+        /// <param name="progress">The progress percentage.</param>
+        public ConfigDialogProgressEventArgs(int progress)
+        {
+            ProgressPercentage = PaintDotNet.Int32Util.Clamp(progress, 0, 100);
+        }
+
+        public int ProgressPercentage
         {
             get;
-            set;
-        }
-
-        public SampleSource SampleFrom
-        {
-            get;
-            set;
-        }
-
-        public FillDirection FillDirection
-        {
-            get;
-            set;
-        }
-
-        public ContentAwareFillConfigToken(int sampleSize, SampleSource sampleFrom, FillDirection fillDirection)
-        {
-            SampleSize = sampleSize;
-            SampleFrom = sampleFrom;
-            FillDirection = fillDirection;
-        }
-
-        private ContentAwareFillConfigToken(ContentAwareFillConfigToken cloneMe)
-        {
-            SampleSize = cloneMe.SampleSize;
-            SampleFrom = cloneMe.SampleFrom;
-            FillDirection = cloneMe.FillDirection;
-        }
-
-        public override object Clone()
-        {
-            return new ContentAwareFillConfigToken(this);
         }
     }
 }
