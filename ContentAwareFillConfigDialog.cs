@@ -179,7 +179,7 @@ namespace ContentAwareFill
 
         private void donateLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            Services.GetService<PaintDotNet.AppModel.IShellService>().LaunchUrl(this, @"https://forums.getpaint.net/index.php?showtopic=112730");
+            Services.GetService<PaintDotNet.AppModel.IShellService>().LaunchUrl(this, "https://forums.getpaint.net/index.php?showtopic=112730");
         }
 
         private void UpdateProgress(object sender, ConfigDialogProgressEventArgs e)
