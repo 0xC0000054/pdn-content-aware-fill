@@ -280,7 +280,7 @@ namespace ContentAwareFill
 
         private void OnConfigDialogProgress(int value)
         {
-            ConfigDialogProgress.Invoke(this, new ConfigDialogProgressEventArgs(value));
+            ConfigDialogProgress?.Invoke(this, new ConfigDialogProgressEventArgs(value));
         }
 
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")]
