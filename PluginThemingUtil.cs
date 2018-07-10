@@ -61,10 +61,7 @@ namespace ContentAwareFill
                     }
                 }
 
-                if (useAppThemeSetter != null)
-                {
-                    useAppThemeSetter.Invoke(dialog, true);
-                }
+                useAppThemeSetter?.Invoke(dialog, true);
             }
             catch
             {
