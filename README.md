@@ -15,7 +15,7 @@ Some icons are from or based on those in the [Fugue](http://p.yusukekamiyamane.c
   Paint.NET Version |  Effects Folder Location
   --------|----------
   Classic | C:\Program Files\Paint.NET\Effects    
-  Microsoft Store | My Documents\paint.net App Files\Effects
+  Microsoft Store | Documents\paint.net App Files\Effects
 
 3. Restart Paint.NET.
 4. The plug-in will now be available as the Content Aware Fill menu item in the Selection category of the Paint.NET Effects menu.
