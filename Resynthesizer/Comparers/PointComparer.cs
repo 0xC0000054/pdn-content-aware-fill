@@ -93,6 +93,8 @@ namespace ContentAwareFill
             return new DirectionalPointComparer(points, true);
         }
 
+#pragma warning disable RCS1168 // Parameter name differs from base name.
         public abstract int Compare(Point point1, Point point2);
+#pragma warning restore RCS1168 // Parameter name differs from base name.
     }
 }
