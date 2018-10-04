@@ -80,7 +80,7 @@ namespace ContentAwareFill.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The source layer is empty. Does the selection include any non-transparent pixels?.
+        ///   Looks up a localized string similar to The source region is empty. Does the area outside the selection include any non-transparent pixels?.
         /// </summary>
         internal static string SourcePointsEmpty {
             get {

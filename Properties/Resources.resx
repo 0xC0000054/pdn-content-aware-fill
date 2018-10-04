@@ -121,7 +121,7 @@
     <value>This plugin can only operate on a selection.</value>
   </data>
   <data name="SourcePointsEmpty" xml:space="preserve">
-    <value>The source layer is empty. Does the selection include any non-transparent pixels?</value>
+    <value>The source region is empty. Does the area outside the selection include any non-transparent pixels?</value>
   </data>
   <data name="TargetPointsEmpty" xml:space="preserve">
     <value>The target layer is empty. Does the selection include any non-transparent pixels?</value>
