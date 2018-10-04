@@ -60,7 +60,7 @@ namespace ContentAwareFill
             MapWeight = mapWeight.Clamp(0.0, ResynthesizerConstants.MaxWeight);
             SensitivityToOutliers = sensitivityToOutliers;
             Neighbors = neighbors > ResynthesizerConstants.MaxNeighbors ? ResynthesizerConstants.MaxNeighbors : neighbors;
-            Trys = trys > ResynthesizerConstants.MaxTriesPerPixel ? ResynthesizerConstants.MaxTriesPerPixel : trys;
+            Trys = trys;
         }
 
         public bool TileHorizontal
