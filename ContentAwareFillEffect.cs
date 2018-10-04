@@ -321,9 +321,10 @@ namespace ContentAwareFill
                             croppedSourceSize = new Size(originalBounds.X + originalBounds.Width, expandedBounds.Y + expandedBounds.Height);
                             break;
                         case SampleSource.AllAround:
-                        default:
                             croppedSourceSize = new Size(expandedBounds.X + expandedBounds.Width, expandedBounds.Y + expandedBounds.Height);
                             break;
+                        default:
+                            throw new InvalidOperationException("Unsupported SampleFrom enumeration value: " + sampleFrom.ToString());
                     }
 
                     ResynthesizerParameters resynthesizerParameters = new ResynthesizerParameters(false, false, matchContext, 0.0, 0.117, 16, 500);
