@@ -68,6 +68,7 @@ namespace ContentAwareFill
             {
                 ContentAwareFillEffect effect = (ContentAwareFillEffect)Effect;
                 effect.ConfigDialogProgress += UpdateProgress;
+                effect.ConfigDialogHandleError += HandleError;
             }
         }
 
@@ -189,6 +190,11 @@ namespace ContentAwareFill
         private void donateLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             Services.GetService<PaintDotNet.AppModel.IShellService>().LaunchUrl(this, "https://forums.getpaint.net/index.php?showtopic=112730");
+        }
+
+        private void HandleError(object sender, ConfigDialogHandleErrorEventArgs e)
+        {
+            ShowMessage(e.Exception.Message, MessageBoxIcon.Error);
         }
 
         private void UpdateProgress(object sender, ConfigDialogProgressEventArgs e)

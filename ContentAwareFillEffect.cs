@@ -36,6 +36,7 @@ namespace ContentAwareFill
         private Surface destination;
         private MaskSurface sourceMask;
         private MaskSurface destinationMask;
+        private int lastSampleSize;
 
         internal static string StaticName
         {
@@ -59,8 +60,10 @@ namespace ContentAwareFill
             destination = null;
             sourceMask = null;
             destinationMask = null;
+            lastSampleSize = 0;
         }
 
+        internal EventHandler<ConfigDialogHandleErrorEventArgs> ConfigDialogHandleError;
         internal EventHandler<ConfigDialogProgressEventArgs> ConfigDialogProgress;
 
         protected override void OnDispose(bool disposing)
@@ -278,6 +281,11 @@ namespace ContentAwareFill
 #endif
         }
 
+        private void OnConfigDialogHandleError(Exception exception)
+        {
+            ConfigDialogHandleError?.Invoke(this, new ConfigDialogHandleErrorEventArgs(exception));
+        }
+
         private void OnConfigDialogProgress(int value)
         {
             ConfigDialogProgress?.Invoke(this, new ConfigDialogProgressEventArgs(value));
@@ -343,13 +351,26 @@ namespace ContentAwareFill
                         }
                         catch (ResynthizerException ex)
                         {
-                            MessageBox.Show(ex.Message, Name, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, 0);
+                            if (repeatEffect)
+                            {
+                                MessageBox.Show(ex.Message, Name, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, 0);
+                            }
+                            else
+                            {
+                                // Only show an error message when the sample size changes.
+                                if (token.SampleSize != lastSampleSize)
+                                {
+                                    OnConfigDialogHandleError(ex);
+                                }
+                            }
                         }
                     }
                 }
 
                 if (!repeatEffect)
                 {
+                    lastSampleSize = token.SampleSize;
+
                     // Reset the configuration dialog progress bar to 0.
                     OnConfigDialogProgress(0);
                 }
