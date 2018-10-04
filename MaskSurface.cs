@@ -206,7 +206,7 @@ namespace ContentAwareFill
 
 			if (windowHeight == 0)
 			{
-				throw new ArgumentOutOfRangeException("windowHeight", "must be greater than zero");
+				throw new ArgumentOutOfRangeException(nameof(windowHeight), "must be greater than zero");
 			}
 
 			Rectangle original = Bounds;
@@ -246,7 +246,7 @@ namespace ContentAwareFill
 
 		public unsafe byte* GetPointAddressUnchecked(int x, int y)
 		{
-			return ((byte*)scan0.VoidStar + (y * stride) + x;
+			return (byte*)scan0.VoidStar + (y * stride) + x;
 		}
 
 		public unsafe byte* GetRowAddressUnchecked(int y)
