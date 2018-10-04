@@ -91,7 +91,7 @@ namespace ContentAwareFill
             {
                 Control parent = stack.Pop();
 
-                var controls = parent.Controls;
+                Control.ControlCollection controls = parent.Controls;
 
                 for (int i = 0; i < controls.Count; i++)
                 {
@@ -139,7 +139,7 @@ namespace ContentAwareFill
             {
                 Control parent = stack.Pop();
 
-                var controls = parent.Controls;
+                Control.ControlCollection controls = parent.Controls;
 
                 for (int i = 0; i < controls.Count; i++)
                 {

@@ -35,7 +35,7 @@ namespace ContentAwareFill
             int right = 0;
             int bottom = 0;
 
-            foreach (var item in points)
+            foreach (Point item in points)
             {
                 left = Math.Min(left, item.X);
                 top = Math.Min(top, item.Y);
