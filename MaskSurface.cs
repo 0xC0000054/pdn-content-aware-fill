@@ -246,12 +246,12 @@ namespace ContentAwareFill
 
 		public unsafe byte* GetPointAddressUnchecked(int x, int y)
 		{
-			return (((byte*)scan0.VoidStar + (y * stride)) + x);
+			return ((byte*)scan0.VoidStar + (y * stride) + x;
 		}
 
 		public unsafe byte* GetRowAddressUnchecked(int y)
 		{
-			return ((byte*)scan0.VoidStar + (y * stride));
+			return (byte*)scan0.VoidStar + (y * stride);
 		}
 
 		private void Dispose(bool disposing)

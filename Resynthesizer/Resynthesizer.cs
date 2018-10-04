@@ -237,11 +237,11 @@ namespace ContentAwareFill
 
         private bool ClippedOrMaskedSource(Point point)
         {
-            return (point.X < 0 ||
+            return point.X < 0 ||
                     point.Y < 0 ||
                     point.X >= source.Width ||
                     point.Y >= source.Height ||
-                    sourceMask.GetPointUnchecked(point.X, point.Y) != MaskFullySelected);
+                    sourceMask.GetPointUnchecked(point.X, point.Y) != MaskFullySelected;
         }
 
         private void MakeDiffTable()
@@ -446,7 +446,7 @@ namespace ContentAwareFill
             latestBettermentKind = bettermentKind;
             bestPoint = point;
 
-            return (sum <= 0);
+            return sum <= 0;
         }
 
         private bool WrapOrClip(Surface image, ref Point point)
