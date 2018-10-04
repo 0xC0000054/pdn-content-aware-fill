@@ -571,7 +571,7 @@ namespace ContentAwareFill
 
                 if (!perfectMatch)
                 {
-                    for (int i = 0; i < parameters.Trys; i++)
+                    for (uint i = 0; i < parameters.Trys; i++)
                     {
                         perfectMatch = TryPoint(RandomSourcePoint(), BettermentKind.RandomSource);
                         if (perfectMatch)
