@@ -117,7 +117,16 @@ namespace ContentAwareFill
         {
             MessageBoxOptions options = RightToLeft == RightToLeft.Yes ? MessageBoxOptions.RtlReading : 0;
 
-            return MessageBox.Show(this, message, Text, MessageBoxButtons.OK, icon, MessageBoxDefaultButton.Button1, options);
+            if (InvokeRequired)
+            {
+                return (DialogResult)Invoke(new Func<string, DialogResult>((string text) =>
+                       MessageBox.Show(this, text, Text, MessageBoxButtons.OK, icon, MessageBoxDefaultButton.Button1, options)),
+                       message);
+            }
+            else
+            {
+                return MessageBox.Show(this, message, Text, MessageBoxButtons.OK, icon, MessageBoxDefaultButton.Button1, options);
+            }
         }
 
         protected override void InitTokenFromDialog()
