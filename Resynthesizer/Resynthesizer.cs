@@ -238,10 +238,10 @@ namespace ContentAwareFill
         private bool ClippedOrMaskedSource(Point point)
         {
             return point.X < 0 ||
-                    point.Y < 0 ||
-                    point.X >= source.Width ||
-                    point.Y >= source.Height ||
-                    sourceMask.GetPointUnchecked(point.X, point.Y) != MaskFullySelected;
+                   point.Y < 0 ||
+                   point.X >= source.Width ||
+                   point.Y >= source.Height ||
+                   sourceMask.GetPointUnchecked(point.X, point.Y) != MaskFullySelected;
         }
 
         private void MakeDiffTable()
