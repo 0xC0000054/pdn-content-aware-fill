@@ -260,7 +260,7 @@ namespace ContentAwareFill
 
         private static double NegLogCauchy(double d)
         {
-            return Math.Log(d * d + 1.0);
+            return Math.Log((d * d) + 1.0);
         }
 
         private void PrepareNeighbors(Point position)
@@ -305,7 +305,7 @@ namespace ContentAwareFill
             int width = Math.Min(target.Width, source.Width);
             int height = Math.Min(target.Height, source.Height);
 
-            int length = (2 * width - 1) * (2 * height - 1);
+            int length = ((2 * width) - 1) * ((2 * height) - 1);
 
             List<Point> offsets = new List<Point>(length);
 

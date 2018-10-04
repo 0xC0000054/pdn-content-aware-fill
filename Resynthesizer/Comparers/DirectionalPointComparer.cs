@@ -71,7 +71,7 @@ namespace ContentAwareFill
             {
                 Point offset = point.Subtract(center);
 
-                uint cartesian = (uint)(offset.X * offset.X + offset.Y * offset.Y);
+                uint cartesian = (uint)((offset.X * offset.X) + (offset.Y * offset.Y));
 
                 uint ray = GetRadial(offset);
                 if (cartesian > maxCartesianAlongRay[ray])
@@ -106,7 +106,7 @@ namespace ContentAwareFill
 
         private static uint GetRadial(Point point)
         {
-            return (uint)(Math.Atan2(point.Y, point.X) * 200 / Math.PI + 200);
+            return (uint)((Math.Atan2(point.Y, point.X) * 200 / Math.PI) + 200);
         }
     }
 }
