@@ -104,7 +104,7 @@ namespace ContentAwareFill
         {
             ContentAwareFillConfigToken token = (ContentAwareFillConfigToken)effectTokenCopy;
 
-            // Call FinishTokenUpdate after the controls are initialed.
+            // Call FinishTokenUpdate after the controls are initialized.
             PushIgnoreTokenChangedEvents();
 
             sampleSizeTrackBar.Value = token.SampleSize;
