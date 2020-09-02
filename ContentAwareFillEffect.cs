@@ -337,6 +337,12 @@ namespace ContentAwareFill
             // If that check succeeds, any further checks can be skipped.
             if (configDialog != null && configDialog.SelectionBoundsAreValid || !IsWholeImageSelected(selection, source.Bounds))
             {
+                if (destination != null)
+                {
+                    destination.Dispose();
+                    destination = null;
+                }
+
                 using (PdnRegion sampleArea = CreateSampleRegion(sourceBounds, selection, token.SampleSize))
                 {
                     RenderSourceMask(sampleArea);
@@ -379,8 +385,6 @@ namespace ContentAwareFill
                         {
                             if (synth.ContentAwareFill(() => IsCancelRequested))
                             {
-                                destination?.Dispose();
-
                                 destination = synth.Target.Clone();
                             }
                         }
