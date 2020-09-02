@@ -19,7 +19,7 @@ namespace ContentAwareFill.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -71,15 +71,6 @@ namespace ContentAwareFill.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This plugin can only operate on a selection..
-        /// </summary>
-        internal static string NoSelectionError {
-            get {
-                return ResourceManager.GetString("NoSelectionError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The source region is empty. Does the area outside the selection include any non-transparent pixels?.
         /// </summary>
         internal static string SourcePointsEmpty {
@@ -94,6 +85,17 @@ namespace ContentAwareFill.Properties {
         internal static string TargetPointsEmpty {
             get {
                 return ResourceManager.GetString("TargetPointsEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There is no active selection or the entire image is selected.
+        ///
+        ///This plugin requires that a portion of the image remain unselected so that it can replace the contents of the selection with pixels that are the closest match in the unselected area..
+        /// </summary>
+        internal static string WholeImageSelected {
+            get {
+                return ResourceManager.GetString("WholeImageSelected", resourceCulture);
             }
         }
     }

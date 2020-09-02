@@ -61,10 +61,13 @@ namespace ContentAwareFill
             sourceMask = null;
             destinationMask = null;
             lastSampleSize = 0;
+            ConfigDialogSelectionBoundsAreValid = false;
         }
 
         internal EventHandler<ConfigDialogHandleErrorEventArgs> ConfigDialogHandleError;
         internal EventHandler<ConfigDialogProgressEventArgs> ConfigDialogProgress;
+
+        internal bool ConfigDialogSelectionBoundsAreValid { get; set; }
 
         protected override void OnDispose(bool disposing)
         {
@@ -83,6 +86,47 @@ namespace ContentAwareFill
             repeatEffect = false;
 
             return new ContentAwareFillConfigDialog();
+        }
+
+        /// <summary>
+        /// Determines whether the whole image is selected.
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <param name="imageBounds">The image bounds.</param>
+        /// <returns>
+        ///   <c>true</c> if the whole image is selected; otherwise, <c>false</c>.
+        /// </returns>
+        /// <exception cref="ArgumentNullException"><paramref name="selection"/> is null.</exception>
+        internal static bool IsWholeImageSelected(PdnRegion selection, Rectangle imageBounds)
+        {
+            if (selection is null)
+            {
+                ExceptionUtil.ThrowArgumentNullException(nameof(selection));
+            }
+
+            bool wholeImageSelected = selection.GetBoundsInt() == imageBounds;
+
+            if (wholeImageSelected)
+            {
+                Rectangle[] scans = selection.GetRegionScansReadOnlyInt();
+                int imageWidth = imageBounds.Width;
+
+                for (int i = 0; i < scans.Length; i++)
+                {
+                    Rectangle scan = scans[i];
+
+                    // The scan rectangle height is not checked because Paint.NET
+                    // may split a tall rectangle into smaller chunks.
+                    if (scan.X > 0 || scan.Width < imageWidth)
+                    {
+                        // The rectangle does not span the entire width of the image.
+                        wholeImageSelected = false;
+                        break;
+                    }
+                }
+            }
+
+            return wholeImageSelected;
         }
 
         /// <summary>
@@ -300,7 +344,13 @@ namespace ContentAwareFill
             Rectangle sourceBounds = source.Bounds;
             PdnRegion selection = EnvironmentParameters.GetSelection(sourceBounds);
 
-            if (selection.GetBoundsInt() != sourceBounds)
+            // This plugin does not support processing a selection of the whole image, it needs some unselected pixels
+            // to replace the contents of the selected area.
+            // When there is no active selection Paint.NET acts as if the whole image/layer is selected.
+            //
+            // The configuration dialog will check that the selection bounds are valid when it shows its user interface.
+            // If that check succeeds, any further checks can be skipped.
+            if (!repeatEffect && ConfigDialogSelectionBoundsAreValid || !IsWholeImageSelected(selection, source.Bounds))
             {
                 using (PdnRegion sampleArea = CreateSampleRegion(sourceBounds, selection, token.SampleSize))
                 {

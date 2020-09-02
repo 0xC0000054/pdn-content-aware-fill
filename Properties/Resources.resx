@@ -117,8 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="NoSelectionError" xml:space="preserve">
-    <value>This plugin can only operate on a selection.</value>
+  <data name="WholeImageSelected" xml:space="preserve">
+    <value>There is no active selection or the entire image is selected.
+
+This plugin requires that a portion of the image remain unselected so that it can replace the contents of the selection with pixels that are the closest match in the unselected area.</value>
   </data>
   <data name="SourcePointsEmpty" xml:space="preserve">
     <value>The source region is empty. Does the area outside the selection include any non-transparent pixels?</value>
