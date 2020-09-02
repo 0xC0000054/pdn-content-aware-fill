@@ -323,6 +323,14 @@ namespace ContentAwareFill
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")]
         protected override void OnSetRenderInfo(EffectConfigToken parameters, RenderArgs dstArgs, RenderArgs srcArgs)
         {
+            if (configDialog != null && configDialog.OkButtonPressed && configDialog.RenderingCompleted)
+            {
+                // Exit early if rendering was completed before the user
+                // pressed the OK button in the configuration dialog.
+                base.OnSetRenderInfo(parameters, dstArgs, srcArgs);
+                return;
+            }
+
             ContentAwareFillConfigToken token = (ContentAwareFillConfigToken)parameters;
 
             Surface source = srcArgs.Surface;
@@ -342,6 +350,7 @@ namespace ContentAwareFill
                     destination.Dispose();
                     destination = null;
                 }
+                configDialog.RenderingCompleted = false;
 
                 using (PdnRegion sampleArea = CreateSampleRegion(sourceBounds, selection, token.SampleSize))
                 {
@@ -386,6 +395,7 @@ namespace ContentAwareFill
                             if (synth.ContentAwareFill(() => IsCancelRequested))
                             {
                                 destination = synth.Target.Clone();
+                                configDialog.RenderingCompleted = true;
                             }
                         }
                         catch (ResynthizerException ex)

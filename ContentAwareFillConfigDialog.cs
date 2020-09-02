@@ -37,8 +37,13 @@ namespace ContentAwareFill
             UI.InitScaling(this);
             ignoreTokenChangedEventCount = 0;
             PluginThemingUtil.EnableEffectDialogTheme(this);
+            RenderingCompleted = false;
             SelectionBoundsAreValid = false;
         }
+
+        internal bool OkButtonPressed { get; private set; }
+
+        internal bool RenderingCompleted { get; set; }
 
         internal bool SelectionBoundsAreValid { get; private set; }
 
@@ -112,6 +117,7 @@ namespace ContentAwareFill
         {
             if (ignoreTokenChangedEventCount == 0)
             {
+                RenderingCompleted = false;
                 FinishTokenUpdate();
             }
         }
@@ -163,6 +169,7 @@ namespace ContentAwareFill
         private void okButton_Click(object sender, EventArgs e)
         {
             DialogResult = DialogResult.OK;
+            OkButtonPressed = true;
             Close();
         }
 
