@@ -31,7 +31,7 @@ namespace ContentAwareFill
     // additional IList<T> indirection of the ReadOnlyCollection<T> class.
 
     [DebuggerDisplay("Count = {Count}")]
-    internal sealed class ReadOnlyList<T> : IEnumerable<T>
+    internal sealed class ReadOnlyList<T> : IEnumerable<T> where T : struct
     {
         private readonly List<T> items;
 
