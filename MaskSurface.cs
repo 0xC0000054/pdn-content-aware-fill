@@ -40,11 +40,13 @@ namespace ContentAwareFill
 	/// </summary>
 	internal sealed class MaskSurface : IDisposable
 	{
+#pragma warning disable IDE0032 // Use auto property
 		private int width;
 		private int height;
 		private int stride;
 		private MemoryBlock scan0;
 		private bool disposed;
+#pragma warning restore IDE0032 // Use auto property
 
 		/// <summary>
 		/// Gets the width of the Surface.

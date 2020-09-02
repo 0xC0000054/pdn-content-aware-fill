@@ -63,7 +63,9 @@ namespace ContentAwareFill
         private readonly Action<int> progressCallback;
         private readonly ReadOnlyArray<ushort> diffTable;
 
+#pragma warning disable IDE0032 // Use auto property
         private Surface target;
+#pragma warning restore IDE0032 // Use auto property
         private Surface source;
         private MaskSurface targetMask;
         private MaskSurface sourceMask;
