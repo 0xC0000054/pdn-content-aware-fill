@@ -32,7 +32,7 @@ namespace ContentAwareFill
     [PluginSupportInfo(typeof(PluginSupportInfo))]
     public sealed class ContentAwareFillEffect : Effect
     {
-        private bool repeatEffect;
+        private ContentAwareFillConfigDialog configDialog;
         private Surface destination;
         private MaskSurface sourceMask;
         private MaskSurface destinationMask;
@@ -56,23 +56,18 @@ namespace ContentAwareFill
 
         public ContentAwareFillEffect() : base(StaticName, StaticImage, "Selection", EffectFlags.Configurable)
         {
-            repeatEffect = true;
+            configDialog = null;
             destination = null;
             sourceMask = null;
             destinationMask = null;
             lastSampleSize = 0;
-            ConfigDialogSelectionBoundsAreValid = false;
         }
-
-        internal EventHandler<ConfigDialogHandleErrorEventArgs> ConfigDialogHandleError;
-        internal EventHandler<ConfigDialogProgressEventArgs> ConfigDialogProgress;
-
-        internal bool ConfigDialogSelectionBoundsAreValid { get; set; }
 
         protected override void OnDispose(bool disposing)
         {
             if (disposing)
             {
+                configDialog?.Dispose();
                 destination?.Dispose();
                 destinationMask?.Dispose();
                 sourceMask?.Dispose();
@@ -83,9 +78,9 @@ namespace ContentAwareFill
 
         public override EffectConfigDialog CreateConfigDialog()
         {
-            repeatEffect = false;
+            configDialog = new ContentAwareFillConfigDialog();
 
-            return new ContentAwareFillConfigDialog();
+            return configDialog;
         }
 
         /// <summary>
@@ -325,16 +320,6 @@ namespace ContentAwareFill
 #endif
         }
 
-        private void OnConfigDialogHandleError(Exception exception)
-        {
-            ConfigDialogHandleError?.Invoke(this, new ConfigDialogHandleErrorEventArgs(exception));
-        }
-
-        private void OnConfigDialogProgress(int value)
-        {
-            ConfigDialogProgress?.Invoke(this, new ConfigDialogProgressEventArgs(value));
-        }
-
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")]
         protected override void OnSetRenderInfo(EffectConfigToken parameters, RenderArgs dstArgs, RenderArgs srcArgs)
         {
@@ -350,7 +335,7 @@ namespace ContentAwareFill
             //
             // The configuration dialog will check that the selection bounds are valid when it shows its user interface.
             // If that check succeeds, any further checks can be skipped.
-            if (!repeatEffect && ConfigDialogSelectionBoundsAreValid || !IsWholeImageSelected(selection, source.Bounds))
+            if (configDialog != null && configDialog.SelectionBoundsAreValid || !IsWholeImageSelected(selection, source.Bounds))
             {
                 using (PdnRegion sampleArea = CreateSampleRegion(sourceBounds, selection, token.SampleSize))
                 {
@@ -388,7 +373,7 @@ namespace ContentAwareFill
                     ResynthesizerParameters resynthesizerParameters = new ResynthesizerParameters(false, false, matchContext, 0.0, 0.117, 16, 500);
 
                     using (Resynthesizer synth = new Resynthesizer(resynthesizerParameters, source, destinationMask, sourceMask, expandedBounds,
-                        croppedSourceSize, repeatEffect ? null : (Action<int>)OnConfigDialogProgress))
+                        croppedSourceSize, configDialog != null ? (Action<int>)configDialog.UpdateProgress : null))
                     {
                         try
                         {
@@ -401,28 +386,28 @@ namespace ContentAwareFill
                         }
                         catch (ResynthizerException ex)
                         {
-                            if (repeatEffect)
-                            {
-                                MessageBox.Show(ex.Message, Name, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, 0);
-                            }
-                            else
+                            if (configDialog != null)
                             {
                                 // Only show an error message when the sample size changes.
                                 if (token.SampleSize != lastSampleSize)
                                 {
-                                    OnConfigDialogHandleError(ex);
+                                    configDialog.HandleError(ex);
                                 }
+                            }
+                            else
+                            {
+                                MessageBox.Show(ex.Message, Name, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, 0);
                             }
                         }
                     }
                 }
 
-                if (!repeatEffect)
+                if (configDialog != null)
                 {
                     lastSampleSize = token.SampleSize;
 
                     // Reset the configuration dialog progress bar to 0.
-                    OnConfigDialogProgress(0);
+                    configDialog.UpdateProgress(0);
                 }
             }
 

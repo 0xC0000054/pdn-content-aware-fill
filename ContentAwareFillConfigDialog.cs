@@ -37,6 +37,26 @@ namespace ContentAwareFill
             UI.InitScaling(this);
             ignoreTokenChangedEventCount = 0;
             PluginThemingUtil.EnableEffectDialogTheme(this);
+            SelectionBoundsAreValid = false;
+        }
+
+        internal bool SelectionBoundsAreValid { get; private set; }
+
+        internal void HandleError(Exception exception)
+        {
+            ShowMessage(exception.Message, MessageBoxIcon.Error);
+        }
+
+        internal void UpdateProgress(int progressPercentage)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action<int>((int value) => progressBar1.Value = value), progressPercentage);
+            }
+            else
+            {
+                progressBar1.Value = progressPercentage;
+            }
         }
 
         protected override void OnBackColorChanged(EventArgs e)
@@ -69,10 +89,7 @@ namespace ContentAwareFill
             }
             else
             {
-                ContentAwareFillEffect effect = (ContentAwareFillEffect)Effect;
-                effect.ConfigDialogProgress += UpdateProgress;
-                effect.ConfigDialogHandleError += HandleError;
-                effect.ConfigDialogSelectionBoundsAreValid = true;
+                SelectionBoundsAreValid = true;
             }
         }
 
@@ -193,23 +210,6 @@ namespace ContentAwareFill
         private void donateLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             Services.GetService<PaintDotNet.AppModel.IShellService>().LaunchUrl(this, "https://forums.getpaint.net/index.php?showtopic=112730");
-        }
-
-        private void HandleError(object sender, ConfigDialogHandleErrorEventArgs e)
-        {
-            ShowMessage(e.Exception.Message, MessageBoxIcon.Error);
-        }
-
-        private void UpdateProgress(object sender, ConfigDialogProgressEventArgs e)
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new Action<int>((int value) => progressBar1.Value = value), e.ProgressPercentage);
-            }
-            else
-            {
-                progressBar1.Value = e.ProgressPercentage;
-            }
         }
     }
 }
