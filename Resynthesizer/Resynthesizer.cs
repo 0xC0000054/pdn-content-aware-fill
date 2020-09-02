@@ -61,6 +61,7 @@ namespace ContentAwareFill
         private readonly ResynthesizerParameters parameters;
         private readonly Random random;
         private readonly Action<int> progressCallback;
+        private readonly ReadOnlyArray<ushort> diffTable;
 
         private Surface target;
         private Surface source;
@@ -69,7 +70,6 @@ namespace ContentAwareFill
 
         private Neighbor[] neighbors;
         private int neighborCount;
-        private ushort[] diffTable;
         private RepetitionParameter[] repetitionParameters;
         private PointIndexedArray<int> tried;
         private PointIndexedArray<bool> hasValue;
@@ -132,7 +132,7 @@ namespace ContentAwareFill
             this.sourceMask.CopySurface(sourceMask, sourceROI);
 
             random = new Random(1198472);
-            diffTable = new ushort[512];
+            diffTable = MakeDiffTable(parameters);
             neighbors = new Neighbor[parameters.Neighbors];
             repetitionParameters = new RepetitionParameter[ResynthesizerConstants.MaxPasses];
             tried = new PointIndexedArray<int>(target.Width, target.Height, -1);
@@ -213,7 +213,6 @@ namespace ContentAwareFill
             }
 
             PrepareSortedOffsets();
-            MakeDiffTable();
             // The constructor handles the setup performed by prepare_tried.
             PrepareRepetitionParameters();
 
@@ -244,8 +243,10 @@ namespace ContentAwareFill
                    sourceMask.GetPointUnchecked(point.X, point.Y) != MaskFullySelected;
         }
 
-        private void MakeDiffTable()
+        private static ReadOnlyArray<ushort> MakeDiffTable(ResynthesizerParameters parameters)
         {
+            ushort[] diffTable = new ushort[512];
+
             double valueDivisor = NegLogCauchy(1.0 / parameters.SensitivityToOutliers);
 
             for (int i = -256; i < 256; i++)
@@ -256,6 +257,8 @@ namespace ContentAwareFill
                 // The original code populated a map diff table array that is used to when mapping between images.
                 // This is not required for the content aware fill functionality.
             }
+
+            return new ReadOnlyArray<ushort>(diffTable);
         }
 
         private static double NegLogCauchy(double d)
