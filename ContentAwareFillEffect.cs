@@ -350,7 +350,11 @@ namespace ContentAwareFill
                     destination.Dispose();
                     destination = null;
                 }
-                configDialog.RenderingCompleted = false;
+
+                if (configDialog != null)
+                {
+                    configDialog.RenderingCompleted = false;
+                }
 
                 using (PdnRegion sampleArea = CreateSampleRegion(sourceBounds, selection, token.SampleSize))
                 {
@@ -395,7 +399,10 @@ namespace ContentAwareFill
                             if (synth.ContentAwareFill(() => IsCancelRequested))
                             {
                                 destination = synth.Target.Clone();
-                                configDialog.RenderingCompleted = true;
+                                if (configDialog != null)
+                                {
+                                    configDialog.RenderingCompleted = true;
+                                }
                             }
                         }
                         catch (ResynthizerException ex)
