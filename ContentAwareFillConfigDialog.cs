@@ -107,7 +107,7 @@ namespace ContentAwareFill
         {
             this.ignoreTokenChangedEventCount--;
 
-            if (this.ignoreTokenChangedEventCount == 0)
+            if (this.ignoreTokenChangedEventCount == 0 && this.autoRenderCb.Checked)
             {
                 FinishTokenUpdate();
             }
@@ -115,16 +115,16 @@ namespace ContentAwareFill
 
         private void UpdateConfigToken()
         {
-            if (this.ignoreTokenChangedEventCount == 0)
+            this.RenderingCompleted = false;
+            if (this.ignoreTokenChangedEventCount == 0 && this.autoRenderCb.Checked)
             {
-                this.RenderingCompleted = false;
                 FinishTokenUpdate();
             }
         }
 
         protected override void InitialInitToken()
         {
-            this.theEffectToken = new ContentAwareFillConfigToken(50, SampleSource.Sides, FillDirection.InwardToCenter);
+            this.theEffectToken = new ContentAwareFillConfigToken(50, SampleSource.Sides, FillDirection.InwardToCenter, true);
         }
 
         protected override void InitDialogFromToken(EffectConfigToken effectTokenCopy)
@@ -137,6 +137,7 @@ namespace ContentAwareFill
             this.sampleSizeTrackBar.Value = token.SampleSize;
             this.sampleFromCombo.SelectedIndex = (int)token.SampleFrom;
             this.fillDirectionCombo.SelectedIndex = (int)token.FillDirection;
+            this.autoRenderCb.Checked = token.RenderAutomatically;
 
             PopIgnoreTokenChangedEvents();
         }
@@ -164,6 +165,7 @@ namespace ContentAwareFill
             token.SampleSize = this.sampleSizeTrackBar.Value;
             token.SampleFrom =  (SampleSource)this.sampleFromCombo.SelectedIndex;
             token.FillDirection = (FillDirection)this.fillDirectionCombo.SelectedIndex;
+            token.RenderAutomatically = this.autoRenderCb.Checked;
         }
 
         private void okButton_Click(object sender, EventArgs e)
@@ -217,6 +219,16 @@ namespace ContentAwareFill
         private void donateLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             this.Services.GetService<PaintDotNet.AppModel.IShellService>().LaunchUrl(this, "https://forums.getpaint.net/index.php?showtopic=112730");
+        }
+
+        private void autoRenderCb_CheckedChanged(object sender, EventArgs e)
+        {
+            this.applyButton.Enabled = !this.autoRenderCb.Checked;
+        }
+
+        private void applyButton_Click(object sender, EventArgs e)
+        {
+            FinishTokenUpdate();
         }
     }
 }

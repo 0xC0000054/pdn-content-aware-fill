@@ -44,11 +44,18 @@ namespace ContentAwareFill
             set;
         }
 
-        public ContentAwareFillConfigToken(int sampleSize, SampleSource sampleFrom, FillDirection fillDirection)
+        public bool RenderAutomatically
+        {
+            get;
+            set;
+        }
+
+        public ContentAwareFillConfigToken(int sampleSize, SampleSource sampleFrom, FillDirection fillDirection, bool renderAutomatically)
         {
             this.SampleSize = sampleSize;
             this.SampleFrom = sampleFrom;
             this.FillDirection = fillDirection;
+            this.RenderAutomatically = renderAutomatically;
         }
 
         private ContentAwareFillConfigToken(ContentAwareFillConfigToken cloneMe)
@@ -56,6 +63,7 @@ namespace ContentAwareFill
             this.SampleSize = cloneMe.SampleSize;
             this.SampleFrom = cloneMe.SampleFrom;
             this.FillDirection = cloneMe.FillDirection;
+            this.RenderAutomatically = cloneMe.RenderAutomatically;
         }
 
         public override object Clone()

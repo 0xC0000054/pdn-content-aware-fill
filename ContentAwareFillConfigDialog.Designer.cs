@@ -45,13 +45,15 @@
             this.sampleFromHeader = new ContentAwareFill.HeaderLabel();
             this.fillDirectionHeader = new ContentAwareFill.HeaderLabel();
             this.donateLabel = new System.Windows.Forms.LinkLabel();
+            this.autoRenderCb = new System.Windows.Forms.CheckBox();
+            this.applyButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.sampleSizeTrackBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.sampleSizeUpDown)).BeginInit();
             this.SuspendLayout();
             // 
             // cancelButton
             // 
-            this.cancelButton.Location = new System.Drawing.Point(250, 210);
+            this.cancelButton.Location = new System.Drawing.Point(250, 239);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(75, 23);
             this.cancelButton.TabIndex = 0;
@@ -61,7 +63,7 @@
             // 
             // okButton
             // 
-            this.okButton.Location = new System.Drawing.Point(167, 210);
+            this.okButton.Location = new System.Drawing.Point(167, 239);
             this.okButton.Name = "okButton";
             this.okButton.Size = new System.Drawing.Size(75, 23);
             this.okButton.TabIndex = 7;
@@ -130,9 +132,9 @@
             // 
             // progressBar1
             // 
-            this.progressBar1.Location = new System.Drawing.Point(12, 171);
+            this.progressBar1.Location = new System.Drawing.Point(12, 200);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(310, 23);
+            this.progressBar1.Size = new System.Drawing.Size(313, 23);
             this.progressBar1.TabIndex = 8;
             // 
             // resetButton
@@ -178,7 +180,7 @@
             // donateLabel
             // 
             this.donateLabel.AutoSize = true;
-            this.donateLabel.Location = new System.Drawing.Point(9, 215);
+            this.donateLabel.Location = new System.Drawing.Point(9, 244);
             this.donateLabel.Name = "donateLabel";
             this.donateLabel.Size = new System.Drawing.Size(45, 13);
             this.donateLabel.TabIndex = 6;
@@ -186,11 +188,37 @@
             this.donateLabel.Text = "Donate!";
             this.donateLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.donateLabel_LinkClicked);
             // 
+            // autoRenderCb
+            // 
+            this.autoRenderCb.AutoSize = true;
+            this.autoRenderCb.Checked = true;
+            this.autoRenderCb.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.autoRenderCb.Location = new System.Drawing.Point(12, 177);
+            this.autoRenderCb.Name = "autoRenderCb";
+            this.autoRenderCb.Size = new System.Drawing.Size(125, 17);
+            this.autoRenderCb.TabIndex = 15;
+            this.autoRenderCb.Text = "Render automatically";
+            this.autoRenderCb.UseVisualStyleBackColor = true;
+            this.autoRenderCb.CheckedChanged += new System.EventHandler(this.autoRenderCb_CheckedChanged);
+            // 
+            // applyButton
+            // 
+            this.applyButton.Enabled = false;
+            this.applyButton.Location = new System.Drawing.Point(250, 173);
+            this.applyButton.Name = "applyButton";
+            this.applyButton.Size = new System.Drawing.Size(75, 23);
+            this.applyButton.TabIndex = 16;
+            this.applyButton.Text = "Apply";
+            this.applyButton.UseVisualStyleBackColor = true;
+            this.applyButton.Click += new System.EventHandler(this.applyButton_Click);
+            // 
             // ContentAwareFillConfigDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-            this.ClientSize = new System.Drawing.Size(337, 244);
+            this.ClientSize = new System.Drawing.Size(337, 274);
+            this.Controls.Add(this.applyButton);
+            this.Controls.Add(this.autoRenderCb);
             this.Controls.Add(this.donateLabel);
             this.Controls.Add(this.fillDirectionHeader);
             this.Controls.Add(this.sampleFromHeader);
@@ -218,6 +246,8 @@
             this.Controls.SetChildIndex(this.sampleFromHeader, 0);
             this.Controls.SetChildIndex(this.fillDirectionHeader, 0);
             this.Controls.SetChildIndex(this.donateLabel, 0);
+            this.Controls.SetChildIndex(this.autoRenderCb, 0);
+            this.Controls.SetChildIndex(this.applyButton, 0);
             ((System.ComponentModel.ISupportInitialize)(this.sampleSizeTrackBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.sampleSizeUpDown)).EndInit();
             this.ResumeLayout(false);
@@ -239,5 +269,7 @@
         private HeaderLabel sampleFromHeader;
         private HeaderLabel fillDirectionHeader;
         private System.Windows.Forms.LinkLabel donateLabel;
+        private System.Windows.Forms.CheckBox autoRenderCb;
+        private System.Windows.Forms.Button applyButton;
     }
 }
