@@ -43,15 +43,15 @@ namespace ContentAwareFill
                     throw new InvalidEnumArgumentException();
             }
 
-            if (this.selfDrawn && (this.label != null && Controls.Contains(this.label)))
+            if (this.selfDrawn && (this.label != null && this.Controls.Contains(this.label)))
             {
                 SuspendLayout();
-                Controls.Remove(this.label);
+                this.Controls.Remove(this.label);
                 ResumeLayout(false);
                 PerformLayout();
                 Invalidate(true);
             }
-            else if (!this.selfDrawn && (this.label != null || !Controls.Contains(this.label)))
+            else if (!this.selfDrawn && (this.label != null || !this.Controls.Contains(this.label)))
             {
                 if (this.label == null)
                 {
@@ -60,7 +60,7 @@ namespace ContentAwareFill
                 }
 
                 SuspendLayout();
-                Controls.Add(this.label);
+                this.Controls.Add(this.label);
                 ResumeLayout(false);
                 PerformLayout();
                 Invalidate(true);
@@ -70,9 +70,9 @@ namespace ContentAwareFill
         public EtchedLine()
         {
             InitForCurrentVisualStyle();
-            DoubleBuffered = true;
-            ResizeRedraw = true;
-            TabStop = false;
+            this.DoubleBuffered = true;
+            this.ResizeRedraw = true;
+            this.TabStop = false;
             SetStyle(ControlStyles.Selectable, false);
         }
 
@@ -85,7 +85,7 @@ namespace ContentAwareFill
         {
             if (this.selfDrawn)
             {
-                GroupBoxRenderer.DrawGroupBox(e.Graphics, new Rectangle(0, 0, Width, 1), GroupBoxState.Normal);
+                GroupBoxRenderer.DrawGroupBox(e.Graphics, new Rectangle(0, 0, this.Width, 1), GroupBoxState.Normal);
             }
 
             base.OnPaint(e);
@@ -95,7 +95,7 @@ namespace ContentAwareFill
         {
             if (!this.selfDrawn)
             {
-                this.label.Bounds = new Rectangle(0, 0, Width, Height);
+                this.label.Bounds = new Rectangle(0, 0, this.Width, this.Height);
             }
 
             base.OnLayout(levent);

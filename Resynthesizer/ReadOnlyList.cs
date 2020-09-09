@@ -49,7 +49,7 @@ namespace ContentAwareFill
         {
             get
             {
-                return items.Count;
+                return this.items.Count;
             }
         }
 
@@ -57,18 +57,18 @@ namespace ContentAwareFill
         {
             get
             {
-                return items[index];
+                return this.items[index];
             }
         }
 
         public IEnumerator<T> GetEnumerator()
         {
-            return items.GetEnumerator();
+            return this.items.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return items.GetEnumerator();
+            return this.items.GetEnumerator();
         }
     }
 }

@@ -67,15 +67,15 @@ namespace ContentAwareFill
             SetStyle(ControlStyles.UserPaint, true);
             SetStyle(ControlStyles.Selectable, false);
             UI.InitScaling(null);
-            TabStop = false;
-            ForeColor = SystemColors.Highlight;
-            DoubleBuffered = true;
-            ResizeRedraw = true;
+            this.TabStop = false;
+            this.ForeColor = SystemColors.Highlight;
+            this.DoubleBuffered = true;
+            this.ResizeRedraw = true;
 
             SuspendLayout();
             this.etchedLine = new EtchedLine();
-            Controls.Add(this.etchedLine);
-            Size = new Size(144, 14);
+            this.Controls.Add(this.etchedLine);
+            this.Size = new Size(144, 14);
             ResumeLayout(false);
         }
 
@@ -92,11 +92,11 @@ namespace ContentAwareFill
 
         private Size GetTextSize()
         {
-            string textToUse = string.IsNullOrEmpty(Text) ? " " : Text;
+            string textToUse = string.IsNullOrEmpty(this.Text) ? " " : this.Text;
 
             Size size = TextRenderer.MeasureText(textToUse, this.Font, this.ClientSize, textFormatFlags);
 
-            if (string.IsNullOrEmpty(Text))
+            if (string.IsNullOrEmpty(this.Text))
             {
                 size.Width = 0;
             }
@@ -109,23 +109,23 @@ namespace ContentAwareFill
             Size textSize = GetTextSize();
 
             int lineLeft = (string.IsNullOrEmpty(this.Text) ? 0 : this.leftMargin) + textSize.Width + (string.IsNullOrEmpty(this.Text) ? 0 : 1);
-            int lineRight = ClientRectangle.Right - this.rightMargin;
+            int lineRight = this.ClientRectangle.Right - this.rightMargin;
 
             this.etchedLine.Size = this.etchedLine.GetPreferredSize(new Size(lineRight - lineLeft, 1));
-            this.etchedLine.Location = new Point(lineLeft, (ClientSize.Height - this.etchedLine.Height) / 2);
+            this.etchedLine.Location = new Point(lineLeft, (this.ClientSize.Height - this.etchedLine.Height) / 2);
 
             base.OnLayout(levent);
         }
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            using (SolidBrush backBrush = new SolidBrush(BackColor))
+            using (SolidBrush backBrush = new SolidBrush(this.BackColor))
             {
                 e.Graphics.FillRectangle(backBrush, e.ClipRectangle);
             }
 
             Size textSize = GetTextSize();
-            Color textColor = BackColor != DefaultBackColor ? ForeColor : SystemColors.WindowText;
+            Color textColor = this.BackColor != DefaultBackColor ? this.ForeColor : SystemColors.WindowText;
             TextRenderer.DrawText(e.Graphics, this.Text, this.Font, new Point(this.leftMargin, 0), textColor, textFormatFlags);
 
             base.OnPaint(e);

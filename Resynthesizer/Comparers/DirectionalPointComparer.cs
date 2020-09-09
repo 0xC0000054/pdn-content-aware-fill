@@ -63,7 +63,7 @@ namespace ContentAwareFill
                 throw new ArgumentNullException(nameof(targetPoints));
             }
 
-            maxCartesianAlongRay = new uint[401];
+            this.maxCartesianAlongRay = new uint[401];
 
             Point center = PointCollectionUtil.GetCenter(targetPoints);
 
@@ -74,9 +74,9 @@ namespace ContentAwareFill
                 uint cartesian = (uint)((offset.X * offset.X) + (offset.Y * offset.Y));
 
                 uint ray = GetRadial(offset);
-                if (cartesian > maxCartesianAlongRay[ray])
+                if (cartesian > this.maxCartesianAlongRay[ray])
                 {
-                    maxCartesianAlongRay[ray] = cartesian;
+                    this.maxCartesianAlongRay[ray] = cartesian;
                 }
             }
             this.outward = outward;
@@ -87,7 +87,7 @@ namespace ContentAwareFill
             float point1Proportion = ProportionInward(point1);
             float point2Proportion = ProportionInward(point2);
 
-            if (outward)
+            if (this.outward)
             {
                 return point2Proportion.CompareTo(point1Proportion);
             }
@@ -101,7 +101,7 @@ namespace ContentAwareFill
         {
             uint ray = GetRadial(point);
 
-            return (float)((point.X * point.X) + (point.Y * point.Y)) / maxCartesianAlongRay[ray];
+            return (float)((point.X * point.X) + (point.Y * point.Y)) / this.maxCartesianAlongRay[ray];
         }
 
         private static uint GetRadial(Point point)

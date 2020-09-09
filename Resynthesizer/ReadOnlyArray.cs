@@ -44,7 +44,7 @@ namespace ContentAwareFill
         {
             get
             {
-                return items.Length;
+                return this.items.Length;
             }
         }
 
@@ -52,18 +52,18 @@ namespace ContentAwareFill
         {
             get
             {
-                return items[index];
+                return this.items[index];
             }
         }
 
         public IEnumerator<T> GetEnumerator()
         {
-            return (IEnumerator<T>)items.GetEnumerator();
+            return (IEnumerator<T>)this.items.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return items.GetEnumerator();
+            return this.items.GetEnumerator();
         }
     }
 }

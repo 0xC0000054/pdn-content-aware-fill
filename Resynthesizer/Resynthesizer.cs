@@ -126,20 +126,20 @@ namespace ContentAwareFill
             }
 
             this.parameters = parameters;
-            target = source.Clone();
+            this.target = source.Clone();
             this.source = new Surface(croppedSourceSize.Width, croppedSourceSize.Height);
             this.source.CopySurface(source, sourceROI);
             this.targetMask = targetMask.Clone();
             this.sourceMask = new MaskSurface(croppedSourceSize.Width, croppedSourceSize.Height);
             this.sourceMask.CopySurface(sourceMask, sourceROI);
 
-            random = new Random(1198472);
-            diffTable = MakeDiffTable(parameters);
-            neighbors = new Neighbor[parameters.Neighbors];
-            repetitionParameters = new RepetitionParameter[ResynthesizerConstants.MaxPasses];
-            tried = new PointIndexedArray<int>(target.Width, target.Height, -1);
-            hasValue = new PointIndexedArray<bool>(target.Width, target.Height, false);
-            sourceOf = new PointIndexedArray<Point>(target.Width, target.Height, new Point(-1, -1));
+            this.random = new Random(1198472);
+            this.diffTable = MakeDiffTable(parameters);
+            this.neighbors = new Neighbor[parameters.Neighbors];
+            this.repetitionParameters = new RepetitionParameter[ResynthesizerConstants.MaxPasses];
+            this.tried = new PointIndexedArray<int>(this.target.Width, this.target.Height, -1);
+            this.hasValue = new PointIndexedArray<bool>(this.target.Width, this.target.Height, false);
+            this.sourceOf = new PointIndexedArray<Point>(this.target.Width, this.target.Height, new Point(-1, -1));
             this.progressCallback = progressCallback;
         }
 
@@ -155,31 +155,31 @@ namespace ContentAwareFill
         {
             get
             {
-                return target;
+                return this.target;
             }
         }
 
         public void Dispose()
         {
-            if (target != null)
+            if (this.target != null)
             {
-                target.Dispose();
-                target = null;
+                this.target.Dispose();
+                this.target = null;
             }
-            if (source != null)
+            if (this.source != null)
             {
-                source.Dispose();
-                source = null;
+                this.source.Dispose();
+                this.source = null;
             }
-            if (targetMask != null)
+            if (this.targetMask != null)
             {
-                targetMask.Dispose();
-                targetMask = null;
+                this.targetMask.Dispose();
+                this.targetMask = null;
             }
-            if (sourceMask != null)
+            if (this.sourceMask != null)
             {
-                sourceMask.Dispose();
-                sourceMask = null;
+                this.sourceMask.Dispose();
+                this.sourceMask = null;
             }
         }
 
@@ -201,15 +201,15 @@ namespace ContentAwareFill
                 throw new ArgumentNullException(nameof(abortCallback));
             }
 
-            PrepareTargetPoints(parameters.MatchContext != MatchContextType.None);
+            PrepareTargetPoints(this.parameters.MatchContext != MatchContextType.None);
             // The constructor handles the setup performed by prepare_target_sources.
             PrepareSourcePoints();
 
-            if (sourcePoints.Count == 0)
+            if (this.sourcePoints.Count == 0)
             {
                 throw new ResynthizerException(Properties.Resources.SourcePointsEmpty);
             }
-            if (targetPoints.Count == 0)
+            if (this.targetPoints.Count == 0)
             {
                 throw new ResynthizerException(Properties.Resources.TargetPointsEmpty);
             }
@@ -227,7 +227,7 @@ namespace ContentAwareFill
                     return false;
                 }
 
-                if (((float)betters.Value / (float)targetPoints.Count) < ResynthesizerConstants.TerminateFraction)
+                if (((float)betters.Value / (float)this.targetPoints.Count) < ResynthesizerConstants.TerminateFraction)
                 {
                     break;
                 }
@@ -240,9 +240,9 @@ namespace ContentAwareFill
         {
             return point.X < 0 ||
                    point.Y < 0 ||
-                   point.X >= source.Width ||
-                   point.Y >= source.Height ||
-                   sourceMask.GetPointUnchecked(point.X, point.Y) != MaskFullySelected;
+                   point.X >= this.source.Width ||
+                   point.Y >= this.source.Height ||
+                   this.sourceMask.GetPointUnchecked(point.X, point.Y) != MaskFullySelected;
         }
 
         private static ReadOnlyArray<ushort> MakeDiffTable(ResynthesizerParameters parameters)
@@ -270,19 +270,19 @@ namespace ContentAwareFill
 
         private void PrepareNeighbors(Point position)
         {
-            neighborCount = 0;
+            this.neighborCount = 0;
 
-            for (int i = 0; i < sortedOffsets.Count; i++)
+            for (int i = 0; i < this.sortedOffsets.Count; i++)
             {
-                Point offset = sortedOffsets[i];
+                Point offset = this.sortedOffsets[i];
                 Point neighborPoint = position.Add(offset);
 
-                if (WrapOrClip(target, ref neighborPoint) && hasValue[neighborPoint])
+                if (WrapOrClip(this.target, ref neighborPoint) && this.hasValue[neighborPoint])
                 {
-                    neighbors[neighborCount] = new Neighbor(target.GetPoint(neighborPoint.X, neighborPoint.Y), offset, sourceOf[neighborPoint]);
-                    neighborCount++;
+                    this.neighbors[this.neighborCount] = new Neighbor(this.target.GetPoint(neighborPoint.X, neighborPoint.Y), offset, this.sourceOf[neighborPoint]);
+                    this.neighborCount++;
 
-                    if (neighborCount >= parameters.Neighbors)
+                    if (this.neighborCount >= this.parameters.Neighbors)
                     {
                         break;
                     }
@@ -292,23 +292,23 @@ namespace ContentAwareFill
 
         private void PrepareRepetitionParameters()
         {
-            repetitionParameters[0] = new RepetitionParameter(0, targetPoints.Count);
+            this.repetitionParameters[0] = new RepetitionParameter(0, this.targetPoints.Count);
 
-            totalTargets = targetPoints.Count;
-            int n = totalTargets;
+            this.totalTargets = this.targetPoints.Count;
+            int n = this.totalTargets;
 
             for (int i = 1; i < ResynthesizerConstants.MaxPasses; i++)
             {
-                repetitionParameters[i] = new RepetitionParameter(0, n);
-                totalTargets += n;
+                this.repetitionParameters[i] = new RepetitionParameter(0, n);
+                this.totalTargets += n;
                 n = n * 3 / 4;
             }
         }
 
         private void PrepareSortedOffsets()
         {
-            int width = Math.Min(target.Width, source.Width);
-            int height = Math.Min(target.Height, source.Height);
+            int width = Math.Min(this.target.Width, this.source.Width);
+            int height = Math.Min(this.target.Height, this.source.Height);
 
             int length = ((2 * width) - 1) * ((2 * height) - 1);
 
@@ -324,18 +324,18 @@ namespace ContentAwareFill
 
             offsets.Sort(PointComparer.LessCartesian);
 
-            sortedOffsets = new ReadOnlyList<Point>(offsets);
+            this.sortedOffsets = new ReadOnlyList<Point>(offsets);
         }
 
         private unsafe void PrepareTargetPoints(bool useContext)
         {
             int targetPointsSize = 0;
 
-            for (int y = 0; y < target.Height; y++)
+            for (int y = 0; y < this.target.Height; y++)
             {
-                byte* mask = targetMask.GetRowAddressUnchecked(y);
+                byte* mask = this.targetMask.GetRowAddressUnchecked(y);
 
-                for (int x = 0; x < target.Width; x++)
+                for (int x = 0; x < this.target.Width; x++)
                 {
                     if (*mask != MaskUnselected)
                     {
@@ -350,16 +350,16 @@ namespace ContentAwareFill
 
             if (targetPointsSize > 0)
             {
-                for (int y = 0; y < target.Height; y++)
+                for (int y = 0; y < this.target.Height; y++)
                 {
-                    ColorBgra* src = target.GetRowAddressUnchecked(y);
-                    byte* mask = targetMask.GetRowAddressUnchecked(y);
+                    ColorBgra* src = this.target.GetRowAddressUnchecked(y);
+                    byte* mask = this.targetMask.GetRowAddressUnchecked(y);
 
-                    for (int x = 0; x < target.Width; x++)
+                    for (int x = 0; x < this.target.Width; x++)
                     {
                         bool isSelectedTarget = *mask != MaskUnselected;
 
-                        hasValue.SetValue(x, y, useContext && !isSelectedTarget && src->A > 0);
+                        this.hasValue.SetValue(x, y, useContext && !isSelectedTarget && src->A > 0);
 
                         if (isSelectedTarget)
                         {
@@ -371,22 +371,22 @@ namespace ContentAwareFill
                     }
                 }
 
-                points = TargetPointSorter.Sort(points, random, parameters.MatchContext);
+                points = TargetPointSorter.Sort(points, this.random, this.parameters.MatchContext);
             }
 
-            targetPoints = new ReadOnlyList<Point>(points);
+            this.targetPoints = new ReadOnlyList<Point>(points);
         }
 
         private unsafe void PrepareSourcePoints()
         {
-            List<Point> points = new List<Point>(source.Width * source.Height);
+            List<Point> points = new List<Point>(this.source.Width * this.source.Height);
 
-            for (int y = 0; y < source.Height; y++)
+            for (int y = 0; y < this.source.Height; y++)
             {
-                ColorBgra* src = source.GetRowAddressUnchecked(y);
-                byte* mask = sourceMask.GetRowAddressUnchecked(y);
+                ColorBgra* src = this.source.GetRowAddressUnchecked(y);
+                byte* mask = this.sourceMask.GetRowAddressUnchecked(y);
 
-                for (int x = 0; x < source.Width; x++)
+                for (int x = 0; x < this.source.Width; x++)
                 {
                     if (*mask == MaskFullySelected && src->A > 0)
                     {
@@ -398,23 +398,23 @@ namespace ContentAwareFill
                 }
             }
 
-            sourcePoints = new ReadOnlyList<Point>(points);
+            this.sourcePoints = new ReadOnlyList<Point>(points);
         }
 
         private Point RandomSourcePoint()
         {
-            int index = random.Next(0, sourcePoints.Count);
+            int index = this.random.Next(0, this.sourcePoints.Count);
 
-            return sourcePoints[index];
+            return this.sourcePoints[index];
         }
 
         private bool TryPoint(Point point, BettermentKind bettermentKind)
         {
             uint sum = 0;
 
-            for (int i = 0; i < neighborCount; i++)
+            for (int i = 0; i < this.neighborCount; i++)
             {
-                Point offset = point.Add(neighbors[i].offset);
+                Point offset = point.Add(this.neighbors[i].offset);
 
                 if (ClippedOrMaskedSource(offset))
                 {
@@ -427,29 +427,29 @@ namespace ContentAwareFill
                 }
                 else
                 {
-                    ColorBgra sourcePixel = source.GetPoint(offset.X, offset.Y);
-                    ColorBgra targetPixel = neighbors[i].pixel;
+                    ColorBgra sourcePixel = this.source.GetPoint(offset.X, offset.Y);
+                    ColorBgra targetPixel = this.neighbors[i].pixel;
 
                     if (i > 0)
                     {
-                        sum += diffTable[256 + targetPixel.B - sourcePixel.B];
-                        sum += diffTable[256 + targetPixel.G - sourcePixel.G];
-                        sum += diffTable[256 + targetPixel.R - sourcePixel.R];
+                        sum += this.diffTable[256 + targetPixel.B - sourcePixel.B];
+                        sum += this.diffTable[256 + targetPixel.G - sourcePixel.G];
+                        sum += this.diffTable[256 + targetPixel.R - sourcePixel.R];
                     }
                     // The original code would add the map_diff_table values to the sum when
                     // the map image is used.
                     // That code is not used for the content aware fill functionality.
                 }
 
-                if (sum >= best)
+                if (sum >= this.best)
                 {
                     return false;
                 }
             }
 
-            best = sum;
-            latestBettermentKind = bettermentKind;
-            bestPoint = point;
+            this.best = sum;
+            this.latestBettermentKind = bettermentKind;
+            this.bestPoint = point;
 
             return sum <= 0;
         }
@@ -458,7 +458,7 @@ namespace ContentAwareFill
         {
             while (point.X < 0)
             {
-                if (parameters.TileHorizontal)
+                if (this.parameters.TileHorizontal)
                 {
                     point.X += image.Width;
                 }
@@ -470,7 +470,7 @@ namespace ContentAwareFill
 
             while (point.X >= image.Width)
             {
-                if (parameters.TileHorizontal)
+                if (this.parameters.TileHorizontal)
                 {
                     point.X -= image.Width;
                 }
@@ -482,7 +482,7 @@ namespace ContentAwareFill
 
             while (point.Y < 0)
             {
-                if (parameters.TileVertical)
+                if (this.parameters.TileVertical)
                 {
                     point.Y += image.Height;
                 }
@@ -494,7 +494,7 @@ namespace ContentAwareFill
 
             while (point.Y >= image.Height)
             {
-                if (parameters.TileVertical)
+                if (this.parameters.TileVertical)
                 {
                     point.Y -= image.Height;
                 }
@@ -515,7 +515,7 @@ namespace ContentAwareFill
         /// <returns>The match count of the image synthesis; or <c>null</c> if the user canceled the operation.</returns>
         private int? Synthesize(int pass, Func<bool> abortCallback)
         {
-            int length = repetitionParameters[pass].end;
+            int length = this.repetitionParameters[pass].end;
             int repeatCountBetters = 0;
             bool perfectMatch;
 
@@ -528,29 +528,29 @@ namespace ContentAwareFill
                     {
                         return null;
                     }
-                    if (progressCallback != null)
+                    if (this.progressCallback != null)
                     {
-                        targetTriesCount += 4096;
+                        this.targetTriesCount += 4096;
 
-                        double value = ((double)targetTriesCount / (double)totalTargets) * 100.0;
+                        double value = ((double)this.targetTriesCount / (double)this.totalTargets) * 100.0;
 
-                        progressCallback((int)value.Clamp(0.0, 100.0));
+                        this.progressCallback((int)value.Clamp(0.0, 100.0));
                     }
                 }
 
-                Point position = targetPoints[targetIndex];
+                Point position = this.targetPoints[targetIndex];
 
-                hasValue[position] = true;
+                this.hasValue[position] = true;
 
                 PrepareNeighbors(position);
 
-                best = uint.MaxValue;
-                latestBettermentKind = BettermentKind.None;
+                this.best = uint.MaxValue;
+                this.latestBettermentKind = BettermentKind.None;
                 perfectMatch = false;
 
-                for (int neighborIndex = 0; neighborIndex < neighborCount; neighborIndex++)
+                for (int neighborIndex = 0; neighborIndex < this.neighborCount; neighborIndex++)
                 {
-                    Neighbor neighbor = neighbors[neighborIndex];
+                    Neighbor neighbor = this.neighbors[neighborIndex];
                     if (neighbor.sourceOf.X != -1)
                     {
                         Point sourcePoint = neighbor.sourceOf.Subtract(neighbor.offset);
@@ -559,7 +559,7 @@ namespace ContentAwareFill
                         {
                             continue;
                         }
-                        if (tried[sourcePoint] == targetIndex)
+                        if (this.tried[sourcePoint] == targetIndex)
                         {
                             continue;
                         }
@@ -570,13 +570,13 @@ namespace ContentAwareFill
                             break;
                         }
 
-                        tried[sourcePoint] = targetIndex;
+                        this.tried[sourcePoint] = targetIndex;
                     }
                 }
 
                 if (!perfectMatch)
                 {
-                    for (uint i = 0; i < parameters.Trys; i++)
+                    for (uint i = 0; i < this.parameters.Trys; i++)
                     {
                         perfectMatch = TryPoint(RandomSourcePoint(), BettermentKind.RandomSource);
                         if (perfectMatch)
@@ -586,14 +586,14 @@ namespace ContentAwareFill
                     }
                 }
 
-                if (latestBettermentKind != BettermentKind.None)
+                if (this.latestBettermentKind != BettermentKind.None)
                 {
-                    if (sourceOf[position] != bestPoint)
+                    if (this.sourceOf[position] != this.bestPoint)
                     {
                         repeatCountBetters++;
 
-                        target[position] = source[bestPoint];
-                        sourceOf[position] = bestPoint;
+                        this.target[position] = this.source[this.bestPoint];
+                        this.sourceOf[position] = this.bestPoint;
                     }
                 }
             }

@@ -54,13 +54,13 @@ namespace ContentAwareFill
         public ResynthesizerParameters(bool tileHorizontal, bool tileVertical, MatchContextType matchContext, double mapWeight, double sensitivityToOutliers,
              uint neighbors, uint trys)
         {
-            TileHorizontal = tileHorizontal;
-            TileVertical = tileVertical;
-            MatchContext = matchContext;
-            MapWeight = mapWeight.Clamp(0.0, ResynthesizerConstants.MaxWeight);
-            SensitivityToOutliers = sensitivityToOutliers;
-            Neighbors = neighbors > ResynthesizerConstants.MaxNeighbors ? ResynthesizerConstants.MaxNeighbors : neighbors;
-            Trys = trys;
+            this.TileHorizontal = tileHorizontal;
+            this.TileVertical = tileVertical;
+            this.MatchContext = matchContext;
+            this.MapWeight = mapWeight.Clamp(0.0, ResynthesizerConstants.MaxWeight);
+            this.SensitivityToOutliers = sensitivityToOutliers;
+            this.Neighbors = neighbors > ResynthesizerConstants.MaxNeighbors ? ResynthesizerConstants.MaxNeighbors : neighbors;
+            this.Trys = trys;
         }
 
         public bool TileHorizontal

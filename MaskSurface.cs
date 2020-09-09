@@ -55,7 +55,7 @@ namespace ContentAwareFill
         {
             get
             {
-                return width;
+                return this.width;
             }
         }
 
@@ -66,7 +66,7 @@ namespace ContentAwareFill
         {
             get
             {
-                return height;
+                return this.height;
             }
         }
 
@@ -74,22 +74,22 @@ namespace ContentAwareFill
         {
             get
             {
-                return new Rectangle(0, 0, width, height);
+                return new Rectangle(0, 0, this.width, this.height);
             }
         }
 
         public MaskSurface(int width, int height)
         {
-            disposed = false;
+            this.disposed = false;
             this.width = width;
             this.height = height;
-            stride = width;
-            scan0 = new MemoryBlock(width * height);
+            this.stride = width;
+            this.scan0 = new MemoryBlock(width * height);
         }
 
         private MaskSurface(int width, int height, int stride, MemoryBlock scan0)
         {
-            disposed = false;
+            this.disposed = false;
             this.width = width;
             this.height = height;
             this.stride = stride;
@@ -101,13 +101,13 @@ namespace ContentAwareFill
         /// </summary>
         public unsafe void Clear()
         {
-            Memory.SetToZero(scan0.VoidStar, (ulong)scan0.Length);
+            Memory.SetToZero(this.scan0.VoidStar, (ulong)this.scan0.Length);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         public MaskSurface Clone()
         {
-            MaskSurface surface = new MaskSurface(width, height);
+            MaskSurface surface = new MaskSurface(this.width, this.height);
             surface.CopySurface(this);
             return surface;
         }
@@ -122,26 +122,26 @@ namespace ContentAwareFill
         /// </remarks>
         private void CopySurface(MaskSurface source)
         {
-            if (disposed)
+            if (this.disposed)
             {
                 throw new ObjectDisposedException("Surface");
             }
 
-            if (stride == source.stride &&
-                width == source.width &&
-                height == source.height)
+            if (this.stride == source.stride &&
+                this.width == source.width &&
+                this.height == source.height)
             {
                 unsafe
                 {
-                    Memory.Copy(scan0.VoidStar,
+                    Memory.Copy(this.scan0.VoidStar,
                                 source.scan0.VoidStar,
-                                ((ulong)(height - 1) * (ulong)stride) + (ulong)width);
+                                ((ulong)(this.height - 1) * (ulong)this.stride) + (ulong)this.width);
                 }
             }
             else
             {
-                int copyWidth = Math.Min(width, source.width);
-                int copyHeight = Math.Min(height, source.height);
+                int copyWidth = Math.Min(this.width, source.width);
+                int copyHeight = Math.Min(this.height, source.height);
 
                 unsafe
                 {
@@ -165,14 +165,14 @@ namespace ContentAwareFill
         /// </param>
         public void CopySurface(MaskSurface source, Rectangle sourceRoi)
         {
-            if (disposed)
+            if (this.disposed)
             {
                 throw new ObjectDisposedException("Surface");
             }
 
             sourceRoi.Intersect(source.Bounds);
-            int copiedWidth = Math.Min(width, sourceRoi.Width);
-            int copiedHeight = Math.Min(Height, sourceRoi.Height);
+            int copiedWidth = Math.Min(this.width, sourceRoi.Width);
+            int copiedHeight = Math.Min(this.Height, sourceRoi.Height);
 
             if (copiedWidth == 0 || copiedHeight == 0)
             {
@@ -201,7 +201,7 @@ namespace ContentAwareFill
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly")]
         public MaskSurface CreateWindow(int x, int y, int windowWidth, int windowHeight)
         {
-            if (disposed)
+            if (this.disposed)
             {
                 throw new ObjectDisposedException("Surface");
             }
@@ -211,7 +211,7 @@ namespace ContentAwareFill
                 throw new ArgumentOutOfRangeException(nameof(windowHeight), "must be greater than zero");
             }
 
-            Rectangle original = Bounds;
+            Rectangle original = this.Bounds;
             Rectangle sub = new Rectangle(x, y, windowWidth, windowHeight);
             Rectangle clipped = Rectangle.Intersect(original, sub);
 
@@ -221,18 +221,18 @@ namespace ContentAwareFill
                     "bounds parameters must be a subset of this Surface's bounds");
             }
 
-            long offset = ((long)stride * (long)y) + ((long)x);
-            long length = ((windowHeight - 1) * (long)stride) + (long)windowWidth;
-            MemoryBlock block = new MemoryBlock(scan0, offset, length);
+            long offset = ((long)this.stride * (long)y) + ((long)x);
+            long length = ((windowHeight - 1) * (long)this.stride) + (long)windowWidth;
+            MemoryBlock block = new MemoryBlock(this.scan0, offset, length);
 
-            return new MaskSurface(windowWidth, windowHeight, stride, block);
+            return new MaskSurface(windowWidth, windowHeight, this.stride, block);
         }
 
         public byte GetPoint(int x, int y)
         {
-            if (x < 0 || y < 0 || x >= width || y >= height)
+            if (x < 0 || y < 0 || x >= this.width || y >= this.height)
             {
-                throw new ArgumentOutOfRangeException("(x,y)", new Point(x, y), "Coordinates out of range, max=" + new Size(width - 1, height - 1).ToString());
+                throw new ArgumentOutOfRangeException("(x,y)", new Point(x, y), "Coordinates out of range, max=" + new Size(this.width - 1, this.height - 1).ToString());
             }
 
             return GetPointUnchecked(x, y);
@@ -248,23 +248,23 @@ namespace ContentAwareFill
 
         public unsafe byte* GetPointAddressUnchecked(int x, int y)
         {
-            return (byte*)scan0.VoidStar + (y * stride) + x;
+            return (byte*)this.scan0.VoidStar + (y * this.stride) + x;
         }
 
         public unsafe byte* GetRowAddressUnchecked(int y)
         {
-            return (byte*)scan0.VoidStar + (y * stride);
+            return (byte*)this.scan0.VoidStar + (y * this.stride);
         }
 
         private void Dispose(bool disposing)
         {
-            if (!disposed && disposing)
+            if (!this.disposed && disposing)
             {
-                disposed = true;
-                if (scan0 != null)
+                this.disposed = true;
+                if (this.scan0 != null)
                 {
-                    scan0.Dispose();
-                    scan0 = null;
+                    this.scan0.Dispose();
+                    this.scan0 = null;
                 }
             }
         }

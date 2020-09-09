@@ -56,21 +56,21 @@ namespace ContentAwareFill
 
         public ContentAwareFillEffect() : base(StaticName, StaticImage, "Selection", EffectFlags.Configurable)
         {
-            configDialog = null;
-            destination = null;
-            sourceMask = null;
-            destinationMask = null;
-            lastSampleSize = 0;
+            this.configDialog = null;
+            this.destination = null;
+            this.sourceMask = null;
+            this.destinationMask = null;
+            this.lastSampleSize = 0;
         }
 
         protected override void OnDispose(bool disposing)
         {
             if (disposing)
             {
-                configDialog?.Dispose();
-                destination?.Dispose();
-                destinationMask?.Dispose();
-                sourceMask?.Dispose();
+                this.configDialog?.Dispose();
+                this.destination?.Dispose();
+                this.destinationMask?.Dispose();
+                this.sourceMask?.Dispose();
             }
 
             base.OnDispose(disposing);
@@ -78,9 +78,9 @@ namespace ContentAwareFill
 
         public override EffectConfigDialog CreateConfigDialog()
         {
-            configDialog = new ContentAwareFillConfigDialog();
+            this.configDialog = new ContentAwareFillConfigDialog();
 
-            return configDialog;
+            return this.configDialog;
         }
 
         /// <summary>
@@ -236,11 +236,11 @@ namespace ContentAwareFill
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         private unsafe void CreateDestinationMask()
         {
-            Surface sourceSurface = EnvironmentParameters.SourceSurface;
+            Surface sourceSurface = this.EnvironmentParameters.SourceSurface;
 
-            destinationMask = new MaskSurface(sourceSurface.Width, sourceSurface.Height);
+            this.destinationMask = new MaskSurface(sourceSurface.Width, sourceSurface.Height);
 
-            Rectangle[] scans = EnvironmentParameters.GetSelection(sourceSurface.Bounds).GetRegionScansReadOnlyInt();
+            Rectangle[] scans = this.EnvironmentParameters.GetSelection(sourceSurface.Bounds).GetRegionScansReadOnlyInt();
 
             for (int i = 0; i < scans.Length; i++)
             {
@@ -248,7 +248,7 @@ namespace ContentAwareFill
 
                 for (int y = rect.Top; y < rect.Bottom; y++)
                 {
-                    byte* ptr = destinationMask.GetPointAddressUnchecked(rect.Left, y);
+                    byte* ptr = this.destinationMask.GetPointAddressUnchecked(rect.Left, y);
 
                     for (int x = rect.Left; x < rect.Right; x++)
                     {
@@ -263,13 +263,13 @@ namespace ContentAwareFill
         private unsafe void RenderSourceMask(PdnRegion region)
         {
 #pragma warning disable RCS1180 // Inline lazy initialization.
-            if (sourceMask == null)
+            if (this.sourceMask == null)
             {
-                sourceMask = new MaskSurface(EnvironmentParameters.SourceSurface.Width, EnvironmentParameters.SourceSurface.Height);
+                this.sourceMask = new MaskSurface(this.EnvironmentParameters.SourceSurface.Width, this.EnvironmentParameters.SourceSurface.Height);
             }
 #pragma warning restore RCS1180 // Inline lazy initialization.
 
-            sourceMask.Clear();
+            this.sourceMask.Clear();
 
             Rectangle[] scans = region.GetRegionScansReadOnlyInt();
 
@@ -279,7 +279,7 @@ namespace ContentAwareFill
 
                 for (int y = rect.Top; y < rect.Bottom; y++)
                 {
-                    byte* ptr = sourceMask.GetPointAddressUnchecked(rect.Left, y);
+                    byte* ptr = this.sourceMask.GetPointAddressUnchecked(rect.Left, y);
 
                     for (int x = rect.Left; x < rect.Right; x++)
                     {
@@ -323,7 +323,7 @@ namespace ContentAwareFill
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")]
         protected override void OnSetRenderInfo(EffectConfigToken parameters, RenderArgs dstArgs, RenderArgs srcArgs)
         {
-            if (configDialog != null && configDialog.OkButtonPressed && configDialog.RenderingCompleted)
+            if (this.configDialog != null && this.configDialog.OkButtonPressed && this.configDialog.RenderingCompleted)
             {
                 // Exit early if rendering was completed before the user
                 // pressed the OK button in the configuration dialog.
@@ -335,7 +335,7 @@ namespace ContentAwareFill
 
             Surface source = srcArgs.Surface;
             Rectangle sourceBounds = source.Bounds;
-            PdnRegion selection = EnvironmentParameters.GetSelection(sourceBounds);
+            PdnRegion selection = this.EnvironmentParameters.GetSelection(sourceBounds);
 
             // This plugin does not support processing a selection of the whole image, it needs some unselected pixels
             // to replace the contents of the selected area.
@@ -343,23 +343,23 @@ namespace ContentAwareFill
             //
             // The configuration dialog will check that the selection bounds are valid when it shows its user interface.
             // If that check succeeds, any further checks can be skipped.
-            if (configDialog != null && configDialog.SelectionBoundsAreValid || !IsWholeImageSelected(selection, source.Bounds))
+            if (this.configDialog != null && this.configDialog.SelectionBoundsAreValid || !IsWholeImageSelected(selection, source.Bounds))
             {
-                if (destination != null)
+                if (this.destination != null)
                 {
-                    destination.Dispose();
-                    destination = null;
+                    this.destination.Dispose();
+                    this.destination = null;
                 }
 
-                if (configDialog != null)
+                if (this.configDialog != null)
                 {
-                    configDialog.RenderingCompleted = false;
+                    this.configDialog.RenderingCompleted = false;
                 }
 
                 using (PdnRegion sampleArea = CreateSampleRegion(sourceBounds, selection, token.SampleSize))
                 {
                     RenderSourceMask(sampleArea);
-                    if (destinationMask == null)
+                    if (this.destinationMask == null)
                     {
                         CreateDestinationMask();
                     }
@@ -391,44 +391,44 @@ namespace ContentAwareFill
 
                     ResynthesizerParameters resynthesizerParameters = new ResynthesizerParameters(false, false, matchContext, 0.0, 0.117, 16, 500);
 
-                    using (Resynthesizer synth = new Resynthesizer(resynthesizerParameters, source, destinationMask, sourceMask, expandedBounds,
-                        croppedSourceSize, configDialog != null ? (Action<int>)configDialog.UpdateProgress : null))
+                    using (Resynthesizer synth = new Resynthesizer(resynthesizerParameters, source, this.destinationMask, this.sourceMask, expandedBounds,
+                        croppedSourceSize, this.configDialog != null ? (Action<int>)this.configDialog.UpdateProgress : null))
                     {
                         try
                         {
-                            if (synth.ContentAwareFill(() => IsCancelRequested))
+                            if (synth.ContentAwareFill(() => this.IsCancelRequested))
                             {
-                                destination = synth.Target.Clone();
-                                if (configDialog != null)
+                                this.destination = synth.Target.Clone();
+                                if (this.configDialog != null)
                                 {
-                                    configDialog.RenderingCompleted = true;
+                                    this.configDialog.RenderingCompleted = true;
                                 }
                             }
                         }
                         catch (ResynthizerException ex)
                         {
-                            if (configDialog != null)
+                            if (this.configDialog != null)
                             {
                                 // Only show an error message when the sample size changes.
-                                if (token.SampleSize != lastSampleSize)
+                                if (token.SampleSize != this.lastSampleSize)
                                 {
-                                    configDialog.HandleError(ex);
+                                    this.configDialog.HandleError(ex);
                                 }
                             }
                             else
                             {
-                                MessageBox.Show(ex.Message, Name, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, 0);
+                                MessageBox.Show(ex.Message, this.Name, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, 0);
                             }
                         }
                     }
                 }
 
-                if (configDialog != null)
+                if (this.configDialog != null)
                 {
-                    lastSampleSize = token.SampleSize;
+                    this.lastSampleSize = token.SampleSize;
 
                     // Reset the configuration dialog progress bar to 0.
-                    configDialog.UpdateProgress(0);
+                    this.configDialog.UpdateProgress(0);
                 }
             }
 
@@ -439,9 +439,9 @@ namespace ContentAwareFill
         [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "1")]
         public override void Render(EffectConfigToken parameters, RenderArgs dstArgs, RenderArgs srcArgs, Rectangle[] rois, int startIndex, int length)
         {
-            if (destination != null)
+            if (this.destination != null)
             {
-                dstArgs.Surface.CopySurface(destination, rois, startIndex, length);
+                dstArgs.Surface.CopySurface(this.destination, rois, startIndex, length);
             }
             else
             {

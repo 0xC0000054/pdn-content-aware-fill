@@ -63,7 +63,7 @@ namespace ContentAwareFill
             int point1Squared = (point1.X * point1.X);
             int point2Squared = (point2.X * point2.X);
 
-            if (outward)
+            if (this.outward)
             {
                 return point2Squared.CompareTo(point1Squared);
             }

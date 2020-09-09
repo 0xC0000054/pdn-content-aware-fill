@@ -35,10 +35,10 @@ namespace ContentAwareFill
         {
             InitializeComponent();
             UI.InitScaling(this);
-            ignoreTokenChangedEventCount = 0;
+            this.ignoreTokenChangedEventCount = 0;
             PluginThemingUtil.EnableEffectDialogTheme(this);
-            RenderingCompleted = false;
-            SelectionBoundsAreValid = false;
+            this.RenderingCompleted = false;
+            this.SelectionBoundsAreValid = false;
         }
 
         internal bool OkButtonPressed { get; private set; }
@@ -54,13 +54,13 @@ namespace ContentAwareFill
 
         internal void UpdateProgress(int progressPercentage)
         {
-            if (InvokeRequired)
+            if (this.InvokeRequired)
             {
-                Invoke(new Action<int>((int value) => progressBar1.Value = value), progressPercentage);
+                Invoke(new Action<int>((int value) => this.progressBar1.Value = value), progressPercentage);
             }
             else
             {
-                progressBar1.Value = progressPercentage;
+                this.progressBar1.Value = progressPercentage;
             }
         }
 
@@ -85,7 +85,7 @@ namespace ContentAwareFill
             // This plugin does not support processing a selection of the whole image, it needs some
             // unselected pixels to replace the contents of the selected area.
             // When there is no active selection Paint.NET acts as if the whole image/layer is selected.
-            if (ContentAwareFillEffect.IsWholeImageSelected(Selection, EffectSourceSurface.Bounds))
+            if (ContentAwareFillEffect.IsWholeImageSelected(this.Selection, this.EffectSourceSurface.Bounds))
             {
                 if (ShowMessage(Properties.Resources.WholeImageSelected, MessageBoxIcon.None) == DialogResult.OK)
                 {
@@ -94,20 +94,20 @@ namespace ContentAwareFill
             }
             else
             {
-                SelectionBoundsAreValid = true;
+                this.SelectionBoundsAreValid = true;
             }
         }
 
         private void PushIgnoreTokenChangedEvents()
         {
-            ignoreTokenChangedEventCount++;
+            this.ignoreTokenChangedEventCount++;
         }
 
         private void PopIgnoreTokenChangedEvents()
         {
-            ignoreTokenChangedEventCount--;
+            this.ignoreTokenChangedEventCount--;
 
-            if (ignoreTokenChangedEventCount == 0)
+            if (this.ignoreTokenChangedEventCount == 0)
             {
                 FinishTokenUpdate();
             }
@@ -115,16 +115,16 @@ namespace ContentAwareFill
 
         private void UpdateConfigToken()
         {
-            if (ignoreTokenChangedEventCount == 0)
+            if (this.ignoreTokenChangedEventCount == 0)
             {
-                RenderingCompleted = false;
+                this.RenderingCompleted = false;
                 FinishTokenUpdate();
             }
         }
 
         protected override void InitialInitToken()
         {
-            theEffectToken = new ContentAwareFillConfigToken(50, SampleSource.Sides, FillDirection.InwardToCenter);
+            this.theEffectToken = new ContentAwareFillConfigToken(50, SampleSource.Sides, FillDirection.InwardToCenter);
         }
 
         protected override void InitDialogFromToken(EffectConfigToken effectTokenCopy)
@@ -134,56 +134,56 @@ namespace ContentAwareFill
             // Call FinishTokenUpdate after the controls are initialized.
             PushIgnoreTokenChangedEvents();
 
-            sampleSizeTrackBar.Value = token.SampleSize;
-            sampleFromCombo.SelectedIndex = (int)token.SampleFrom;
-            fillDirectionCombo.SelectedIndex = (int)token.FillDirection;
+            this.sampleSizeTrackBar.Value = token.SampleSize;
+            this.sampleFromCombo.SelectedIndex = (int)token.SampleFrom;
+            this.fillDirectionCombo.SelectedIndex = (int)token.FillDirection;
 
             PopIgnoreTokenChangedEvents();
         }
 
         private DialogResult ShowMessage(string message, MessageBoxIcon icon)
         {
-            MessageBoxOptions options = RightToLeft == RightToLeft.Yes ? MessageBoxOptions.RtlReading : 0;
+            MessageBoxOptions options = this.RightToLeft == RightToLeft.Yes ? MessageBoxOptions.RtlReading : 0;
 
-            if (InvokeRequired)
+            if (this.InvokeRequired)
             {
                 return (DialogResult)Invoke(new Func<string, DialogResult>((string text) =>
-                       MessageBox.Show(this, text, Text, MessageBoxButtons.OK, icon, MessageBoxDefaultButton.Button1, options)),
+                       MessageBox.Show(this, text, this.Text, MessageBoxButtons.OK, icon, MessageBoxDefaultButton.Button1, options)),
                        message);
             }
             else
             {
-                return MessageBox.Show(this, message, Text, MessageBoxButtons.OK, icon, MessageBoxDefaultButton.Button1, options);
+                return MessageBox.Show(this, message, this.Text, MessageBoxButtons.OK, icon, MessageBoxDefaultButton.Button1, options);
             }
         }
 
         protected override void InitTokenFromDialog()
         {
-            ContentAwareFillConfigToken token = (ContentAwareFillConfigToken)theEffectToken;
+            ContentAwareFillConfigToken token = (ContentAwareFillConfigToken)this.theEffectToken;
 
-            token.SampleSize = sampleSizeTrackBar.Value;
-            token.SampleFrom =  (SampleSource)sampleFromCombo.SelectedIndex;
-            token.FillDirection = (FillDirection)fillDirectionCombo.SelectedIndex;
+            token.SampleSize = this.sampleSizeTrackBar.Value;
+            token.SampleFrom =  (SampleSource)this.sampleFromCombo.SelectedIndex;
+            token.FillDirection = (FillDirection)this.fillDirectionCombo.SelectedIndex;
         }
 
         private void okButton_Click(object sender, EventArgs e)
         {
-            DialogResult = DialogResult.OK;
-            OkButtonPressed = true;
+            this.DialogResult = DialogResult.OK;
+            this.OkButtonPressed = true;
             Close();
         }
 
         private void cancelButton_Click(object sender, EventArgs e)
         {
-            DialogResult = DialogResult.Cancel;
+            this.DialogResult = DialogResult.Cancel;
             Close();
         }
 
         private void sampleSizeTrackBar_ValueChanged(object sender, EventArgs e)
         {
-            if (sampleSizeTrackBar.Value != (int)sampleSizeUpDown.Value)
+            if (this.sampleSizeTrackBar.Value != (int)this.sampleSizeUpDown.Value)
             {
-                sampleSizeUpDown.Value = sampleSizeTrackBar.Value;
+                this.sampleSizeUpDown.Value = this.sampleSizeTrackBar.Value;
 
                 UpdateConfigToken();
             }
@@ -191,9 +191,9 @@ namespace ContentAwareFill
 
         private void sampleSizeUpDown_ValueChanged(object sender, EventArgs e)
         {
-            if (sampleSizeUpDown.Value != sampleSizeTrackBar.Value)
+            if (this.sampleSizeUpDown.Value != this.sampleSizeTrackBar.Value)
             {
-                sampleSizeTrackBar.Value = (int)sampleSizeUpDown.Value;
+                this.sampleSizeTrackBar.Value = (int)this.sampleSizeUpDown.Value;
 
                 UpdateConfigToken();
             }
@@ -211,12 +211,12 @@ namespace ContentAwareFill
 
         private void resetButton_Click(object sender, EventArgs e)
         {
-            sampleSizeTrackBar.Value = 50;
+            this.sampleSizeTrackBar.Value = 50;
         }
 
         private void donateLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            Services.GetService<PaintDotNet.AppModel.IShellService>().LaunchUrl(this, "https://forums.getpaint.net/index.php?showtopic=112730");
+            this.Services.GetService<PaintDotNet.AppModel.IShellService>().LaunchUrl(this, "https://forums.getpaint.net/index.php?showtopic=112730");
         }
     }
 }

@@ -32,7 +32,7 @@ namespace ContentAwareFill
         {
             get
             {
-                return parentBlock;
+                return this.parentBlock;
             }
         }
 
@@ -40,12 +40,12 @@ namespace ContentAwareFill
         {
             get
             {
-                if (disposed)
+                if (this.disposed)
                 {
                     throw new ObjectDisposedException("MemoryBlock");
                 }
 
-                return length;
+                return this.length;
             }
         }
 
@@ -53,12 +53,12 @@ namespace ContentAwareFill
         {
             get
             {
-                if (disposed)
+                if (this.disposed)
                 {
                     throw new ObjectDisposedException("MemoryBlock");
                 }
 
-                return new IntPtr(voidStar);
+                return new IntPtr(this.voidStar);
             }
         }
 
@@ -66,12 +66,12 @@ namespace ContentAwareFill
         {
             get
             {
-                if (disposed)
+                if (this.disposed)
                 {
                     throw new ObjectDisposedException("MemoryBlock");
                 }
 
-                return voidStar;
+                return this.voidStar;
             }
         }
 
@@ -116,13 +116,13 @@ namespace ContentAwareFill
         /// </summary>
         public MemoryBlock Clone()
         {
-            if (disposed)
+            if (this.disposed)
             {
                 throw new ObjectDisposedException("MemoryBlock");
             }
 
-            MemoryBlock dupe = new MemoryBlock(length);
-            CopyBlock(dupe, 0, this, 0, length);
+            MemoryBlock dupe = new MemoryBlock(this.length);
+            CopyBlock(dupe, 0, this, 0, this.length);
             return dupe;
         }
 
@@ -137,10 +137,10 @@ namespace ContentAwareFill
                 throw new ArgumentOutOfRangeException("bytes", bytes, "Bytes must be greater than zero");
             }
 
-            length = bytes;
-            parentBlock = null;
-            voidStar = Allocate(bytes).ToPointer();
-            valid = true;
+            this.length = bytes;
+            this.parentBlock = null;
+            this.voidStar = Allocate(bytes).ToPointer();
+            this.valid = true;
         }
 
         /// <summary>
@@ -157,8 +157,8 @@ namespace ContentAwareFill
             this.parentBlock = parentBlock;
             byte* bytePointer = (byte*)parentBlock.VoidStar;
             bytePointer += offset;
-            voidStar = (void*)bytePointer;
-            valid = true;
+            this.voidStar = (void*)bytePointer;
+            this.valid = true;
             this.length = length;
         }
 
@@ -175,29 +175,29 @@ namespace ContentAwareFill
 
         private void Dispose(bool disposing)
         {
-            if (!disposed)
+            if (!this.disposed)
             {
-                disposed = true;
+                this.disposed = true;
 
                 if (disposing)
                 {
                 }
 
-                if (valid && parentBlock == null)
+                if (this.valid && this.parentBlock == null)
                 {
-                    if (length >= largeBlockThreshold)
+                    if (this.length >= largeBlockThreshold)
                     {
-                        Memory.FreeLarge(new IntPtr(voidStar), (ulong)length);
+                        Memory.FreeLarge(new IntPtr(this.voidStar), (ulong)this.length);
                     }
                     else
                     {
-                        Memory.Free(new IntPtr(voidStar));
+                        Memory.Free(new IntPtr(this.voidStar));
                     }
                 }
 
-                parentBlock = null;
-                voidStar = null;
-                valid = false;
+                this.parentBlock = null;
+                this.voidStar = null;
+                this.valid = false;
             }
         }
 

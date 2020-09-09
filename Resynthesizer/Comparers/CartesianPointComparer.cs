@@ -63,7 +63,7 @@ namespace ContentAwareFill
             int point1Cartesian = (point1.X * point1.X) + (point1.Y * point1.Y);
             int point2Cartesian = (point2.X * point2.X) + (point2.Y * point2.Y);
 
-            if (moreCartesian)
+            if (this.moreCartesian)
             {
                 return point2Cartesian.CompareTo(point1Cartesian);
             }
