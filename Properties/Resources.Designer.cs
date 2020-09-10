@@ -63,9 +63,9 @@ namespace ContentAwareFill.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap arrow_180_small {
+        internal static System.Drawing.Bitmap ResetIcon_96 {
             get {
-                object obj = ResourceManager.GetObject("arrow_180_small", resourceCulture);
+                object obj = ResourceManager.GetObject("ResetIcon_96", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

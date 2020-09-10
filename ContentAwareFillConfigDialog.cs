@@ -23,6 +23,7 @@
 using PaintDotNet;
 using PaintDotNet.Effects;
 using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace ContentAwareFill
@@ -76,6 +77,13 @@ namespace ContentAwareFill
             base.OnForeColorChanged(e);
 
             PluginThemingUtil.UpdateControlForeColor(this);
+        }
+
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            UpdateResetButtonIconForDpi();
         }
 
         protected override void OnShown(EventArgs e)
@@ -140,6 +148,36 @@ namespace ContentAwareFill
             this.autoRenderCb.Checked = token.RenderAutomatically;
 
             PopIgnoreTokenChangedEvents();
+        }
+
+        private void UpdateResetButtonIconForDpi()
+        {
+            int dpi = 96;
+
+            using (Graphics graphics = this.resetButton.CreateGraphics())
+            {
+                dpi = (int)graphics.DpiX;
+            }
+
+            if (dpi > 96)
+            {
+                if (dpi <= 120)
+                {
+                    this.resetButton.Image = new Bitmap(typeof(ContentAwareFillConfigDialog), "Resources.Icons.ResetIcon-120.png");
+                }
+                else if (dpi <= 144)
+                {
+                    this.resetButton.Image = new Bitmap(typeof(ContentAwareFillConfigDialog), "Resources.Icons.ResetIcon-144.png");
+                }
+                else if (dpi <= 192)
+                {
+                    this.resetButton.Image = new Bitmap(typeof(ContentAwareFillConfigDialog), "Resources.Icons.ResetIcon-192.png");
+                }
+                else
+                {
+                    this.resetButton.Image = new Bitmap(typeof(ContentAwareFillConfigDialog), "Resources.Icons.ResetIcon-384.png");
+                }
+            }
         }
 
         private DialogResult ShowMessage(string message, MessageBoxIcon icon)

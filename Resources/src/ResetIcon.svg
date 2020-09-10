@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg857"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
+   sodipodi:docname="ResetIcon.svg">
+  <defs
+     id="defs851" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="89.6"
+     inkscape:cx="-140.21305"
+     inkscape:cy="147.46609"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="false"
+     inkscape:window-width="2560"
+     inkscape:window-height="1377"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata854">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       class="st3"
+       d="m -35.230278,38.581047 c -0.187694,-0.153948 -0.319596,-0.211283 -0.675926,-0.242823 l -0.666193,-0.0015 0.379154,-0.410258 -0.407319,0.02653 -0.566646,0.613131 0.653228,0.535785 0.405234,-0.02428 -0.435487,-0.35719 0.632902,0.01352 c 0.158095,0.02113 0.292645,0.05323 0.405218,0.145562 0.26151,0.214493 0.289083,0.590159 0.06102,0.836929 -0.120951,0.130873 -0.296206,0.204942 -0.483714,0.204048 l -1.345352,0.0044 0.02816,0.383724 1.317326,0.0069 a 1.0488701,0.98811008 0 0 0 0.799955,-0.339546 1.050891,0.99001398 0 0 0 -0.101566,-1.394891 z"
+       id="color_x5F_action"
+       style="fill:#00539c;stroke-width:0.280219" />
+  </g>
+</svg>

@@ -139,7 +139,7 @@
             // 
             // resetButton
             // 
-            this.resetButton.Image = global::ContentAwareFill.Properties.Resources.arrow_180_small;
+            this.resetButton.Image = global::ContentAwareFill.Properties.Resources.ResetIcon_96;
             this.resetButton.Location = new System.Drawing.Point(300, 37);
             this.resetButton.Name = "resetButton";
             this.resetButton.Size = new System.Drawing.Size(22, 20);

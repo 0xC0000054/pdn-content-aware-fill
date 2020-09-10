@@ -70,6 +70,7 @@
     <Compile Include="PaintDotNet\SafeNativeMethods.cs" />
     <Compile Include="PaintDotNet\UI.cs" />
     <Compile Include="PaintDotNet\VisualStyleClass.cs" />
+    <Compile Include="PluginIconUtil.cs" />
     <Compile Include="PluginSupportInfo.cs" />
     <Compile Include="PluginThemingUtil.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -114,11 +115,18 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="icon.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include=".editorconfig" />
-    <None Include="Resources\arrow-180-small.png" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Icons\ContentAwareFill-192.png" />
+    <EmbeddedResource Include="Resources\Icons\ContentAwareFill-384.png" />
+    <EmbeddedResource Include="Resources\Icons\ContentAwareFill-96.png" />
+    <EmbeddedResource Include="Resources\Icons\ResetIcon-120.png" />
+    <EmbeddedResource Include="Resources\Icons\ResetIcon-144.png" />
+    <EmbeddedResource Include="Resources\Icons\ResetIcon-192.png" />
+    <EmbeddedResource Include="Resources\Icons\ResetIcon-384.png" />
+    <EmbeddedResource Include="Resources\Icons\ResetIcon-96.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

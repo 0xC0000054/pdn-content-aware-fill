@@ -50,7 +50,7 @@ namespace ContentAwareFill
         {
             get
             {
-                return new Bitmap(typeof(ContentAwareFillEffect), "icon.png");
+                return new Bitmap(typeof(ContentAwareFillEffect), PluginIconUtil.GetIconResourceForCurrentDpi());
             }
         }
 
