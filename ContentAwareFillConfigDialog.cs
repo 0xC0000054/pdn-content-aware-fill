@@ -150,6 +150,16 @@ namespace ContentAwareFill
             PopIgnoreTokenChangedEvents();
         }
 
+        protected override void InitTokenFromDialog()
+        {
+            ContentAwareFillConfigToken token = (ContentAwareFillConfigToken)this.theEffectToken;
+
+            token.SampleSize = this.sampleSizeTrackBar.Value;
+            token.SampleFrom =  (SampleSource)this.sampleFromCombo.SelectedIndex;
+            token.FillDirection = (FillDirection)this.fillDirectionCombo.SelectedIndex;
+            token.RenderAutomatically = this.autoRenderCb.Checked;
+        }
+
         private void UpdateResetButtonIconForDpi()
         {
             int dpi = 96;
@@ -194,16 +204,6 @@ namespace ContentAwareFill
             {
                 return MessageBox.Show(this, message, this.Text, MessageBoxButtons.OK, icon, MessageBoxDefaultButton.Button1, options);
             }
-        }
-
-        protected override void InitTokenFromDialog()
-        {
-            ContentAwareFillConfigToken token = (ContentAwareFillConfigToken)this.theEffectToken;
-
-            token.SampleSize = this.sampleSizeTrackBar.Value;
-            token.SampleFrom =  (SampleSource)this.sampleFromCombo.SelectedIndex;
-            token.FillDirection = (FillDirection)this.fillDirectionCombo.SelectedIndex;
-            token.RenderAutomatically = this.autoRenderCb.Checked;
         }
 
         private void okButton_Click(object sender, EventArgs e)
