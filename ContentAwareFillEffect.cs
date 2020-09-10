@@ -290,7 +290,7 @@ namespace ContentAwareFill
             }
 
 #if DEBUG
-            using (Bitmap image = new Bitmap(sourceMask.Width, sourceMask.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
+            using (Bitmap image = new Bitmap(this.sourceMask.Width, this.sourceMask.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
             {
                 System.Drawing.Imaging.BitmapData data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height),
                                                                         System.Drawing.Imaging.ImageLockMode.WriteOnly, image.PixelFormat);
@@ -299,7 +299,7 @@ namespace ContentAwareFill
                 {
                     for (int y = 0; y < image.Height; y++)
                     {
-                        byte* src = sourceMask.GetRowAddressUnchecked(y);
+                        byte* src = this.sourceMask.GetRowAddressUnchecked(y);
                         byte* dst = (byte*)data.Scan0 + (y * data.Stride);
 
                         for (int x = 0; x < image.Width; x++)
