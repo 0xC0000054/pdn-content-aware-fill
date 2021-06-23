@@ -21,6 +21,12 @@
                     components.Dispose();
                     components = null;
                 }
+
+                if (this.resynthesizer != null)
+                {
+                    this.resynthesizer.Dispose();
+                    this.resynthesizer = null;
+                }
             }
             base.Dispose(disposing);
         }
@@ -47,6 +53,7 @@
             this.donateLabel = new System.Windows.Forms.LinkLabel();
             this.autoRenderCb = new System.Windows.Forms.CheckBox();
             this.applyButton = new System.Windows.Forms.Button();
+            this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)(this.sampleSizeTrackBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.sampleSizeUpDown)).BeginInit();
             this.SuspendLayout();
@@ -212,6 +219,14 @@
             this.applyButton.UseVisualStyleBackColor = true;
             this.applyButton.Click += new System.EventHandler(this.applyButton_Click);
             // 
+            // backgroundWorker
+            // 
+            this.backgroundWorker.WorkerReportsProgress = true;
+            this.backgroundWorker.WorkerSupportsCancellation = true;
+            this.backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker_DoWork);
+            this.backgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker_ProgressChanged);
+            this.backgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker_RunWorkerCompleted);
+            // 
             // ContentAwareFillConfigDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -271,5 +286,6 @@
         private System.Windows.Forms.LinkLabel donateLabel;
         private System.Windows.Forms.CheckBox autoRenderCb;
         private System.Windows.Forms.Button applyButton;
+        private System.ComponentModel.BackgroundWorker backgroundWorker;
     }
 }

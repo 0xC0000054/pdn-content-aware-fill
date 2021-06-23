@@ -84,6 +84,7 @@
     </Compile>
     <Compile Include="ContentAwareFillConfigToken.cs" />
     <Compile Include="ContentAwareFillEffect.cs" />
+    <Compile Include="ResynthesizerRunner.cs" />
     <Compile Include="Resynthesizer\Comparers\CartesianPointComparer.cs" />
     <Compile Include="Resynthesizer\Comparers\HorizontalPointComparer.cs" />
     <Compile Include="Resynthesizer\Comparers\DirectionalPointComparer.cs" />

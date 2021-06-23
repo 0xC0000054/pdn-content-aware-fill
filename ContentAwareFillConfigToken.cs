@@ -20,6 +20,7 @@
 *
 */
 
+using PaintDotNet;
 using PaintDotNet.Effects;
 
 namespace ContentAwareFill
@@ -50,12 +51,23 @@ namespace ContentAwareFill
             set;
         }
 
-        public ContentAwareFillConfigToken(int sampleSize, SampleSource sampleFrom, FillDirection fillDirection, bool renderAutomatically)
+        public Surface Output
+        {
+            get;
+            set;
+        }
+
+        public ContentAwareFillConfigToken(int sampleSize,
+                                           SampleSource sampleFrom,
+                                           FillDirection fillDirection,
+                                           bool renderAutomatically,
+                                           Surface output)
         {
             this.SampleSize = sampleSize;
             this.SampleFrom = sampleFrom;
             this.FillDirection = fillDirection;
             this.RenderAutomatically = renderAutomatically;
+            this.Output = output;
         }
 
         private ContentAwareFillConfigToken(ContentAwareFillConfigToken cloneMe)
@@ -64,6 +76,7 @@ namespace ContentAwareFill
             this.SampleFrom = cloneMe.SampleFrom;
             this.FillDirection = cloneMe.FillDirection;
             this.RenderAutomatically = cloneMe.RenderAutomatically;
+            this.Output = cloneMe.Output;
         }
 
         public override object Clone()

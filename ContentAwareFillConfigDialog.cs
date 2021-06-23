@@ -23,6 +23,7 @@
 using PaintDotNet;
 using PaintDotNet.Effects;
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -31,38 +32,20 @@ namespace ContentAwareFill
     internal partial class ContentAwareFillConfigDialog : EffectConfigDialog
     {
         private int ignoreTokenChangedEventCount;
+        private bool formClosePending;
+        private bool restartBackgroundWorker;
+        private Surface output;
+        private ResynthesizerRunner resynthesizer;
 
         public ContentAwareFillConfigDialog()
         {
             InitializeComponent();
             UI.InitScaling(this);
             this.ignoreTokenChangedEventCount = 0;
+            this.formClosePending = false;
+            this.output = null;
+            this.resynthesizer = null;
             PluginThemingUtil.EnableEffectDialogTheme(this);
-            this.RenderingCompleted = false;
-            this.SelectionBoundsAreValid = false;
-        }
-
-        internal bool OkButtonPressed { get; private set; }
-
-        internal bool RenderingCompleted { get; set; }
-
-        internal bool SelectionBoundsAreValid { get; private set; }
-
-        internal void HandleError(Exception exception)
-        {
-            ShowMessage(exception.Message, MessageBoxIcon.Error);
-        }
-
-        internal void UpdateProgress(int progressPercentage)
-        {
-            if (this.InvokeRequired)
-            {
-                Invoke(new Action<int>((int value) => this.progressBar1.Value = value), progressPercentage);
-            }
-            else
-            {
-                this.progressBar1.Value = progressPercentage;
-            }
         }
 
         protected override void OnBackColorChanged(EventArgs e)
@@ -77,6 +60,22 @@ namespace ContentAwareFill
             base.OnForeColorChanged(e);
 
             PluginThemingUtil.UpdateControlForeColor(this);
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (this.backgroundWorker.IsBusy)
+            {
+                e.Cancel = true;
+                this.formClosePending = true;
+
+                if (this.DialogResult == DialogResult.Cancel)
+                {
+                    this.backgroundWorker.CancelAsync();
+                }
+            }
+
+            base.OnFormClosing(e);
         }
 
         protected override void OnLoad(EventArgs e)
@@ -100,10 +99,6 @@ namespace ContentAwareFill
                     Close();
                 }
             }
-            else
-            {
-                this.SelectionBoundsAreValid = true;
-            }
         }
 
         private void PushIgnoreTokenChangedEvents()
@@ -117,22 +112,25 @@ namespace ContentAwareFill
 
             if (this.ignoreTokenChangedEventCount == 0 && this.autoRenderCb.Checked)
             {
-                FinishTokenUpdate();
+                StartBackgroundWorker();
             }
         }
 
         private void UpdateConfigToken()
         {
-            this.RenderingCompleted = false;
             if (this.ignoreTokenChangedEventCount == 0 && this.autoRenderCb.Checked)
             {
-                FinishTokenUpdate();
+                StartBackgroundWorker();
             }
         }
 
         protected override void InitialInitToken()
         {
-            this.theEffectToken = new ContentAwareFillConfigToken(50, SampleSource.Sides, FillDirection.InwardToCenter, true);
+            this.theEffectToken = new ContentAwareFillConfigToken(50,
+                                                                  SampleSource.Sides,
+                                                                  FillDirection.InwardToCenter,
+                                                                  true,
+                                                                  null);
         }
 
         protected override void InitDialogFromToken(EffectConfigToken effectTokenCopy)
@@ -158,6 +156,7 @@ namespace ContentAwareFill
             token.SampleFrom =  (SampleSource)this.sampleFromCombo.SelectedIndex;
             token.FillDirection = (FillDirection)this.fillDirectionCombo.SelectedIndex;
             token.RenderAutomatically = this.autoRenderCb.Checked;
+            token.Output = this.output;
         }
 
         private void UpdateResetButtonIconForDpi()
@@ -209,7 +208,6 @@ namespace ContentAwareFill
         private void okButton_Click(object sender, EventArgs e)
         {
             this.DialogResult = DialogResult.OK;
-            this.OkButtonPressed = true;
             Close();
         }
 
@@ -266,7 +264,96 @@ namespace ContentAwareFill
 
         private void applyButton_Click(object sender, EventArgs e)
         {
-            FinishTokenUpdate();
+            StartBackgroundWorker();
+        }
+
+        private void StartBackgroundWorker()
+        {
+            if (this.backgroundWorker.IsBusy)
+            {
+                this.restartBackgroundWorker = true;
+                this.backgroundWorker.CancelAsync();
+            }
+            else
+            {
+                if (this.resynthesizer is null)
+                {
+                    ContentAwareFillEffect effect = (ContentAwareFillEffect)this.Effect;
+
+                    Surface source = effect.EnvironmentParameters.SourceSurface;
+                    Rectangle sourceBounds = source.Bounds;
+                    PdnRegion selection = effect.EnvironmentParameters.GetSelection(sourceBounds);
+
+                    this.resynthesizer = new ResynthesizerRunner(source,
+                                                                      sourceBounds,
+                                                                      selection);
+                }
+
+                this.resynthesizer.SetParameters(this.sampleSizeTrackBar.Value,
+                                                 (SampleSource)this.sampleFromCombo.SelectedIndex,
+                                                 (FillDirection)this.fillDirectionCombo.SelectedIndex);
+
+                this.backgroundWorker.RunWorkerAsync();
+            }
+        }
+
+        private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker worker = (BackgroundWorker)sender;
+
+            Surface output = this.resynthesizer.Run(() => worker.CancellationPending, worker.ReportProgress);
+
+            if (output != null)
+            {
+                e.Result = output;
+            }
+            else
+            {
+                e.Cancel = true;
+            }
+        }
+
+        private void backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            this.progressBar1.Value = e.ProgressPercentage;
+        }
+
+        private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            this.progressBar1.Value = 0;
+
+            if (this.restartBackgroundWorker)
+            {
+                this.restartBackgroundWorker = false;
+                this.resynthesizer.SetParameters(this.sampleSizeTrackBar.Value,
+                                                 (SampleSource)this.sampleFromCombo.SelectedIndex,
+                                                 (FillDirection)this.fillDirectionCombo.SelectedIndex);
+
+                this.backgroundWorker.RunWorkerAsync();
+            }
+            else if (e.Error != null)
+            {
+                ShowMessage(e.Error.Message, MessageBoxIcon.Error);
+            }
+            else
+            {
+                if (this.output != null)
+                {
+                    this.output.Dispose();
+                    this.output = null;
+                }
+
+                if (!e.Cancelled)
+                {
+                    this.output = (Surface)e.Result;
+                    FinishTokenUpdate();
+                }
+
+                if (this.formClosePending)
+                {
+                    Close();
+                }
+            }
         }
     }
 }
