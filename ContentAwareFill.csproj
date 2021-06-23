@@ -36,17 +36,14 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="PaintDotNet.Base, Version=4.21.6589.7045, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Dev_projects\PSFilterPdn\References\PaintDotNet.Base.dll</HintPath>
+    <Reference Include="PaintDotNet.Base">
+      <HintPath>..\..\..\..\..\..\Dev_projects\PSFilterPdn\References\PaintDotNet.Base.dll</HintPath>
     </Reference>
-    <Reference Include="PaintDotNet.Core, Version=4.21.6589.7045, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Dev_projects\PSFilterPdn\References\PaintDotNet.Core.dll</HintPath>
+    <Reference Include="PaintDotNet.Core">
+      <HintPath>..\..\..\..\..\..\Dev_projects\PSFilterPdn\References\PaintDotNet.Core.dll</HintPath>
     </Reference>
-    <Reference Include="PaintDotNet.Effects, Version=4.21.6589.7045, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Dev_projects\PSFilterPdn\References\PaintDotNet.Effects.dll</HintPath>
+    <Reference Include="PaintDotNet.Effects">
+      <HintPath>..\..\..\..\..\..\Dev_projects\PSFilterPdn\References\PaintDotNet.Effects.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
