@@ -49,8 +49,8 @@ namespace ContentAwareFill
         /// <paramref name="selection"/> is null.
         /// </exception>
         public ResynthesizerRunner(Surface source,
-                                        Rectangle sourceBounds,
-                                        PdnRegion selection)
+                                   Rectangle sourceBounds,
+                                   PdnRegion selection)
         {
             this.sourceMask = null;
             this.destinationMask = null;

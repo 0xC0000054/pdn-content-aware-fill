@@ -285,8 +285,8 @@ namespace ContentAwareFill
                     PdnRegion selection = effect.EnvironmentParameters.GetSelection(sourceBounds);
 
                     this.resynthesizer = new ResynthesizerRunner(source,
-                                                                      sourceBounds,
-                                                                      selection);
+                                                                 sourceBounds,
+                                                                 selection);
                 }
 
                 this.resynthesizer.SetParameters(this.sampleSizeTrackBar.Value,
