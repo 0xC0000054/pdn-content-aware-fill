@@ -34,6 +34,8 @@ namespace ContentAwareFill
         private int ignoreTokenChangedEventCount;
         private bool formClosePending;
         private bool restartBackgroundWorker;
+        private bool selectionValid;
+        private bool ranFirstAutoRender;
         private Surface output;
         private ResynthesizerRunner resynthesizer;
 
@@ -43,6 +45,8 @@ namespace ContentAwareFill
             UI.InitScaling(this);
             this.ignoreTokenChangedEventCount = 0;
             this.formClosePending = false;
+            this.selectionValid = false;
+            this.ranFirstAutoRender = false;
             this.output = null;
             this.resynthesizer = null;
             PluginThemingUtil.EnableEffectDialogTheme(this);
@@ -99,6 +103,15 @@ namespace ContentAwareFill
                     Close();
                 }
             }
+            else
+            {
+                this.selectionValid = true;
+
+                if (this.ignoreTokenChangedEventCount == 0 && this.autoRenderCb.Checked && !this.ranFirstAutoRender)
+                {
+                    StartBackgroundWorker();
+                }
+            }
         }
 
         private void PushIgnoreTokenChangedEvents()
@@ -110,8 +123,9 @@ namespace ContentAwareFill
         {
             this.ignoreTokenChangedEventCount--;
 
-            if (this.ignoreTokenChangedEventCount == 0 && this.autoRenderCb.Checked)
+            if (this.ignoreTokenChangedEventCount == 0 && this.autoRenderCb.Checked && this.selectionValid)
             {
+                this.ranFirstAutoRender = true;
                 StartBackgroundWorker();
             }
         }
