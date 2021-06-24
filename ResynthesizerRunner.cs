@@ -134,6 +134,7 @@ namespace ContentAwareFill
         /// <summary>
         /// Sets the parameters.
         /// </summary>
+        /// <param name="sampleSize">The sample area size.</param>
         /// <param name="sampleFrom">The area of the selection to sample.</param>
         /// <param name="fillDirection">The direction to fill the generated image.</param>
         /// <exception cref="ArgumentOutOfRangeException">
