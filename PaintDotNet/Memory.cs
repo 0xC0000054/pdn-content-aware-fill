@@ -46,8 +46,6 @@ namespace ContentAwareFill
     {
         private static IntPtr hHeap;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "GetProcessHeap")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         private static void CreateHeap()
         {
             hHeap = SafeNativeMethods.GetProcessHeap();
@@ -66,7 +64,6 @@ namespace ContentAwareFill
         /// <param name="zeroFill"><c>true</c> if the memory block should be zero filled; otherwise, <c>false</c>.</param>
         /// <returns>A pointer to a block of memory at least as large as <b>bytes</b>.</returns>
         /// <exception cref="OutOfMemoryException">Thrown if the memory manager could not fulfill the request for a memory block at least as large as <b>bytes</b>.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public static IntPtr Allocate(ulong bytes, bool zeroFill)
         {
             if (hHeap == IntPtr.Zero)
@@ -98,7 +95,6 @@ namespace ContentAwareFill
         /// granularity is the page size of the system (usually 4K). Blocks allocated with this method may also
         /// be protected using the ProtectBlock method.
         /// </remarks>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public static IntPtr AllocateLarge(ulong bytes)
         {
             IntPtr block = SafeNativeMethods.VirtualAlloc(IntPtr.Zero, new UIntPtr(bytes),
@@ -122,7 +118,6 @@ namespace ContentAwareFill
         /// </summary>
         /// <param name="block">The block to free.</param>
         /// <exception cref="InvalidOperationException">There was an error freeing the block.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public static void Free(IntPtr block)
         {
             if (Memory.hHeap != IntPtr.Zero)
@@ -155,7 +150,6 @@ namespace ContentAwareFill
         /// </summary>
         /// <param name="block">The block to free.</param>
         /// <param name="bytes">The size of the block.</param>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public static void FreeLarge(IntPtr block, ulong bytes)
         {
             bool result = SafeNativeMethods.VirtualFree(block, UIntPtr.Zero, NativeConstants.MEM_RELEASE);

@@ -78,7 +78,6 @@ namespace ContentAwareFill
             get;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public double MapWeight
         {
             get;

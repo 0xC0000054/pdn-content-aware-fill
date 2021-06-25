@@ -103,7 +103,6 @@ namespace ContentAwareFill
             return wholeImageSelected;
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")]
         protected override void OnSetRenderInfo(EffectConfigToken parameters, RenderArgs dstArgs, RenderArgs srcArgs)
         {
             if (this.repeatEffect)
@@ -144,8 +143,6 @@ namespace ContentAwareFill
             base.OnSetRenderInfo(parameters, dstArgs, srcArgs);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "2")]
-        [SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "1")]
         public override void Render(EffectConfigToken parameters, RenderArgs dstArgs, RenderArgs srcArgs, Rectangle[] rois, int startIndex, int length)
         {
             ContentAwareFillConfigToken token = (ContentAwareFillConfigToken)parameters;

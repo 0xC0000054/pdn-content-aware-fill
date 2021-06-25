@@ -25,7 +25,6 @@ using System.Runtime.Serialization;
 
 namespace ContentAwareFill
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1064:ExceptionsShouldBePublic")]
     [Serializable]
     internal sealed class ResynthizerException : Exception
     {

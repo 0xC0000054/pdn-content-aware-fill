@@ -104,7 +104,6 @@ namespace ContentAwareFill
             Memory.SetToZero(this.scan0.VoidStar, (ulong)this.scan0.Length);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         public MaskSurface Clone()
         {
             MaskSurface surface = new MaskSurface(this.width, this.height);
@@ -197,8 +196,6 @@ namespace ContentAwareFill
             return CreateWindow(bounds.X, bounds.Y, bounds.Width, bounds.Height);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2208:InstantiateArgumentExceptionsCorrectly")]
         public MaskSurface CreateWindow(int x, int y, int windowWidth, int windowHeight)
         {
             if (this.disposed)

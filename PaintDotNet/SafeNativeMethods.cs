@@ -42,14 +42,10 @@ namespace ContentAwareFill
         internal static extern IntPtr GetProcessHeap();
 
         [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl, SetLastError = false)]
-#pragma warning disable IDE1006 // Naming Styles
         internal static extern unsafe void memcpy(void* dst, void* src, UIntPtr length);
-#pragma warning restore IDE1006 // Naming Styles
 
         [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl, SetLastError = false)]
-#pragma warning disable IDE1006 // Naming Styles
         internal static extern unsafe void memset(void* dst, int value, UIntPtr length);
-#pragma warning restore IDE1006 // Naming Styles
 
         [DllImport("kernel32.dll", SetLastError = true)]
         internal static extern IntPtr VirtualAlloc(

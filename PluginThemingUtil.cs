@@ -40,7 +40,6 @@ namespace ContentAwareFill
         /// </summary>
         /// <param name="dialog">The dialog.</param>
         /// <exception cref="ArgumentNullException"><paramref name="dialog"/> is null.</exception>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public static void EnableEffectDialogTheme(EffectConfigDialog dialog)
         {
             if (dialog == null)
