@@ -23,7 +23,6 @@
 using PaintDotNet;
 using PaintDotNet.Effects;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Windows.Forms;
 
