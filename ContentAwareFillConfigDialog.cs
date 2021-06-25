@@ -29,6 +29,10 @@ using System.Windows.Forms;
 
 namespace ContentAwareFill
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage(
+        "Style",
+        "IDE1006:Naming Styles",
+        Justification = "The VS designer generates methods that start with a lower case letter.")]
     internal partial class ContentAwareFillConfigDialog : EffectConfigDialog
     {
         private int ignoreTokenChangedEventCount;
