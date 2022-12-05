@@ -227,7 +227,7 @@ namespace ContentAwareFill
                     return false;
                 }
 
-                if (((float)betters.Value / (float)this.targetPoints.Count) < ResynthesizerConstants.TerminateFraction)
+                if (((float)betters.Value / this.targetPoints.Count) < ResynthesizerConstants.TerminateFraction)
                 {
                     break;
                 }
