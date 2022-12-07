@@ -20,6 +20,7 @@
 *
 */
 
+using ContentAwareFill.Properties;
 using PaintDotNet;
 using PaintDotNet.Effects;
 using System;
@@ -40,6 +41,7 @@ namespace ContentAwareFill
         private bool restartBackgroundWorker;
         private bool selectionValid;
         private bool ranFirstAutoRender;
+        private bool setRenderingStatusText;
         private Surface output;
         private ResynthesizerRunner resynthesizer;
 
@@ -47,6 +49,7 @@ namespace ContentAwareFill
         {
             InitializeComponent();
             UI.InitScaling(this);
+            this.toolStripStatusLabel1.Text = Resources.StatusReadyText;
             this.ignoreTokenChangedEventCount = 0;
             this.formClosePending = false;
             this.selectionValid = false;
@@ -307,6 +310,7 @@ namespace ContentAwareFill
                                                                  selection);
                 }
 
+                this.setRenderingStatusText = false;
                 this.resynthesizer.SetParameters(this.sampleSizeTrackBar.Value,
                                                  (SampleSource)this.sampleFromCombo.SelectedIndex,
                                                  (FillDirection)this.fillDirectionCombo.SelectedIndex);
@@ -333,13 +337,17 @@ namespace ContentAwareFill
 
         private void backgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-            this.progressBar1.Value = e.ProgressPercentage;
+            if (!this.setRenderingStatusText)
+            {
+                this.setRenderingStatusText = true;
+                this.toolStripStatusLabel1.Text = Resources.StatusRenderingText;
+            }
+
+            this.toolStripProgressBar1.Value = e.ProgressPercentage;
         }
 
         private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            this.progressBar1.Value = 0;
-
             if (this.restartBackgroundWorker)
             {
                 this.restartBackgroundWorker = false;
@@ -349,27 +357,33 @@ namespace ContentAwareFill
 
                 this.backgroundWorker.RunWorkerAsync();
             }
-            else if (e.Error != null)
-            {
-                ShowMessage(e.Error.Message, MessageBoxIcon.Error);
-            }
             else
             {
-                if (this.output != null)
-                {
-                    this.output.Dispose();
-                    this.output = null;
-                }
+                this.toolStripStatusLabel1.Text = Resources.StatusReadyText;
+                this.toolStripProgressBar1.Value = 0;
 
-                if (!e.Cancelled)
+                if (e.Error != null)
                 {
-                    this.output = (Surface)e.Result;
-                    FinishTokenUpdate();
+                    ShowMessage(e.Error.Message, MessageBoxIcon.Error);
                 }
-
-                if (this.formClosePending)
+                else
                 {
-                    Close();
+                    if (this.output != null)
+                    {
+                        this.output.Dispose();
+                        this.output = null;
+                    }
+
+                    if (!e.Cancelled)
+                    {
+                        this.output = (Surface)e.Result;
+                        FinishTokenUpdate();
+                    }
+
+                    if (this.formClosePending)
+                    {
+                        Close();
+                    }
                 }
             }
         }

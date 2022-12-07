@@ -45,22 +45,25 @@
             this.fillDirectionCombo = new System.Windows.Forms.ComboBox();
             this.sampleSizeTrackBar = new System.Windows.Forms.TrackBar();
             this.sampleSizeUpDown = new System.Windows.Forms.NumericUpDown();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.resetButton = new System.Windows.Forms.Button();
-            this.sampleSizeHeader = new ContentAwareFill.HeaderLabel();
-            this.sampleFromHeader = new ContentAwareFill.HeaderLabel();
-            this.fillDirectionHeader = new ContentAwareFill.HeaderLabel();
             this.donateLabel = new System.Windows.Forms.LinkLabel();
             this.autoRenderCb = new System.Windows.Forms.CheckBox();
             this.applyButton = new System.Windows.Forms.Button();
             this.backgroundWorker = new System.ComponentModel.BackgroundWorker();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
+            this.fillDirectionHeader = new ContentAwareFill.HeaderLabel();
+            this.sampleFromHeader = new ContentAwareFill.HeaderLabel();
+            this.sampleSizeHeader = new ContentAwareFill.HeaderLabel();
             ((System.ComponentModel.ISupportInitialize)(this.sampleSizeTrackBar)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.sampleSizeUpDown)).BeginInit();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // cancelButton
             // 
-            this.cancelButton.Location = new System.Drawing.Point(250, 239);
+            this.cancelButton.Location = new System.Drawing.Point(250, 226);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(75, 23);
             this.cancelButton.TabIndex = 0;
@@ -70,7 +73,7 @@
             // 
             // okButton
             // 
-            this.okButton.Location = new System.Drawing.Point(167, 239);
+            this.okButton.Location = new System.Drawing.Point(169, 226);
             this.okButton.Name = "okButton";
             this.okButton.Size = new System.Drawing.Size(75, 23);
             this.okButton.TabIndex = 7;
@@ -137,13 +140,6 @@
             0});
             this.sampleSizeUpDown.ValueChanged += new System.EventHandler(this.sampleSizeUpDown_ValueChanged);
             // 
-            // progressBar1
-            // 
-            this.progressBar1.Location = new System.Drawing.Point(12, 200);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(313, 23);
-            this.progressBar1.TabIndex = 8;
-            // 
             // resetButton
             // 
             this.resetButton.Image = global::ContentAwareFill.Properties.Resources.ResetIcon_96;
@@ -154,40 +150,10 @@
             this.resetButton.UseVisualStyleBackColor = true;
             this.resetButton.Click += new System.EventHandler(this.resetButton_Click);
             // 
-            // sampleSizeHeader
-            // 
-            this.sampleSizeHeader.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.sampleSizeHeader.Location = new System.Drawing.Point(12, 17);
-            this.sampleSizeHeader.Name = "sampleSizeHeader";
-            this.sampleSizeHeader.Size = new System.Drawing.Size(310, 14);
-            this.sampleSizeHeader.TabIndex = 11;
-            this.sampleSizeHeader.TabStop = false;
-            this.sampleSizeHeader.Text = "Sample area size (in pixels):";
-            // 
-            // sampleFromHeader
-            // 
-            this.sampleFromHeader.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.sampleFromHeader.Location = new System.Drawing.Point(12, 63);
-            this.sampleFromHeader.Name = "sampleFromHeader";
-            this.sampleFromHeader.Size = new System.Drawing.Size(310, 14);
-            this.sampleFromHeader.TabIndex = 12;
-            this.sampleFromHeader.TabStop = false;
-            this.sampleFromHeader.Text = "Sample from:";
-            // 
-            // fillDirectionHeader
-            // 
-            this.fillDirectionHeader.ForeColor = System.Drawing.SystemColors.Highlight;
-            this.fillDirectionHeader.Location = new System.Drawing.Point(12, 115);
-            this.fillDirectionHeader.Name = "fillDirectionHeader";
-            this.fillDirectionHeader.Size = new System.Drawing.Size(310, 14);
-            this.fillDirectionHeader.TabIndex = 14;
-            this.fillDirectionHeader.TabStop = false;
-            this.fillDirectionHeader.Text = "Fill direction:";
-            // 
             // donateLabel
             // 
             this.donateLabel.AutoSize = true;
-            this.donateLabel.Location = new System.Drawing.Point(9, 244);
+            this.donateLabel.Location = new System.Drawing.Point(9, 231);
             this.donateLabel.Name = "donateLabel";
             this.donateLabel.Size = new System.Drawing.Size(45, 13);
             this.donateLabel.TabIndex = 6;
@@ -227,18 +193,71 @@
             this.backgroundWorker.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker_ProgressChanged);
             this.backgroundWorker.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker_RunWorkerCompleted);
             // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripStatusLabel1,
+            this.toolStripProgressBar1});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 252);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(337, 22);
+            this.statusStrip1.SizingGrip = false;
+            this.statusStrip1.TabIndex = 17;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripStatusLabel1
+            // 
+            this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(118, 17);
+            this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
+            // 
+            // toolStripProgressBar1
+            // 
+            this.toolStripProgressBar1.Name = "toolStripProgressBar1";
+            this.toolStripProgressBar1.Size = new System.Drawing.Size(100, 16);
+            // 
+            // fillDirectionHeader
+            // 
+            this.fillDirectionHeader.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.fillDirectionHeader.Location = new System.Drawing.Point(12, 115);
+            this.fillDirectionHeader.Name = "fillDirectionHeader";
+            this.fillDirectionHeader.Size = new System.Drawing.Size(310, 14);
+            this.fillDirectionHeader.TabIndex = 14;
+            this.fillDirectionHeader.TabStop = false;
+            this.fillDirectionHeader.Text = "Fill direction:";
+            // 
+            // sampleFromHeader
+            // 
+            this.sampleFromHeader.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.sampleFromHeader.Location = new System.Drawing.Point(12, 63);
+            this.sampleFromHeader.Name = "sampleFromHeader";
+            this.sampleFromHeader.Size = new System.Drawing.Size(310, 14);
+            this.sampleFromHeader.TabIndex = 12;
+            this.sampleFromHeader.TabStop = false;
+            this.sampleFromHeader.Text = "Sample from:";
+            // 
+            // sampleSizeHeader
+            // 
+            this.sampleSizeHeader.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.sampleSizeHeader.Location = new System.Drawing.Point(12, 17);
+            this.sampleSizeHeader.Name = "sampleSizeHeader";
+            this.sampleSizeHeader.Size = new System.Drawing.Size(310, 14);
+            this.sampleSizeHeader.TabIndex = 11;
+            this.sampleSizeHeader.TabStop = false;
+            this.sampleSizeHeader.Text = "Sample area size (in pixels):";
+            // 
             // ContentAwareFillConfigDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.ClientSize = new System.Drawing.Size(337, 274);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.applyButton);
             this.Controls.Add(this.autoRenderCb);
             this.Controls.Add(this.donateLabel);
             this.Controls.Add(this.fillDirectionHeader);
             this.Controls.Add(this.sampleFromHeader);
             this.Controls.Add(this.sampleSizeHeader);
-            this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.okButton);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.resetButton);
@@ -256,15 +275,17 @@
             this.Controls.SetChildIndex(this.resetButton, 0);
             this.Controls.SetChildIndex(this.cancelButton, 0);
             this.Controls.SetChildIndex(this.okButton, 0);
-            this.Controls.SetChildIndex(this.progressBar1, 0);
             this.Controls.SetChildIndex(this.sampleSizeHeader, 0);
             this.Controls.SetChildIndex(this.sampleFromHeader, 0);
             this.Controls.SetChildIndex(this.fillDirectionHeader, 0);
             this.Controls.SetChildIndex(this.donateLabel, 0);
             this.Controls.SetChildIndex(this.autoRenderCb, 0);
             this.Controls.SetChildIndex(this.applyButton, 0);
+            this.Controls.SetChildIndex(this.statusStrip1, 0);
             ((System.ComponentModel.ISupportInitialize)(this.sampleSizeTrackBar)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.sampleSizeUpDown)).EndInit();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -278,7 +299,6 @@
         private System.Windows.Forms.ComboBox fillDirectionCombo;
         private System.Windows.Forms.TrackBar sampleSizeTrackBar;
         private System.Windows.Forms.NumericUpDown sampleSizeUpDown;
-        private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Button resetButton;
         private HeaderLabel sampleSizeHeader;
         private HeaderLabel sampleFromHeader;
@@ -287,5 +307,8 @@
         private System.Windows.Forms.CheckBox autoRenderCb;
         private System.Windows.Forms.Button applyButton;
         private System.ComponentModel.BackgroundWorker backgroundWorker;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
     }
 }
