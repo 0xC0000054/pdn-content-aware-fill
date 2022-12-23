@@ -45,11 +45,11 @@ namespace ContentAwareFill
         {
             get
             {
-                return new Bitmap(typeof(ContentAwareFillEffect), PluginIconUtil.GetIconResourceForCurrentDpi());
+                return new Bitmap(typeof(ContentAwareFillEffect), PluginIconUtil.GetIconResourceForDpi(UIScaleFactor.Current.Dpi));
             }
         }
 
-        public ContentAwareFillEffect() : base(StaticName, StaticImage, "Selection", EffectFlags.Configurable)
+        public ContentAwareFillEffect() : base(StaticName, StaticImage, "Selection", new EffectOptions { Flags = EffectFlags.Configurable })
         {
             this.repeatEffect = true;
         }
@@ -116,7 +116,7 @@ namespace ContentAwareFill
 
                 Surface source = srcArgs.Surface;
                 Rectangle sourceBounds = source.Bounds;
-                PdnRegion selection = this.EnvironmentParameters.GetSelection(sourceBounds);
+                PdnRegion selection = this.EnvironmentParameters.GetSelectionAsPdnRegion();
 
                 // This plugin does not support processing a selection of the whole image, it needs some unselected pixels
                 // to replace the contents of the selected area.

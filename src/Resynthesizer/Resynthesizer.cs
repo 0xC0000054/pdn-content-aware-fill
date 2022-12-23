@@ -352,7 +352,7 @@ namespace ContentAwareFill
             {
                 for (int y = 0; y < this.target.Height; y++)
                 {
-                    ColorBgra* src = this.target.GetRowAddressUnchecked(y);
+                    ColorBgra* src = this.target.GetRowPointerUnchecked(y);
                     byte* mask = this.targetMask.GetRowAddressUnchecked(y);
 
                     for (int x = 0; x < this.target.Width; x++)
@@ -383,7 +383,7 @@ namespace ContentAwareFill
 
             for (int y = 0; y < this.source.Height; y++)
             {
-                ColorBgra* src = this.source.GetRowAddressUnchecked(y);
+                ColorBgra* src = this.source.GetRowPointerUnchecked(y);
                 byte* mask = this.sourceMask.GetRowAddressUnchecked(y);
 
                 for (int x = 0; x < this.source.Width; x++)

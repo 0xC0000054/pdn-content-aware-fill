@@ -45,6 +45,16 @@ namespace ContentAwareFill
             }
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.etchedLine?.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
+
         protected override void OnFontChanged(EventArgs e)
         {
             PerformLayout();

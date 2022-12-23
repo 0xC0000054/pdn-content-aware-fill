@@ -1,9 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net35</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -13,17 +14,6 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="PaintDotNet.Base">
-      <HintPath>..\..\..\..\..\..\Dev_projects\PSFilterPdn\References\PaintDotNet.Base.dll</HintPath>
-    </Reference>
-    <Reference Include="PaintDotNet.Core">
-      <HintPath>..\..\..\..\..\..\Dev_projects\PSFilterPdn\References\PaintDotNet.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="PaintDotNet.Effects">
-      <HintPath>..\..\..\..\..\..\Dev_projects\PSFilterPdn\References\PaintDotNet.Effects.dll</HintPath>
-    </Reference>
-  </ItemGroup>
   <ItemGroup>
     <Compile Update="PaintDotNet\EtchedLine.cs" />
     <Compile Update="PaintDotNet\HeaderLabel.cs" />
@@ -38,7 +28,36 @@
     <EmbeddedResource Include="Resources\Icons\ResetIcon-384.png" />
     <EmbeddedResource Include="Resources\Icons\ResetIcon-96.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="PaintDotNet.Base">
+      <HintPath>..\..\..\..\..\..\..\paint.net 5.0\PaintDotNet.Base.dll</HintPath>
+    </Reference>
+    <Reference Include="PaintDotNet.ComponentModel">
+      <HintPath>..\..\..\..\..\..\..\paint.net 5.0\PaintDotNet.ComponentModel.dll</HintPath>
+    </Reference>
+    <Reference Include="PaintDotNet.Core">
+      <HintPath>..\..\..\..\..\..\..\paint.net 5.0\PaintDotNet.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="PaintDotNet.Effects.Core">
+      <HintPath>..\..\..\..\..\..\..\paint.net 5.0\PaintDotNet.Effects.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="PaintDotNet.Framework">
+      <HintPath>..\..\..\..\..\..\..\paint.net 5.0\PaintDotNet.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="PaintDotNet.Fundamentals">
+      <HintPath>..\..\..\..\..\..\..\paint.net 5.0\PaintDotNet.Fundamentals.dll</HintPath>
+    </Reference>
+    <Reference Include="PaintDotNet.ObjectModel">
+      <HintPath>..\..\..\..\..\..\..\paint.net 5.0\PaintDotNet.ObjectModel.dll</HintPath>
+    </Reference>
+    <Reference Include="PaintDotNet.Primitives">
+      <HintPath>..\..\..\..\..\..\..\paint.net 5.0\PaintDotNet.Primitives.dll</HintPath>
+    </Reference>
+    <Reference Include="PaintDotNet.Windows">
+      <HintPath>..\..\..\..\..\..\..\paint.net 5.0\PaintDotNet.Windows.dll</HintPath>
+    </Reference>
+  </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;D:\Program Files\paint.net\Effects&quot; /y" />
+    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;D:\paint.net 5.0\Effects&quot; /y" />
   </Target>
 </Project>

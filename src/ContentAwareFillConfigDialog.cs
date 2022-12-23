@@ -103,7 +103,8 @@ namespace ContentAwareFill
             // This plugin does not support processing a selection of the whole image, it needs some
             // unselected pixels to replace the contents of the selected area.
             // When there is no active selection Paint.NET acts as if the whole image/layer is selected.
-            if (ContentAwareFillEffect.IsWholeImageSelected(this.Selection, this.EffectSourceSurface.Bounds))
+            if (ContentAwareFillEffect.IsWholeImageSelected(this.EnvironmentParameters.GetSelectionAsPdnRegion(),
+                                                            this.EnvironmentParameters.SourceSurface.Bounds))
             {
                 if (ShowMessage(Properties.Resources.WholeImageSelected, MessageBoxIcon.None) == DialogResult.OK)
                 {
@@ -303,7 +304,7 @@ namespace ContentAwareFill
 
                     Surface source = effect.EnvironmentParameters.SourceSurface;
                     Rectangle sourceBounds = source.Bounds;
-                    PdnRegion selection = effect.EnvironmentParameters.GetSelection(sourceBounds);
+                    PdnRegion selection = effect.EnvironmentParameters.GetSelectionAsPdnRegion();
 
                     this.resynthesizer = new ResynthesizerRunner(source,
                                                                  sourceBounds,

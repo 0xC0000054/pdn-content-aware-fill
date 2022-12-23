@@ -20,73 +20,37 @@
 *
 */
 
-using PaintDotNet;
 using System;
-using System.Reflection;
 
 namespace ContentAwareFill
 {
     internal static class PluginIconUtil
     {
-        private static readonly bool HighDpiIconsSupported;
-        private static readonly MethodInfo CurrentScaleFactorMethodInfo;
-        private static readonly MethodInfo DpiMethodInfo;
-        private static readonly Pair<int, string>[] AvailableIcons;
+        private static readonly ValueTuple<int, string>[] AvailableIcons;
 
         static PluginIconUtil()
         {
-            HighDpiIconsSupported = typeof(ColorBgra).Assembly.GetName().Version >= new Version(4, 106);
-
-            // Support for high-DPI Effect icons was added in Paint.NET version 4.1.6.
-            if (HighDpiIconsSupported)
+            AvailableIcons = new ValueTuple<int, string>[]
             {
-                Type uiScaleFactorType = Type.GetType("PaintDotNet.UIScaleFactor, PaintDotNet.Core");
-
-                if (uiScaleFactorType != null)
-                {
-                    PropertyInfo currentProperty = uiScaleFactorType.GetProperty("Current", BindingFlags.Public | BindingFlags.Static);
-                    PropertyInfo dpiProperty = uiScaleFactorType.GetProperty("Dpi", BindingFlags.Public | BindingFlags.Instance);
-
-                    if (currentProperty != null && dpiProperty != null)
-                    {
-                        CurrentScaleFactorMethodInfo = currentProperty.GetGetMethod();
-                        DpiMethodInfo = dpiProperty.GetGetMethod();
-                    }
-                }
-            }
-
-            AvailableIcons = new Pair<int, string>[]
-            {
-                Pair.Create(96, "Resources.Icons.ContentAwareFill-96.png"),
-                Pair.Create(192, "Resources.Icons.ContentAwareFill-192.png"),
-                Pair.Create(384, "Resources.Icons.ContentAwareFill-384.png"),
+                ValueTuple.Create(96, "Resources.Icons.ContentAwareFill-96.png"),
+                ValueTuple.Create(192, "Resources.Icons.ContentAwareFill-192.png"),
+                ValueTuple.Create(384, "Resources.Icons.ContentAwareFill-384.png"),
             };
         }
 
-        public static string GetIconResourceForCurrentDpi()
+        public static string GetIconResourceForDpi(int dpi)
         {
-            if (HighDpiIconsSupported && CurrentScaleFactorMethodInfo != null && DpiMethodInfo != null)
+            for (int i = 0; i < AvailableIcons.Length; i++)
             {
-                object currentScaleFactor = CurrentScaleFactorMethodInfo.Invoke(null, null);
+                ValueTuple<int, string> icon = AvailableIcons[i];
 
-                int currentDpi = (int)DpiMethodInfo.Invoke(currentScaleFactor, null);
-
-                for (int i = 0; i < AvailableIcons.Length; i++)
+                if (icon.Item1 >= dpi)
                 {
-                    Pair<int, string> icon = AvailableIcons[i];
-
-                    if (icon.First >= currentDpi)
-                    {
-                        return icon.Second;
-                    }
+                    return icon.Item2;
                 }
+            }
 
-                return "Resources.Icons.ContentAwareFill-384.png";
-            }
-            else
-            {
-                return "Resources.Icons.ContentAwareFill-96.png";
-            }
+            return "Resources.Icons.ContentAwareFill-384.png";
         }
     }
 }

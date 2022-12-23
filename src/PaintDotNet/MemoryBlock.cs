@@ -24,7 +24,9 @@ namespace ContentAwareFill
 
         private bool valid; // if voidStar is null, and this is false, we know that it's null because allocation failed. otherwise we have a real error
 
+#pragma warning disable CA2213 // Disposable fields should be disposed
         private MemoryBlock parentBlock = null;
+#pragma warning restore CA2213 // Disposable fields should be disposed
 
         private bool disposed = false;
 

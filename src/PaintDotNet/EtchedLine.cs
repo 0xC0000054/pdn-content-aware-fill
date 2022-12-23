@@ -81,6 +81,16 @@ namespace ContentAwareFill
             return new Size(proposedSize.Width, 2);
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.label?.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
             if (this.selfDrawn)
