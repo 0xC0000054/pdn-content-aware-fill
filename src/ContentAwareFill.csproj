@@ -1,38 +1,16 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{8DA3487E-8747-49C0-92EB-46033D4F9972}</ProjectGuid>
+    <TargetFramework>net35</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ContentAwareFill</RootNamespace>
-    <AssemblyName>ContentAwareFill</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
@@ -45,77 +23,11 @@
     <Reference Include="PaintDotNet.Effects">
       <HintPath>..\..\..\..\..\..\Dev_projects\PSFilterPdn\References\PaintDotNet.Effects.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FillDirection.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="MaskSurface.cs" />
-    <Compile Include="PaintDotNet\EtchedLine.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="PaintDotNet\HeaderLabel.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="PaintDotNet\Memory.cs" />
-    <Compile Include="PaintDotNet\MemoryBlock.cs" />
-    <Compile Include="PaintDotNet\NativeConstants.cs" />
-    <Compile Include="PaintDotNet\SafeNativeMethods.cs" />
-    <Compile Include="PaintDotNet\UI.cs" />
-    <Compile Include="PaintDotNet\VisualStyleClass.cs" />
-    <Compile Include="PluginIconUtil.cs" />
-    <Compile Include="PluginSupportInfo.cs" />
-    <Compile Include="PluginThemingUtil.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="ContentAwareFillConfigDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ContentAwareFillConfigDialog.Designer.cs">
-      <DependentUpon>ContentAwareFillConfigDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ContentAwareFillConfigToken.cs" />
-    <Compile Include="ContentAwareFillEffect.cs" />
-    <Compile Include="ResynthesizerRunner.cs" />
-    <Compile Include="Resynthesizer\Comparers\CartesianPointComparer.cs" />
-    <Compile Include="Resynthesizer\Comparers\HorizontalPointComparer.cs" />
-    <Compile Include="Resynthesizer\Comparers\DirectionalPointComparer.cs" />
-    <Compile Include="Resynthesizer\Comparers\PointComparer.cs" />
-    <Compile Include="Resynthesizer\Comparers\VerticalPointComparer.cs" />
-    <Compile Include="Resynthesizer\MatchContextType.cs" />
-    <Compile Include="Resynthesizer\PointCollectionUtil.cs" />
-    <Compile Include="Resynthesizer\PointExtensions.cs" />
-    <Compile Include="Resynthesizer\PointIndexedArray.cs" />
-    <Compile Include="Resynthesizer\ReadOnlyArray.cs" />
-    <Compile Include="Resynthesizer\ReadOnlyList.cs" />
-    <Compile Include="Resynthesizer\ResynthesizerConstants.cs" />
-    <Compile Include="Resynthesizer\ResynthesizerParameters.cs" />
-    <Compile Include="Resynthesizer\Resynthesizer.cs" />
-    <Compile Include="Resynthesizer\ResynthizerException.cs" />
-    <Compile Include="Resynthesizer\TargetPointSorter.cs" />
-    <Compile Include="SampleSource.cs" />
+    <Compile Update="PaintDotNet\EtchedLine.cs" />
+    <Compile Update="PaintDotNet\HeaderLabel.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ContentAwareFillConfigDialog.resx">
-      <DependentUpon>ContentAwareFillConfigDialog.cs</DependentUpon>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include=".editorconfig" />
-  </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <EmbeddedResource Include="Resources\Icons\ContentAwareFill-192.png" />
     <EmbeddedResource Include="Resources\Icons\ContentAwareFill-384.png" />
@@ -126,9 +38,7 @@
     <EmbeddedResource Include="Resources\Icons\ResetIcon-384.png" />
     <EmbeddedResource Include="Resources\Icons\ResetIcon-96.png" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>copy "$(TargetPath)" "D:\Program Files\paint.net\Effects" /y
-if "$(ConfigurationName)" == "Debug" copy "$(TargetDir)$(TargetName).pdb" "D:\Program Files\Paint.NET\Effects" /y</PostBuildEvent>
-  </PropertyGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;D:\Program Files\paint.net\Effects&quot; /y" />
+  </Target>
 </Project>
