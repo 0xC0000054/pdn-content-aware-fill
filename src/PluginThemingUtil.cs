@@ -82,7 +82,7 @@ namespace ContentAwareFill
 
             Color backColor = root.BackColor;
 
-            Stack<Control> stack = new Stack<Control>();
+            Stack<Control> stack = new();
             stack.Push(root);
 
             while (stack.Count > 0)
@@ -130,7 +130,7 @@ namespace ContentAwareFill
 
             Color foreColor = root.ForeColor;
 
-            Stack<Control> stack = new Stack<Control>();
+            Stack<Control> stack = new();
             stack.Push(root);
 
             while (stack.Count > 0)

@@ -125,7 +125,7 @@ namespace ContentAwareFill
                 {
                     try
                     {
-                        using (ResynthesizerRunner resynthesizer = new ResynthesizerRunner(source, sourceBounds, selection))
+                        using (ResynthesizerRunner resynthesizer = new(source, sourceBounds, selection))
                         {
                             resynthesizer.SetParameters(token.SampleSize, token.SampleFrom, token.FillDirection);
 

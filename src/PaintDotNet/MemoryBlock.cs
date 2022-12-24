@@ -123,7 +123,7 @@ namespace ContentAwareFill
                 throw new ObjectDisposedException("MemoryBlock");
             }
 
-            MemoryBlock dupe = new MemoryBlock(this.length);
+            MemoryBlock dupe = new(this.length);
             CopyBlock(dupe, 0, this, 0, this.length);
             return dupe;
         }

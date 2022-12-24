@@ -106,7 +106,7 @@ namespace ContentAwareFill
 
         public MaskSurface Clone()
         {
-            MaskSurface surface = new MaskSurface(this.width, this.height);
+            MaskSurface surface = new(this.width, this.height);
             surface.CopySurface(this);
             return surface;
         }
@@ -209,7 +209,7 @@ namespace ContentAwareFill
             }
 
             Rectangle original = this.Bounds;
-            Rectangle sub = new Rectangle(x, y, windowWidth, windowHeight);
+            Rectangle sub = new(x, y, windowWidth, windowHeight);
             Rectangle clipped = Rectangle.Intersect(original, sub);
 
             if (clipped != sub)
@@ -220,7 +220,7 @@ namespace ContentAwareFill
 
             long offset = ((long)this.stride * (long)y) + ((long)x);
             long length = ((windowHeight - 1) * (long)this.stride) + (long)windowWidth;
-            MemoryBlock block = new MemoryBlock(this.scan0, offset, length);
+            MemoryBlock block = new(this.scan0, offset, length);
 
             return new MaskSurface(windowWidth, windowHeight, this.stride, block);
         }

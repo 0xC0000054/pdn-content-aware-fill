@@ -111,15 +111,15 @@ namespace ContentAwareFill
                         throw new InvalidOperationException("Unsupported SampleFrom enumeration value: " + this.sampleFrom.ToString());
                 }
 
-                ResynthesizerParameters resynthesizerParameters = new ResynthesizerParameters(false, false, matchContext, 0.0, 0.117, 16, 500);
+                ResynthesizerParameters resynthesizerParameters = new(false, false, matchContext, 0.0, 0.117, 16, 500);
 
-                using (Resynthesizer synth = new Resynthesizer(resynthesizerParameters,
-                                                               this.sourceSurface,
-                                                               this.destinationMask,
-                                                               this.sourceMask,
-                                                               expandedBounds,
-                                                               croppedSourceSize,
-                                                               progressCallback))
+                using (Resynthesizer synth = new(resynthesizerParameters,
+                                                 this.sourceSurface,
+                                                 this.destinationMask,
+                                                 this.sourceMask,
+                                                 expandedBounds,
+                                                 croppedSourceSize,
+                                                 progressCallback))
                 {
                     if (synth.ContentAwareFill(abortCallback))
                     {
@@ -197,7 +197,7 @@ namespace ContentAwareFill
 
             PdnRegion sampleRegion;
 
-            using (PdnGraphicsPath path = new PdnGraphicsPath())
+            using (PdnGraphicsPath path = new())
             {
                 path.FillMode = System.Drawing.Drawing2D.FillMode.Winding;
                 path.AddRectangles(expandedScans);
@@ -308,7 +308,7 @@ namespace ContentAwareFill
             }
 
 #if DEBUG
-            using (Bitmap image = new Bitmap(this.sourceMask.Width, this.sourceMask.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
+            using (Bitmap image = new(this.sourceMask.Width, this.sourceMask.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
             {
                 System.Drawing.Imaging.BitmapData data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height),
                                                                         System.Drawing.Imaging.ImageLockMode.WriteOnly, image.PixelFormat);

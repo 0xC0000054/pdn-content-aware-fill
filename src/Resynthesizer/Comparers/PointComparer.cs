@@ -27,12 +27,12 @@ namespace ContentAwareFill
 {
     internal abstract class PointComparer : IComparer<Point>
     {
-        private static readonly CartesianPointComparer lessCartesian = new CartesianPointComparer(false);
-        private static readonly CartesianPointComparer moreCartesian = new CartesianPointComparer(true);
-        private static readonly HorizontalPointComparer inwardHorizontal = new HorizontalPointComparer(false);
-        private static readonly HorizontalPointComparer outwardHorizontal = new HorizontalPointComparer(true);
-        private static readonly VerticalPointComparer inwardVertical = new VerticalPointComparer(false);
-        private static readonly VerticalPointComparer outwardVertical = new VerticalPointComparer(true);
+        private static readonly CartesianPointComparer lessCartesian = new(false);
+        private static readonly CartesianPointComparer moreCartesian = new(true);
+        private static readonly HorizontalPointComparer inwardHorizontal = new(false);
+        private static readonly HorizontalPointComparer outwardHorizontal = new(true);
+        private static readonly VerticalPointComparer inwardVertical = new(false);
+        private static readonly VerticalPointComparer outwardVertical = new(true);
 
         internal static PointComparer LessCartesian
         {

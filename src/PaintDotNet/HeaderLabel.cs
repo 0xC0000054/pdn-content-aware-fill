@@ -129,7 +129,7 @@ namespace ContentAwareFill
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            using (SolidBrush backBrush = new SolidBrush(this.BackColor))
+            using (SolidBrush backBrush = new(this.BackColor))
             {
                 e.Graphics.FillRectangle(backBrush, e.ClipRectangle);
             }
