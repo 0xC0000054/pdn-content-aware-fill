@@ -48,6 +48,7 @@
 using PaintDotNet;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Drawing;
 
 namespace ContentAwareFill
@@ -61,7 +62,7 @@ namespace ContentAwareFill
         private readonly ResynthesizerParameters parameters;
         private readonly Random random;
         private readonly Action<int> progressCallback;
-        private readonly ReadOnlyArray<ushort> diffTable;
+        private readonly ImmutableArray<ushort> diffTable;
 
 #pragma warning disable IDE0032 // Use auto property
         private Surface target;
@@ -76,9 +77,9 @@ namespace ContentAwareFill
         private PointIndexedArray<int> tried;
         private PointIndexedArray<bool> hasValue;
         private PointIndexedArray<Point> sourceOf;
-        private ReadOnlyList<Point> sortedOffsets;
-        private ReadOnlyList<Point> targetPoints;
-        private ReadOnlyList<Point> sourcePoints;
+        private ImmutableArray<Point> sortedOffsets;
+        private ImmutableArray<Point> targetPoints;
+        private ImmutableArray<Point> sourcePoints;
         private int targetTriesCount;
         private int totalTargets;
         private uint best;
@@ -205,11 +206,12 @@ namespace ContentAwareFill
             // The constructor handles the setup performed by prepare_target_sources.
             PrepareSourcePoints();
 
-            if (this.sourcePoints.Count == 0)
+            if (this.sourcePoints.Length == 0)
             {
                 throw new ResynthizerException(Properties.Resources.SourcePointsEmpty);
             }
-            if (this.targetPoints.Count == 0)
+
+            if (this.targetPoints.Length == 0)
             {
                 throw new ResynthizerException(Properties.Resources.TargetPointsEmpty);
             }
@@ -227,7 +229,7 @@ namespace ContentAwareFill
                     return false;
                 }
 
-                if (((float)betters.Value / this.targetPoints.Count) < ResynthesizerConstants.TerminateFraction)
+                if (((float)betters.Value / this.targetPoints.Length) < ResynthesizerConstants.TerminateFraction)
                 {
                     break;
                 }
@@ -245,9 +247,9 @@ namespace ContentAwareFill
                    this.sourceMask.GetPointUnchecked(point.X, point.Y) != MaskFullySelected;
         }
 
-        private static ReadOnlyArray<ushort> MakeDiffTable(ResynthesizerParameters parameters)
+        private static ImmutableArray<ushort> MakeDiffTable(ResynthesizerParameters parameters)
         {
-            ushort[] diffTable = new ushort[512];
+            ImmutableArray<ushort>.Builder diffTable = ImmutableArray.CreateBuilder<ushort>(512);
 
             double valueDivisor = NegLogCauchy(1.0 / parameters.SensitivityToOutliers);
 
@@ -255,12 +257,12 @@ namespace ContentAwareFill
             {
                 double value = NegLogCauchy(i / 256.0 / parameters.SensitivityToOutliers) / valueDivisor * ResynthesizerConstants.MaxWeight;
 
-                diffTable[256 + i] = (ushort)value;
+                diffTable.Insert(256 + i, (ushort)value);
                 // The original code populated a map diff table array that is used to when mapping between images.
                 // This is not required for the content aware fill functionality.
             }
 
-            return new ReadOnlyArray<ushort>(diffTable);
+            return diffTable.MoveToImmutable();
         }
 
         private static double NegLogCauchy(double d)
@@ -272,7 +274,7 @@ namespace ContentAwareFill
         {
             this.neighborCount = 0;
 
-            for (int i = 0; i < this.sortedOffsets.Count; i++)
+            for (int i = 0; i < this.sortedOffsets.Length; i++)
             {
                 Point offset = this.sortedOffsets[i];
                 Point neighborPoint = position.Add(offset);
@@ -292,9 +294,9 @@ namespace ContentAwareFill
 
         private void PrepareRepetitionParameters()
         {
-            this.repetitionParameters[0] = new RepetitionParameter(0, this.targetPoints.Count);
+            this.repetitionParameters[0] = new RepetitionParameter(0, this.targetPoints.Length);
 
-            this.totalTargets = this.targetPoints.Count;
+            this.totalTargets = this.targetPoints.Length;
             int n = this.totalTargets;
 
             for (int i = 1; i < ResynthesizerConstants.MaxPasses; i++)
@@ -312,7 +314,7 @@ namespace ContentAwareFill
 
             int length = ((2 * width) - 1) * ((2 * height) - 1);
 
-            List<Point> offsets = new List<Point>(length);
+            ImmutableArray<Point>.Builder offsets = ImmutableArray.CreateBuilder<Point>(length);
 
             for (int y = -height + 1; y < height; y++)
             {
@@ -324,7 +326,7 @@ namespace ContentAwareFill
 
             offsets.Sort(PointComparer.LessCartesian);
 
-            this.sortedOffsets = new ReadOnlyList<Point>(offsets);
+            this.sortedOffsets = offsets.MoveToImmutable();
         }
 
         private unsafe void PrepareTargetPoints(bool useContext)
@@ -346,7 +348,7 @@ namespace ContentAwareFill
                 }
             }
 
-            List<Point> points = new List<Point>(targetPointsSize);
+            ImmutableArray<Point>.Builder points = ImmutableArray.CreateBuilder<Point>(targetPointsSize);
 
             if (targetPointsSize > 0)
             {
@@ -371,15 +373,15 @@ namespace ContentAwareFill
                     }
                 }
 
-                points = TargetPointSorter.Sort(points, this.random, this.parameters.MatchContext);
+                TargetPointSorter.Sort(points, this.random, this.parameters.MatchContext);
             }
 
-            this.targetPoints = new ReadOnlyList<Point>(points);
+            this.targetPoints = points.MoveToImmutable();
         }
 
         private unsafe void PrepareSourcePoints()
         {
-            List<Point> points = new List<Point>(this.source.Width * this.source.Height);
+            int sourcePointsSize = 0;
 
             for (int y = 0; y < this.source.Height; y++)
             {
@@ -390,7 +392,7 @@ namespace ContentAwareFill
                 {
                     if (*mask == MaskFullySelected && src->A > 0)
                     {
-                        points.Add(new Point(x, y));
+                        sourcePointsSize++;
                     }
 
                     src++;
@@ -398,12 +400,34 @@ namespace ContentAwareFill
                 }
             }
 
-            this.sourcePoints = new ReadOnlyList<Point>(points);
+            ImmutableArray<Point>.Builder points = ImmutableArray.CreateBuilder<Point>(sourcePointsSize);
+
+            if (sourcePointsSize > 0)
+            {
+                for (int y = 0; y < this.source.Height; y++)
+                {
+                    ColorBgra* src = this.source.GetRowPointerUnchecked(y);
+                    byte* mask = this.sourceMask.GetRowAddressUnchecked(y);
+
+                    for (int x = 0; x < this.source.Width; x++)
+                    {
+                        if (*mask == MaskFullySelected && src->A > 0)
+                        {
+                            points.Add(new Point(x, y));
+                        }
+
+                        src++;
+                        mask++;
+                    }
+                }
+            }
+
+            this.sourcePoints = points.MoveToImmutable();
         }
 
         private Point RandomSourcePoint()
         {
-            int index = this.random.Next(0, this.sourcePoints.Count);
+            int index = this.random.Next(0, this.sourcePoints.Length);
 
             return this.sourcePoints[index];
         }

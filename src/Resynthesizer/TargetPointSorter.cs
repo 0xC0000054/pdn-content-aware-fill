@@ -47,6 +47,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel;
 using System.Drawing;
 
@@ -54,40 +55,38 @@ namespace ContentAwareFill
 {
     internal static class TargetPointSorter
     {
-        internal static List<Point> Sort(List<Point> points, Random random, MatchContextType matchContextType)
+        internal static void Sort(ImmutableArray<Point>.Builder points, Random random, MatchContextType matchContextType)
         {
             switch (matchContextType)
             {
                 case MatchContextType.None:
                 case MatchContextType.Random:
-                    points = OrderTargetPointsRandom(points, random);
+                    OrderTargetPointsRandom(points, random);
                     break;
                 case MatchContextType.InwardConcentric:
-                    points = OrderTargetPointsRandomDirectional(points, random, PointComparer.CreateInwardConcentric(points));
+                    OrderTargetPointsRandomDirectional(points, random, PointComparer.CreateInwardConcentric(points));
                     break;
                 case MatchContextType.InwardHorizontal:
-                    points = OrderTargetPointsRandomDirectional(points, random, PointComparer.InwardHorizontal);
+                    OrderTargetPointsRandomDirectional(points, random, PointComparer.InwardHorizontal);
                     break;
                 case MatchContextType.InwardVertical:
-                    points = OrderTargetPointsRandomDirectional(points, random, PointComparer.InwardVertical);
+                    OrderTargetPointsRandomDirectional(points, random, PointComparer.InwardVertical);
                     break;
                 case MatchContextType.OutwardConcentric:
-                    points = OrderTargetPointsRandomDirectional(points, random, PointComparer.CreateOutwardConcentric(points));
+                    OrderTargetPointsRandomDirectional(points, random, PointComparer.CreateOutwardConcentric(points));
                     break;
                 case MatchContextType.OutwardHorizontal:
-                    points = OrderTargetPointsRandomDirectional(points, random, PointComparer.OutwardHorizontal);
+                    OrderTargetPointsRandomDirectional(points, random, PointComparer.OutwardHorizontal);
                     break;
                 case MatchContextType.OutwardVertical:
-                    points = OrderTargetPointsRandomDirectional(points, random, PointComparer.OutwardVertical);
+                    OrderTargetPointsRandomDirectional(points, random, PointComparer.OutwardVertical);
                     break;
                 default:
                     throw new InvalidEnumArgumentException(nameof(matchContextType), (int)matchContextType, typeof(MatchContextType));
             }
-
-            return points;
         }
 
-        private static List<Point> OrderTargetPointsRandom(List<Point> points, Random random)
+        private static void OrderTargetPointsRandom(ImmutableArray<Point>.Builder points, Random random)
         {
             int count = points.Count;
 
@@ -95,35 +94,27 @@ namespace ContentAwareFill
             {
                 int j = random.Next(0, count);
 
-                Point temp = points[i];
-                points[i] = points[j];
-                points[j] = temp;
+                (points[j], points[i]) = (points[i], points[j]);
             }
-
-            return points;
         }
 
-        private static List<Point> TargetPointsToOffsets(List<Point> points, Point center)
+        private static void TargetPointsToOffsets(ImmutableArray<Point>.Builder points, Point center)
         {
             for (int i = 0; i < points.Count; i++)
             {
                 points[i] = points[i].Subtract(center);
             }
-
-            return points;
         }
 
-        private static List<Point> TargetPointsFromOffsets(List<Point> points, Point center)
+        private static void TargetPointsFromOffsets(ImmutableArray<Point>.Builder points, Point center)
         {
             for (int i = 0; i < points.Count; i++)
             {
                 points[i] = points[i].Add(center);
             }
-
-            return points;
         }
 
-        private static List<Point> RandomizeBandsTargetPoints(List<Point> points, Random random)
+        private static void RandomizeBandsTargetPoints(ImmutableArray<Point>.Builder points, Random random)
         {
             int last = points.Count - 1;
             int halfBand = (int)(points.Count * ResynthesizerConstants.BandFraction);
@@ -136,25 +127,21 @@ namespace ContentAwareFill
 
                 int j = bandStart + random.Next(0, bandSize);
 
-                Point temp = points[i];
-                points[i] = points[j];
-                points[j] = temp;
+                (points[j], points[i]) = (points[i], points[j]);
             }
-
-            return points;
         }
 
-        private static List<Point> OrderTargetPointsRandomDirectional(List<Point> points, Random random, IComparer<Point> pointComparer)
+        private static void OrderTargetPointsRandomDirectional(ImmutableArray<Point>.Builder points, Random random, IComparer<Point> pointComparer)
         {
             Point center = PointCollectionUtil.GetCenter(points);
 
-            points = TargetPointsToOffsets(points, center);
+            TargetPointsToOffsets(points, center);
 
             points.Sort(pointComparer);
 
-            points = TargetPointsFromOffsets(points, center);
+            TargetPointsFromOffsets(points, center);
 
-            return RandomizeBandsTargetPoints(points, random);
+            RandomizeBandsTargetPoints(points, random);
         }
     }
 }
