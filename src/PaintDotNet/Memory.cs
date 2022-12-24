@@ -175,7 +175,7 @@ namespace ContentAwareFill
         /// <param name="length">The number of bytes to copy</param>
         public static void Copy(void *dst, void *src, ulong length)
         {
-            SafeNativeMethods.memcpy(dst, src, new UIntPtr(length));
+            NativeMemory.Copy(src, dst, checked((nuint)length));
         }
 
         /// <summary>
@@ -186,7 +186,7 @@ namespace ContentAwareFill
         /// <param name="length">The number of bytes to set to zero.</param>
         public static void SetToZero(void* dst, ulong length)
         {
-            SafeNativeMethods.memset(dst, 0, new UIntPtr(length));
+            NativeMemory.Clear(dst, checked((nuint)length));
         }
     }
 }
