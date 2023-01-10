@@ -33,6 +33,8 @@ namespace ContentAwareFill
             AvailableIcons = new ValueTuple<int, string>[]
             {
                 ValueTuple.Create(96, "Resources.Icons.ContentAwareFill-96.png"),
+                ValueTuple.Create(120, "Resources.Icons.ContentAwareFill-120.png"),
+                ValueTuple.Create(144, "Resources.Icons.ContentAwareFill-144.png"),
                 ValueTuple.Create(192, "Resources.Icons.ContentAwareFill-192.png"),
                 ValueTuple.Create(384, "Resources.Icons.ContentAwareFill-384.png"),
             };

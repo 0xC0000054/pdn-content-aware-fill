@@ -3,8 +3,7 @@
 A [Paint.NET](http://www.getpaint.net) Effect plugin that replaces the contents of the selection with pixels that are the closest match to the areas outside the selection.   
 This is often called 'content aware fill'.   
 
-This plugin is based on the GIMP [Resynthesizer](https://github.com/bootchk/resynthesizer) plugin.  
-Some icons are from or based on those in the [Fugue](http://p.yusukekamiyamane.com/) icon set by Yusuke Kamiyamane.
+This plugin is based on the GIMP [Resynthesizer](https://github.com/bootchk/resynthesizer) plugin.
 
 
 ##  How to install the plugin
