@@ -2,7 +2,7 @@
 *  This file is part of pdn-content-aware-fill, A Resynthesizer-based
 *  content aware fill Effect plug-in for Paint.NET.
 *
-*  Copyright (C) 2018, 2020, 2021, 2022 Nicholas Hayes
+*  Copyright (C) 2018, 2020, 2021, 2022, 2023 Nicholas Hayes
 *
 *  This program is free software; you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ using System.Runtime.Versioning;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("null54")]
 [assembly: AssemblyProduct("ContentAwareFill")]
-[assembly: AssemblyCopyright("Copyright © 2022 Nicholas Hayes (aka null54)")]
+[assembly: AssemblyCopyright("Copyright © 2023 Nicholas Hayes (aka null54)")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
