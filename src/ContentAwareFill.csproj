@@ -19,6 +19,8 @@
     <Compile Update="PaintDotNet\HeaderLabel.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\Icons\ContentAwareFill-120.png" />
+    <EmbeddedResource Include="Resources\Icons\ContentAwareFill-144.png" />
     <EmbeddedResource Include="Resources\Icons\ContentAwareFill-192.png" />
     <EmbeddedResource Include="Resources\Icons\ContentAwareFill-384.png" />
     <EmbeddedResource Include="Resources\Icons\ContentAwareFill-96.png" />
