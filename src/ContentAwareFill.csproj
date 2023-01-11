@@ -30,34 +30,34 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="PaintDotNet.Base">
-      <HintPath>..\..\..\..\..\..\..\paint.net 5.0\PaintDotNet.Base.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files\paint.net\PaintDotNet.Base.dll</HintPath>
     </Reference>
     <Reference Include="PaintDotNet.ComponentModel">
-      <HintPath>..\..\..\..\..\..\..\paint.net 5.0\PaintDotNet.ComponentModel.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files\paint.net\PaintDotNet.ComponentModel.dll</HintPath>
     </Reference>
     <Reference Include="PaintDotNet.Core">
-      <HintPath>..\..\..\..\..\..\..\paint.net 5.0\PaintDotNet.Core.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files\paint.net\PaintDotNet.Core.dll</HintPath>
     </Reference>
     <Reference Include="PaintDotNet.Effects.Core">
-      <HintPath>..\..\..\..\..\..\..\paint.net 5.0\PaintDotNet.Effects.Core.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files\paint.net\PaintDotNet.Effects.Core.dll</HintPath>
     </Reference>
     <Reference Include="PaintDotNet.Framework">
-      <HintPath>..\..\..\..\..\..\..\paint.net 5.0\PaintDotNet.Framework.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files\paint.net\PaintDotNet.Framework.dll</HintPath>
     </Reference>
     <Reference Include="PaintDotNet.Fundamentals">
-      <HintPath>..\..\..\..\..\..\..\paint.net 5.0\PaintDotNet.Fundamentals.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files\paint.net\PaintDotNet.Fundamentals.dll</HintPath>
     </Reference>
     <Reference Include="PaintDotNet.ObjectModel">
-      <HintPath>..\..\..\..\..\..\..\paint.net 5.0\PaintDotNet.ObjectModel.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files\paint.net\PaintDotNet.ObjectModel.dll</HintPath>
     </Reference>
     <Reference Include="PaintDotNet.Primitives">
-      <HintPath>..\..\..\..\..\..\..\paint.net 5.0\PaintDotNet.Primitives.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files\paint.net\PaintDotNet.Primitives.dll</HintPath>
     </Reference>
     <Reference Include="PaintDotNet.Windows">
-      <HintPath>..\..\..\..\..\..\..\paint.net 5.0\PaintDotNet.Windows.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files\paint.net\PaintDotNet.Windows.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;D:\paint.net 5.0\Effects&quot; /y" />
+    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;D:\Program Files\paint.net\Effects&quot; /y" />
   </Target>
 </Project>
