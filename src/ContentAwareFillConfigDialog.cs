@@ -183,12 +183,7 @@ namespace ContentAwareFill
 
         private void UpdateResetButtonIconForDpi()
         {
-            int dpi = 96;
-
-            using (Graphics graphics = this.resetButton.CreateGraphics())
-            {
-                dpi = (int)graphics.DpiX;
-            }
+            int dpi = this.DeviceDpi;
 
             if (dpi > 96)
             {
