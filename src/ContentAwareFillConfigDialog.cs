@@ -23,6 +23,7 @@
 using ContentAwareFill.Properties;
 using PaintDotNet;
 using PaintDotNet.Effects;
+using PaintDotNet.Imaging;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -34,7 +35,7 @@ namespace ContentAwareFill
         "Style",
         "IDE1006:Naming Styles",
         Justification = "The VS designer generates methods that start with a lower case letter.")]
-    internal partial class ContentAwareFillConfigDialog : EffectConfigDialog
+    internal partial class ContentAwareFillConfigDialog : EffectConfigForm<ContentAwareFillEffect, ContentAwareFillConfigToken>
     {
         private int ignoreTokenChangedEventCount;
         private bool formClosePending;
@@ -42,7 +43,7 @@ namespace ContentAwareFill
         private bool selectionValid;
         private bool ranFirstAutoRender;
         private bool setRenderingStatusText;
-        private Surface output;
+        private IBitmap<ColorBgra32> output;
         private ResynthesizerRunner resynthesizer;
 
         public ContentAwareFillConfigDialog()
@@ -56,8 +57,12 @@ namespace ContentAwareFill
             this.ranFirstAutoRender = false;
             this.output = null;
             this.resynthesizer = null;
-            PluginThemingUtil.EnableEffectDialogTheme(this);
+
+            PluginThemingUtil.UpdateControlBackColor(this);
+            PluginThemingUtil.UpdateControlForeColor(this);
         }
+
+        protected override bool UseAppThemeColorsDefault => true;
 
         protected override void OnBackColorChanged(EventArgs e)
         {
@@ -89,9 +94,9 @@ namespace ContentAwareFill
             base.OnFormClosing(e);
         }
 
-        protected override void OnLoad(EventArgs e)
+        protected override void OnLoading()
         {
-            base.OnLoad(e);
+            base.OnLoading();
 
             UpdateResetButtonIconForDpi();
         }
@@ -103,8 +108,7 @@ namespace ContentAwareFill
             // This plugin does not support processing a selection of the whole image, it needs some
             // unselected pixels to replace the contents of the selected area.
             // When there is no active selection Paint.NET acts as if the whole image/layer is selected.
-            if (ContentAwareFillEffect.IsWholeImageSelected(this.EnvironmentParameters.GetSelectionAsPdnRegion(),
-                                                            this.EnvironmentParameters.SourceSurface.Bounds))
+            if (ContentAwareFillEffect.IsWholeImageSelected(this.Environment))
             {
                 if (ShowMessage(Properties.Resources.WholeImageSelected, MessageBoxIcon.None) == DialogResult.OK)
                 {
@@ -146,19 +150,17 @@ namespace ContentAwareFill
             }
         }
 
-        protected override void InitialInitToken()
+        protected override EffectConfigToken OnCreateInitialToken()
         {
-            this.theEffectToken = new ContentAwareFillConfigToken(50,
-                                                                  SampleSource.Sides,
-                                                                  FillDirection.InwardToCenter,
-                                                                  true,
-                                                                  null);
+            return new ContentAwareFillConfigToken(50,
+                                                   SampleSource.Sides,
+                                                   FillDirection.InwardToCenter,
+                                                   true,
+                                                   null);
         }
 
-        protected override void InitDialogFromToken(EffectConfigToken effectTokenCopy)
+        protected override void OnUpdateDialogFromToken(ContentAwareFillConfigToken token)
         {
-            ContentAwareFillConfigToken token = (ContentAwareFillConfigToken)effectTokenCopy;
-
             // Call FinishTokenUpdate after the controls are initialized.
             PushIgnoreTokenChangedEvents();
 
@@ -170,10 +172,8 @@ namespace ContentAwareFill
             PopIgnoreTokenChangedEvents();
         }
 
-        protected override void InitTokenFromDialog()
+        protected override void OnUpdateTokenFromDialog(ContentAwareFillConfigToken token)
         {
-            ContentAwareFillConfigToken token = (ContentAwareFillConfigToken)this.theEffectToken;
-
             token.SampleSize = this.sampleSizeTrackBar.Value;
             token.SampleFrom =  (SampleSource)this.sampleFromCombo.SelectedIndex;
             token.FillDirection = (FillDirection)this.fillDirectionCombo.SelectedIndex;
@@ -293,18 +293,7 @@ namespace ContentAwareFill
             }
             else
             {
-                if (this.resynthesizer is null)
-                {
-                    ContentAwareFillEffect effect = (ContentAwareFillEffect)this.Effect;
-
-                    Surface source = effect.EnvironmentParameters.SourceSurface;
-                    Rectangle sourceBounds = source.Bounds;
-                    PdnRegion selection = effect.EnvironmentParameters.GetSelectionAsPdnRegion();
-
-                    this.resynthesizer = new ResynthesizerRunner(source,
-                                                                 sourceBounds,
-                                                                 selection);
-                }
+                this.resynthesizer ??= new ResynthesizerRunner(this.Environment, this.Services);
 
                 this.setRenderingStatusText = false;
                 this.resynthesizer.SetParameters(this.sampleSizeTrackBar.Value,
@@ -319,7 +308,7 @@ namespace ContentAwareFill
         {
             BackgroundWorker worker = (BackgroundWorker)sender;
 
-            Surface output = this.resynthesizer.Run(() => worker.CancellationPending, worker.ReportProgress);
+            IBitmap<ColorBgra32> output = this.resynthesizer.Run(() => worker.CancellationPending, worker.ReportProgress);
 
             if (output != null)
             {
@@ -372,8 +361,8 @@ namespace ContentAwareFill
 
                     if (!e.Cancelled)
                     {
-                        this.output = (Surface)e.Result;
-                        FinishTokenUpdate();
+                        this.output = (IBitmap<ColorBgra32>)e.Result;
+                        UpdateTokenFromDialog();
                     }
 
                     if (this.formClosePending)

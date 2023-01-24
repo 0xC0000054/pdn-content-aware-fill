@@ -20,8 +20,8 @@
 *
 */
 
-using PaintDotNet;
 using PaintDotNet.Effects;
+using PaintDotNet.Imaging;
 
 namespace ContentAwareFill
 {
@@ -51,7 +51,7 @@ namespace ContentAwareFill
             set;
         }
 
-        public Surface Output
+        public IBitmap<ColorBgra32> Output
         {
             get;
             set;
@@ -61,7 +61,7 @@ namespace ContentAwareFill
                                            SampleSource sampleFrom,
                                            FillDirection fillDirection,
                                            bool renderAutomatically,
-                                           Surface output)
+                                           IBitmap<ColorBgra32> output)
         {
             this.SampleSize = sampleSize;
             this.SampleFrom = sampleFrom;

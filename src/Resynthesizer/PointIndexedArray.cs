@@ -20,6 +20,7 @@
 *
 */
 
+using PaintDotNet.Rendering;
 using System.Drawing;
 
 namespace ContentAwareFill
@@ -29,10 +30,10 @@ namespace ContentAwareFill
         private T[] items;
         private readonly int stride;
 
-        public PointIndexedArray(int width, int height, T defaultValue)
+        public PointIndexedArray(SizeInt32 size, T defaultValue)
         {
-            this.items = new T[width * height];
-            this.stride = width;
+            this.items = new T[size.Width * size.Height];
+            this.stride = size.Width;
 
             for (int i = 0; i < this.items.Length; i++)
             {

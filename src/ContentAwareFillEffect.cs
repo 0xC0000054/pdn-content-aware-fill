@@ -22,6 +22,8 @@
 
 using PaintDotNet;
 using PaintDotNet.Effects;
+using PaintDotNet.Imaging;
+using PaintDotNet.Rendering;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -29,9 +31,11 @@ using System.Windows.Forms;
 namespace ContentAwareFill
 {
     [PluginSupportInfo(typeof(PluginSupportInfo))]
-    public sealed class ContentAwareFillEffect : Effect
+    public sealed class ContentAwareFillEffect : BitmapEffect<ContentAwareFillConfigToken>
     {
         private bool repeatEffect;
+        private IBitmap<ColorBgra32> output;
+        private IBitmapSource<ColorBgra32> sourceBitmap;
 
         internal static string StaticName
         {
@@ -49,12 +53,12 @@ namespace ContentAwareFill
             }
         }
 
-        public ContentAwareFillEffect() : base(StaticName, StaticImage, "Selection", new EffectOptions { Flags = EffectFlags.Configurable })
+        public ContentAwareFillEffect() : base(StaticName, StaticImage, "Selection", new BitmapEffectOptions { IsConfigurable = true })
         {
             this.repeatEffect = true;
         }
 
-        public override EffectConfigDialog CreateConfigDialog()
+        protected override IEffectConfigForm OnCreateConfigForm()
         {
             this.repeatEffect = false;
 
@@ -64,30 +68,25 @@ namespace ContentAwareFill
         /// <summary>
         /// Determines whether the whole image is selected.
         /// </summary>
-        /// <param name="selection">The selection.</param>
-        /// <param name="imageBounds">The image bounds.</param>
+        /// <param name="environment">The effect environment.</param>
         /// <returns>
         ///   <c>true</c> if the whole image is selected; otherwise, <c>false</c>.
         /// </returns>
-        /// <exception cref="ArgumentNullException"><paramref name="selection"/> is null.</exception>
-        internal static bool IsWholeImageSelected(PdnRegion selection, Rectangle imageBounds)
+        /// <exception cref="ArgumentNullException"><paramref name="environment"/> is null.</exception>
+        internal static bool IsWholeImageSelected(IEffectEnvironment environment)
         {
-            if (selection is null)
-            {
-                ExceptionUtil.ThrowArgumentNullException(nameof(selection));
-            }
+            ArgumentNullException.ThrowIfNull(environment);
 
-            bool wholeImageSelected = selection.GetBoundsInt() == imageBounds;
+            RectInt32 documentBounds = new(Point2Int32.Zero, environment.Document.Size);
+
+            bool wholeImageSelected = environment.Selection.RenderBounds == documentBounds;
 
             if (wholeImageSelected)
             {
-                Rectangle[] scans = selection.GetRegionScansReadOnlyInt();
-                int imageWidth = imageBounds.Width;
+                int imageWidth = documentBounds.Width;
 
-                for (int i = 0; i < scans.Length; i++)
+                foreach (RectInt32 scan in environment.Selection.RenderScans)
                 {
-                    Rectangle scan = scans[i];
-
                     // The scan rectangle height is not checked because Paint.NET
                     // may split a tall rectangle into smaller chunks.
                     if (scan.X > 0 || scan.Width < imageWidth)
@@ -102,30 +101,26 @@ namespace ContentAwareFill
             return wholeImageSelected;
         }
 
-        protected override void OnSetRenderInfo(EffectConfigToken parameters, RenderArgs dstArgs, RenderArgs srcArgs)
+        protected override void OnSetToken(ContentAwareFillConfigToken token)
         {
             if (this.repeatEffect)
             {
-                ContentAwareFillConfigToken token = (ContentAwareFillConfigToken)parameters;
-
                 if (token.Output != null)
                 {
                     token.Output.Dispose();
                     token.Output = null;
                 }
 
-                Surface source = srcArgs.Surface;
-                Rectangle sourceBounds = source.Bounds;
-                PdnRegion selection = this.EnvironmentParameters.GetSelectionAsPdnRegion();
+                IBitmapEffectEnvironment environment = this.Environment;
 
                 // This plugin does not support processing a selection of the whole image, it needs some unselected pixels
                 // to replace the contents of the selected area.
                 // When there is no active selection Paint.NET acts as if the whole image/layer is selected.
-                if (!IsWholeImageSelected(selection, source.Bounds))
+                if (!IsWholeImageSelected(this.Environment))
                 {
                     try
                     {
-                        using (ResynthesizerRunner resynthesizer = new(source, sourceBounds, selection))
+                        using (ResynthesizerRunner resynthesizer = new(this.Environment, this.Services))
                         {
                             resynthesizer.SetParameters(token.SampleSize, token.SampleFrom, token.FillDirection);
 
@@ -134,25 +129,41 @@ namespace ContentAwareFill
                     }
                     catch (ResynthizerException ex)
                     {
-                        MessageBox.Show(ex.Message, this.Name, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, 0);
+                        MessageBox.Show(ex.Message, StaticName, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, 0);
                     }
                 }
             }
 
-            base.OnSetRenderInfo(parameters, dstArgs, srcArgs);
-        }
-
-        public override void Render(EffectConfigToken parameters, RenderArgs dstArgs, RenderArgs srcArgs, Rectangle[] rois, int startIndex, int length)
-        {
-            ContentAwareFillConfigToken token = (ContentAwareFillConfigToken)parameters;
-
             if (token.Output != null)
             {
-                dstArgs.Surface.CopySurface(token.Output, rois, startIndex, length);
+                this.output ??= this.Environment.ImagingFactory.CreateBitmap<ColorBgra32>(this.Environment.Document.Size);
+
+                BitmapUtil.CopyFromBitmapSource(token.Output, this.output);
             }
             else
             {
-                dstArgs.Surface.CopySurface(srcArgs.Surface, rois, startIndex, length);
+                this.sourceBitmap ??= this.Environment.GetSourceBitmapBgra32();
+            }
+
+            base.OnSetToken(token);
+        }
+
+        protected override unsafe void OnRender(IBitmapEffectOutput output)
+        {
+            if (this.output != null)
+            {
+                using (IBitmapLock<ColorBgra32> src = this.output.Lock(output.Bounds, BitmapLockOptions.Read))
+                using (IBitmapLock<ColorBgra32> dst = output.LockBgra32())
+                {
+                    src.AsRegionPtr().CopyTo(dst.AsRegionPtr());
+                }
+            }
+            else
+            {
+                using (IBitmapLock<ColorBgra32> dst = output.LockBgra32())
+                {
+                    sourceBitmap.CopyPixels(dst.Buffer, dst.BufferStride, dst.BufferSize, output.Bounds);
+                }
             }
         }
     }

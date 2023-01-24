@@ -58,6 +58,9 @@
     <Reference Include="PaintDotNet.Windows">
       <HintPath>..\..\..\..\..\..\..\Program Files\paint.net\PaintDotNet.Windows.dll</HintPath>
     </Reference>
+    <Reference Include="PaintDotNet.Windows.Core">
+      <HintPath>..\..\..\..\..\..\..\Program Files\paint.net\PaintDotNet.Windows.Core.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="copy &quot;$(TargetPath)&quot; &quot;D:\Program Files\paint.net\Effects&quot; /y" />

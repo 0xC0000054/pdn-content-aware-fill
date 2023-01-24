@@ -20,18 +20,32 @@
 *
 */
 
+using PaintDotNet.Imaging;
+using System.Diagnostics;
+using System.IO;
+
 namespace ContentAwareFill
 {
-    internal static class NativeConstants
+    internal static class DebugUtil
     {
-        public const int PAGE_READWRITE = 4;
+        [Conditional("DEBUG")]
+        public static void SaveBitmapAsPng(string path, IBitmapSource bitmap, IImagingFactory imagingFactory)
+        {
+            using (FileStream fs = new(path, FileMode.Create, FileAccess.Write))
+            using (IBitmapEncoder encoder = imagingFactory.CreateEncoder(fs, ContainerFormats.Png))
+            {
+                IBitmapFrameEncode bitmapFrame = encoder.CreateNewFrame(out var encoderOptions);
 
-        public const uint MEM_COMMIT = 0x1000;
-        public const uint MEM_RESERVE = 0x2000;
-        public const uint MEM_RELEASE = 0x8000;
+                bitmapFrame.Initialize(encoderOptions);
+                bitmapFrame.SetSize(bitmap.Size);
+                bitmapFrame.SetPixelFormat(bitmap.PixelFormat);
+                bitmapFrame.SetResolution(bitmap.Resolution);
 
-        public const uint HEAP_ZERO_MEMORY = 8;
+                bitmapFrame.WriteSource(bitmap);
 
-        public const int HeapCompatibilityInformation = 0;
+                bitmapFrame.Commit();
+                encoder.Commit();
+            }
+        }
     }
 }

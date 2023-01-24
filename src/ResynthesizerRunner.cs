@@ -21,45 +21,52 @@
 */
 
 using PaintDotNet;
+using PaintDotNet.Direct2D1;
+using PaintDotNet.Effects;
+using PaintDotNet.Imaging;
+using PaintDotNet.Rendering;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 
 namespace ContentAwareFill
 {
     internal sealed class ResynthesizerRunner : Disposable
     {
-        private MaskSurface sourceMask;
-        private MaskSurface destinationMask;
+        private IBitmap<ColorAlpha8> sourceMask;
+        private IBitmap<ColorAlpha8> targetMask;
         private int sampleSize;
         private SampleSource sampleFrom;
         private FillDirection fillDirection;
-        private readonly Surface sourceSurface;
-        private readonly Rectangle sourceBounds;
-        private readonly PdnRegion selection;
+        private readonly IEffectEnvironment environment;
+        private readonly IServiceProvider serviceProvider;
+#pragma warning disable CA2213 // Disposable fields should be disposed
+        private readonly IImagingFactory imagingFactory;
+#pragma warning restore CA2213 // Disposable fields should be disposed
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ResynthesizerRunner"/> class.
         /// </summary>
-        /// <param name="source">The source.</param>
-        /// <param name="sourceBounds">The source bounds.</param>
-        /// <param name="selection">The selection.</param>
+        /// <param name="environment">The source.</param>
+        /// <param name="serviceProvider">The service provider.</param>
         /// <exception cref="ArgumentNullException">
-        /// <paramref name="source"/> is null.
+        /// <paramref name="environment"/> is null.
         /// or
-        /// <paramref name="selection"/> is null.
+        /// <paramref name="serviceProvider"/> is null.
         /// </exception>
-        public ResynthesizerRunner(Surface source,
-                                   Rectangle sourceBounds,
-                                   PdnRegion selection)
+        public ResynthesizerRunner(IEffectEnvironment environment, IServiceProvider serviceProvider)
         {
+            ArgumentNullException.ThrowIfNull(environment);
+            ArgumentNullException.ThrowIfNull(serviceProvider);
+
             this.sourceMask = null;
-            this.destinationMask = null;
+            this.targetMask = null;
             this.sampleSize = 50;
             this.sampleFrom = SampleSource.Sides;
             this.fillDirection = FillDirection.InwardToCenter;
-            this.sourceSurface = source ?? throw new ArgumentNullException(nameof(source));
-            this.sourceBounds = sourceBounds;
-            this.selection = selection ?? throw new ArgumentNullException(nameof(selection));
+            this.environment = environment;
+            this.serviceProvider = serviceProvider;
+            this.imagingFactory = serviceProvider.GetService<IImagingFactory>();
         }
 
         /// <summary>
@@ -72,59 +79,47 @@ namespace ContentAwareFill
         /// </returns>
         /// <exception cref="ArgumentNullException"><paramref name="abortCallback"/> is null.</exception>
         /// <exception cref="InvalidOperationException">Unsupported SampleFrom enumeration value.</exception>
-        public Surface Run(Func<bool> abortCallback, Action<int> progressCallback = null)
+        public IBitmap<ColorBgra32> Run(Func<bool> abortCallback, Action<int> progressCallback = null)
         {
             if (abortCallback is null)
             {
                 throw new ArgumentNullException(nameof(abortCallback));
             }
 
-            Surface output = null;
+            IBitmap<ColorBgra32> output = null;
 
-            using (PdnRegion sampleArea = CreateSampleRegion())
+            Rectangle expandedBounds = RenderSourceMask();
+            RectInt32 originalBounds = this.environment.Selection.RenderBounds;
+
+            if (this.targetMask is null)
             {
-                RenderSourceMask(sampleArea);
-                if (this.destinationMask is null)
+                this.targetMask = BitmapUtil.CreateFromBitmapSource(this.imagingFactory, this.environment.Selection.MaskBitmap);
+            }
+
+            Size croppedSourceSize = this.sampleFrom switch
+            {
+                SampleSource.Sides => new Size(expandedBounds.X + expandedBounds.Width, originalBounds.Y + originalBounds.Height),
+                SampleSource.TopAndBottom => new Size(originalBounds.X + originalBounds.Width, expandedBounds.Y + expandedBounds.Height),
+                SampleSource.AllAround => new Size(expandedBounds.X + expandedBounds.Width, expandedBounds.Y + expandedBounds.Height),
+                _ => throw new InvalidOperationException("Unsupported SampleFrom enumeration value: " + this.sampleFrom.ToString()),
+            };
+
+            MatchContextType matchContext = GetMatchContextType();
+
+            ResynthesizerParameters resynthesizerParameters = new(false, false, matchContext, 0.0, 0.117, 16, 500);
+
+            using (Resynthesizer synth = new(resynthesizerParameters,
+                                             this.environment.GetSourceBitmapBgra32(),
+                                             this.sourceMask,
+                                             expandedBounds,
+                                             croppedSourceSize,
+                                             this.targetMask,
+                                             progressCallback,
+                                             this.imagingFactory))
+            {
+                if (synth.ContentAwareFill(abortCallback))
                 {
-                    CreateDestinationMask();
-                }
-
-                MatchContextType matchContext = GetMatchContextType();
-
-                Rectangle expandedBounds = sampleArea.GetBoundsInt();
-                Rectangle originalBounds = this.selection.GetBoundsInt();
-
-                Size croppedSourceSize;
-
-                switch (this.sampleFrom)
-                {
-                    case SampleSource.Sides:
-                        croppedSourceSize = new Size(expandedBounds.X + expandedBounds.Width, originalBounds.Y + originalBounds.Height);
-                        break;
-                    case SampleSource.TopAndBottom:
-                        croppedSourceSize = new Size(originalBounds.X + originalBounds.Width, expandedBounds.Y + expandedBounds.Height);
-                        break;
-                    case SampleSource.AllAround:
-                        croppedSourceSize = new Size(expandedBounds.X + expandedBounds.Width, expandedBounds.Y + expandedBounds.Height);
-                        break;
-                    default:
-                        throw new InvalidOperationException("Unsupported SampleFrom enumeration value: " + this.sampleFrom.ToString());
-                }
-
-                ResynthesizerParameters resynthesizerParameters = new(false, false, matchContext, 0.0, 0.117, 16, 500);
-
-                using (Resynthesizer synth = new(resynthesizerParameters,
-                                                 this.sourceSurface,
-                                                 this.destinationMask,
-                                                 this.sourceMask,
-                                                 expandedBounds,
-                                                 croppedSourceSize,
-                                                 progressCallback))
-                {
-                    if (synth.ContentAwareFill(abortCallback))
-                    {
-                        output = synth.Target.Clone();
-                    }
+                    output = BitmapUtil.CreateFromBitmapSource(this.imagingFactory, synth.Target);
                 }
             }
 
@@ -170,47 +165,11 @@ namespace ContentAwareFill
         {
             if (disposing)
             {
-                this.destinationMask?.Dispose();
+                this.targetMask?.Dispose();
                 this.sourceMask?.Dispose();
             }
 
             base.Dispose(disposing);
-        }
-
-        /// <summary>
-        /// Creates a <see cref="PdnRegion"/> representing the sample area.
-        /// </summary>
-        private PdnRegion CreateSampleRegion()
-        {
-            if (this.sampleSize < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(this.sampleSize), "The sample size cannot be negative.");
-            }
-
-            Rectangle[] expandedScans = this.selection.GetRegionScansInt();
-
-            for (int i = 0; i < expandedScans.Length; i++)
-            {
-                // Expand each scan rectangle by the specified number of pixels.
-                expandedScans[i].Inflate(this.sampleSize, this.sampleSize);
-            }
-
-            PdnRegion sampleRegion;
-
-            using (PdnGraphicsPath path = new())
-            {
-                path.FillMode = System.Drawing.Drawing2D.FillMode.Winding;
-                path.AddRectangles(expandedScans);
-
-                sampleRegion = new PdnRegion(path);
-            }
-
-            // Clip the expanded region to the surface bounds and exclude the original selection.
-            // Excluding the original selection prevents sampling from the area that is to be replaced.
-            sampleRegion.Intersect(this.sourceBounds);
-            sampleRegion.Exclude(this.selection);
-
-            return sampleRegion;
         }
 
         /// <summary>
@@ -253,89 +212,50 @@ namespace ContentAwareFill
             return MatchContextType.None;
         }
 
-        /// <summary>
-        /// Creates a <see cref="MaskSurface"/> for the destination.
-        /// </summary>
-        /// <returns>The mask for the destination.</returns>
-        private unsafe void CreateDestinationMask()
+        private unsafe RectInt32 RenderSourceMask()
         {
-            this.destinationMask = new MaskSurface(this.sourceSurface.Width, this.sourceSurface.Height);
+            this.sourceMask ??= this.imagingFactory.CreateBitmap<ColorAlpha8>(this.environment.Document.Size);
 
-            Rectangle[] scans = this.selection.GetRegionScansReadOnlyInt();
+            RectInt32 maskBounds = RectInt32.Empty;
 
-            for (int i = 0; i < scans.Length; i++)
+            IDirect2DFactory d2dFactory = this.serviceProvider.GetService<IDirect2DFactory>();
+
+            using (PaintDotNet.Direct2D1.IDeviceContext deviceContext = d2dFactory.CreateBitmapDeviceContext(this.sourceMask))
             {
-                Rectangle rect = scans[i];
+                // PrimitiveBlend.Copy is required for Direct2D mask to out the original selection.
+                //
+                deviceContext.PrimitiveBlend = PrimitiveBlend.Copy;
 
-                for (int y = rect.Top; y < rect.Bottom; y++)
+                using (ISolidColorBrush selectedRegionBrush = deviceContext.CreateSolidColorBrush(Colors.White))
+                using (ISolidColorBrush unselectedRegionBrush = deviceContext.CreateSolidColorBrush(Colors.TransparentBlack))
+                using (deviceContext.UseBeginDraw())
                 {
-                    byte* ptr = this.destinationMask.GetPointAddressUnchecked(rect.Left, y);
+                    IReadOnlyList<RectInt32> selectionRects = this.environment.Selection.RenderScans;
+                    RectInt32 surfaceBounds = this.sourceMask.Bounds();
 
-                    for (int x = rect.Left; x < rect.Right; x++)
+                    deviceContext.Clear(Colors.TransparentBlack);
+
+                    foreach (RectInt32 rect in selectionRects)
                     {
-                        *ptr = 255;
-                        ptr++;
+                        RectInt32 expandedRect = RectInt32.Inflate(rect, this.sampleSize, this.sampleSize);
+                        RectInt32 selectedArea = RectInt32.Intersect(expandedRect, surfaceBounds);
+
+                        deviceContext.FillRectangle(selectedArea, selectedRegionBrush);
+
+                        maskBounds = RectInt32.Union(maskBounds, selectedArea);
                     }
-                }
-            }
-        }
 
-        private unsafe void RenderSourceMask(PdnRegion region)
-        {
-            if (this.sourceMask == null)
-            {
-                this.sourceMask = new MaskSurface(this.sourceSurface.Width, this.sourceSurface.Height);
-            }
-
-            this.sourceMask.Clear();
-
-            Rectangle[] scans = region.GetRegionScansReadOnlyInt();
-
-            for (int i = 0; i < scans.Length; i++)
-            {
-                Rectangle rect = scans[i];
-
-                for (int y = rect.Top; y < rect.Bottom; y++)
-                {
-                    byte* ptr = this.sourceMask.GetPointAddressUnchecked(rect.Left, y);
-
-                    for (int x = rect.Left; x < rect.Right; x++)
+                    // Exclude the pixels in the original selection.
+                    // This is does in a second pass because it would be overwritten by the enlarged scans
+                    // when there is more than one scan rectangle.
+                    foreach (RectInt32 rect in selectionRects)
                     {
-                        *ptr = 255;
-                        ptr++;
+                        deviceContext.FillRectangle(rect, unselectedRegionBrush);
                     }
                 }
             }
 
-#if DEBUG
-            using (Bitmap image = new(this.sourceMask.Width, this.sourceMask.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb))
-            {
-                System.Drawing.Imaging.BitmapData data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height),
-                                                                        System.Drawing.Imaging.ImageLockMode.WriteOnly, image.PixelFormat);
-
-                try
-                {
-                    for (int y = 0; y < image.Height; y++)
-                    {
-                        byte* src = this.sourceMask.GetRowAddressUnchecked(y);
-                        byte* dst = (byte*)data.Scan0 + (y * data.Stride);
-
-                        for (int x = 0; x < image.Width; x++)
-                        {
-                            dst[0] = dst[1] = dst[2] = *src;
-                            dst[3] = 255;
-
-                            src++;
-                            dst += 4;
-                        }
-                    }
-                }
-                finally
-                {
-                    image.UnlockBits(data);
-                }
-            }
-#endif
+            return maskBounds;
         }
     }
 }

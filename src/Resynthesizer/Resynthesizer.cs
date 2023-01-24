@@ -46,18 +46,19 @@
 */
 
 using PaintDotNet;
+using PaintDotNet.Effects;
+using PaintDotNet.Imaging;
+using PaintDotNet.Rendering;
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Drawing;
+using System.Runtime.InteropServices;
 
 namespace ContentAwareFill
 {
     internal sealed class Resynthesizer : IDisposable
     {
         private const int ColorChannelCount = 3;
-        private const byte MaskUnselected = 0;
-        private const byte MaskFullySelected = 255;
 
         private readonly ResynthesizerParameters parameters;
         private readonly Random random;
@@ -65,11 +66,11 @@ namespace ContentAwareFill
         private readonly ImmutableArray<ushort> diffTable;
 
 #pragma warning disable IDE0032 // Use auto property
-        private Surface target;
+        private IBitmap<ColorBgra32> target;
 #pragma warning restore IDE0032 // Use auto property
-        private Surface source;
-        private MaskSurface targetMask;
-        private MaskSurface sourceMask;
+        private IBitmap<ColorBgra32> source;
+        private IBitmap<ColorAlpha8> targetMask;
+        private IBitmap<ColorAlpha8> sourceMask;
 
         private Neighbor[] neighbors;
         private int neighborCount;
@@ -90,57 +91,57 @@ namespace ContentAwareFill
         /// Initializes a new instance of the <see cref="Resynthesizer"/> class.
         /// </summary>
         /// <param name="parameters">The parameters.</param>
-        /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        /// <param name="targetMask">The target mask.</param>
         /// <param name="sourceMask">The source mask.</param>
-        /// <param name="sourceROI">The source region of interest.</param>
+        /// <param name="sourceRoi">The source region of interest.</param>
         /// <param name="croppedSourceSize">The size of the cropped source.</param>
+        /// <param name="targetMask">The target mask.</param>
         /// <param name="progressCallback">The progress callback.</param>
+        /// <param name="imagingFactory">The imaging factory.</param>
         /// <exception cref="ArgumentNullException">
         /// <paramref name="parameters"/> is null.
         /// or
         /// <paramref name="source"/> is null.
         /// or
+        /// <paramref name="sourceMask"/> is null.
+        /// or
         /// <paramref name="targetMask"/> is null.
         /// or
-        /// <paramref name="sourceMask"/> is null.
+        /// <paramref name="imagingFactory"/> is null.
         /// </exception>
-        public Resynthesizer(ResynthesizerParameters parameters, Surface source, MaskSurface targetMask, MaskSurface sourceMask,
-            Rectangle sourceROI, Size croppedSourceSize, Action<int> progressCallback)
+        public Resynthesizer(ResynthesizerParameters parameters,
+                             IEffectInputBitmap<ColorBgra32> source,
+                             IBitmap<ColorAlpha8> sourceMask,
+                             RectInt32 sourceRoi,
+                             SizeInt32 croppedSourceSize,
+                             IBitmap<ColorAlpha8> targetMask,
+                             Action<int> progressCallback,
+                             IImagingFactory imagingFactory)
         {
-            if (parameters == null)
+            ArgumentNullException.ThrowIfNull(parameters);
+            ArgumentNullException.ThrowIfNull(source);
+            ArgumentNullException.ThrowIfNull(sourceMask);
+            ArgumentNullException.ThrowIfNull(targetMask);
+            ArgumentNullException.ThrowIfNull(imagingFactory);
+
+            if (targetMask.Size != source.Size)
             {
-                throw new ArgumentNullException(nameof(parameters));
-            }
-            if (source == null)
-            {
-                throw new ArgumentNullException(nameof(source));
-            }
-            if (targetMask == null)
-            {
-                throw new ArgumentNullException(nameof(targetMask));
-            }
-            if (sourceMask == null)
-            {
-                throw new ArgumentNullException(nameof(sourceMask));
+                throw new ArgumentException("The target mask size does not match the source image.");
             }
 
             this.parameters = parameters;
-            this.target = source.Clone();
-            this.source = new Surface(croppedSourceSize.Width, croppedSourceSize.Height);
-            this.source.CopySurface(source, sourceROI);
-            this.targetMask = targetMask.Clone();
-            this.sourceMask = new MaskSurface(croppedSourceSize.Width, croppedSourceSize.Height);
-            this.sourceMask.CopySurface(sourceMask, sourceROI);
+            this.target = BitmapUtil.CreateFromBitmapSource(imagingFactory, source);
+            this.source = BitmapUtil.CreateFromBitmapSource(imagingFactory, source, croppedSourceSize, sourceRoi);
+            this.sourceMask = BitmapUtil.CreateFromBitmapSource(imagingFactory, sourceMask, croppedSourceSize, sourceRoi, clear: true);
+            this.targetMask = targetMask.CreateRefT();
 
             this.random = new Random(1198472);
             this.diffTable = MakeDiffTable(parameters);
             this.neighbors = new Neighbor[parameters.Neighbors];
             this.repetitionParameters = new RepetitionParameter[ResynthesizerConstants.MaxPasses];
-            this.tried = new PointIndexedArray<int>(this.target.Width, this.target.Height, -1);
-            this.hasValue = new PointIndexedArray<bool>(this.target.Width, this.target.Height, false);
-            this.sourceOf = new PointIndexedArray<Point>(this.target.Width, this.target.Height, new Point(-1, -1));
+            this.tried = new PointIndexedArray<int>(this.target.Size, -1);
+            this.hasValue = new PointIndexedArray<bool>(this.target.Size, false);
+            this.sourceOf = new PointIndexedArray<Point>(this.target.Size, new Point(-1, -1));
             this.progressCallback = progressCallback;
         }
 
@@ -152,7 +153,7 @@ namespace ContentAwareFill
             PerfectMatch
         }
 
-        public Surface Target
+        public IBitmap<ColorBgra32> Target
         {
             get
             {
@@ -167,16 +168,13 @@ namespace ContentAwareFill
                 this.target.Dispose();
                 this.target = null;
             }
-            if (this.source != null)
-            {
-                this.source.Dispose();
-                this.source = null;
-            }
+
             if (this.targetMask != null)
             {
                 this.targetMask.Dispose();
                 this.targetMask = null;
             }
+
             if (this.sourceMask != null)
             {
                 this.sourceMask.Dispose();
@@ -220,31 +218,40 @@ namespace ContentAwareFill
             // The constructor handles the setup performed by prepare_tried.
             PrepareRepetitionParameters();
 
-            for (int i = 0; i < ResynthesizerConstants.MaxPasses; i++)
+            using (IBitmapLock<ColorBgra32> sourceLock = this.source.Lock(BitmapLockOptions.Read))
+            using (IBitmapLock<ColorAlpha8> sourceMaskLock = this.sourceMask.Lock(BitmapLockOptions.Read))
+            using (IBitmapLock<ColorBgra32> targetLock = this.target.Lock(BitmapLockOptions.Write))
             {
-                int? betters = Synthesize(i, abortCallback);
+                RegionPtr<ColorBgra32> sourceRegion = sourceLock.AsRegionPtr();
+                RegionPtr<ColorAlpha8> sourceMaskRegion = sourceMaskLock.AsRegionPtr();
+                RegionPtr<ColorBgra32> targetRegion = targetLock.AsRegionPtr();
 
-                if (!betters.HasValue)
+                for (int i = 0; i < ResynthesizerConstants.MaxPasses; i++)
                 {
-                    return false;
-                }
+                    int? betters = Synthesize(i, abortCallback, sourceRegion, sourceMaskRegion, targetRegion);
 
-                if (((float)betters.Value / this.targetPoints.Length) < ResynthesizerConstants.TerminateFraction)
-                {
-                    break;
+                    if (!betters.HasValue)
+                    {
+                        return false;
+                    }
+
+                    if (((float)betters.Value / this.targetPoints.Length) < ResynthesizerConstants.TerminateFraction)
+                    {
+                        break;
+                    }
                 }
             }
 
             return true;
         }
 
-        private bool ClippedOrMaskedSource(Point point)
+        private static bool ClippedOrMaskedSource(Point point, RegionPtr<ColorAlpha8> sourceMaskRegion)
         {
             return point.X < 0 ||
                    point.Y < 0 ||
-                   point.X >= this.source.Width ||
-                   point.Y >= this.source.Height ||
-                   this.sourceMask.GetPointUnchecked(point.X, point.Y) != MaskFullySelected;
+                   point.X >= sourceMaskRegion.Width ||
+                   point.Y >= sourceMaskRegion.Height ||
+                   sourceMaskRegion[point.X, point.Y] != ColorAlpha8.Opaque;
         }
 
         private static ImmutableArray<ushort> MakeDiffTable(ResynthesizerParameters parameters)
@@ -274,19 +281,27 @@ namespace ContentAwareFill
         {
             this.neighborCount = 0;
 
-            for (int i = 0; i < this.sortedOffsets.Length; i++)
+            using (IBitmapLock<ColorBgra32> bitmapLock = this.target.Lock(BitmapLockOptions.Read))
             {
-                Point offset = this.sortedOffsets[i];
-                Point neighborPoint = position.Add(offset);
+                RegionPtr<ColorBgra32> region = bitmapLock.AsRegionPtr();
+                SizeInt32 targetSize = region.Size;
 
-                if (WrapOrClip(this.target, ref neighborPoint) && this.hasValue[neighborPoint])
+                for (int i = 0; i < this.sortedOffsets.Length; i++)
                 {
-                    this.neighbors[this.neighborCount] = new Neighbor(this.target.GetPoint(neighborPoint.X, neighborPoint.Y), offset, this.sourceOf[neighborPoint]);
-                    this.neighborCount++;
+                    Point offset = this.sortedOffsets[i];
+                    Point neighborPoint = position.Add(offset);
 
-                    if (this.neighborCount >= this.parameters.Neighbors)
+                    if (WrapOrClip(targetSize, ref neighborPoint) && this.hasValue[neighborPoint])
                     {
-                        break;
+                        this.neighbors[this.neighborCount] = new Neighbor(region[neighborPoint.X, neighborPoint.Y],
+                                                                          offset,
+                                                                          this.sourceOf[neighborPoint]);
+                        this.neighborCount++;
+
+                        if (this.neighborCount >= this.parameters.Neighbors)
+                        {
+                            break;
+                        }
                     }
                 }
             }
@@ -309,8 +324,10 @@ namespace ContentAwareFill
 
         private void PrepareSortedOffsets()
         {
-            int width = Math.Min(this.target.Width, this.source.Width);
-            int height = Math.Min(this.target.Height, this.source.Height);
+            SizeInt32 sourceSize = this.source.Size;
+
+            int width = sourceSize.Width;
+            int height = sourceSize.Height;
 
             int length = ((2 * width) - 1) * ((2 * height) - 1);
 
@@ -331,98 +348,120 @@ namespace ContentAwareFill
 
         private unsafe void PrepareTargetPoints(bool useContext)
         {
-            int targetPointsSize = 0;
-
-            for (int y = 0; y < this.target.Height; y++)
+            using (IBitmapLock<ColorAlpha8> targetMaskLock = this.targetMask.Lock(BitmapLockOptions.Read))
             {
-                byte* mask = this.targetMask.GetRowAddressUnchecked(y);
+                RegionPtr<ColorAlpha8> targetMaskRegion = targetMaskLock.AsRegionPtr();
 
-                for (int x = 0; x < this.target.Width; x++)
+                int targetPointsSize = 0;
+
+                SizeInt32 targetSize = this.target.Size;
+
+                foreach (RegionRowPtr<ColorAlpha8> row in targetMaskRegion.Rows)
                 {
-                    if (*mask != MaskUnselected)
+                    foreach (ColorAlpha8 pixel in row)
                     {
-                        targetPointsSize++;
-                    }
-
-                    mask++;
-                }
-            }
-
-            ImmutableArray<Point>.Builder points = ImmutableArray.CreateBuilder<Point>(targetPointsSize);
-
-            if (targetPointsSize > 0)
-            {
-                for (int y = 0; y < this.target.Height; y++)
-                {
-                    ColorBgra* src = this.target.GetRowPointerUnchecked(y);
-                    byte* mask = this.targetMask.GetRowAddressUnchecked(y);
-
-                    for (int x = 0; x < this.target.Width; x++)
-                    {
-                        bool isSelectedTarget = *mask != MaskUnselected;
-
-                        this.hasValue.SetValue(x, y, useContext && !isSelectedTarget && src->A > 0);
-
-                        if (isSelectedTarget)
+                        if (pixel != ColorAlpha8.Transparent)
                         {
-                            points.Add(new Point(x, y));
+                            targetPointsSize++;
                         }
-
-                        src++;
-                        mask++;
                     }
                 }
 
-                TargetPointSorter.Sort(points, this.random, this.parameters.MatchContext);
-            }
+                ImmutableArray<Point>.Builder points = ImmutableArray.CreateBuilder<Point>(targetPointsSize);
 
-            this.targetPoints = points.MoveToImmutable();
+                if (targetPointsSize > 0)
+                {
+                    using (IBitmapLock<ColorBgra32> targetLock = this.target.Lock(BitmapLockOptions.Read))
+                    {
+                        RegionPtr<ColorBgra32> targetRegion = targetLock.AsRegionPtr();
+                        RegionRowPtrCollection<ColorBgra32> targetRows = targetRegion.Rows;
+                        RegionRowPtrCollection<ColorAlpha8> targetMaskRows = targetMaskRegion.Rows;
+
+                        for (int y = 0; y < targetSize.Height; y++)
+                        {
+                            ColorBgra32* src = targetRows[y].Ptr;
+                            ColorAlpha8* mask = targetMaskRows[y].Ptr;
+
+                            for (int x = 0; x < targetSize.Width; x++)
+                            {
+                                bool isSelectedTarget = *mask != ColorAlpha8.Transparent;
+
+                                this.hasValue.SetValue(x, y, useContext && !isSelectedTarget && src->A > 0);
+
+                                if (isSelectedTarget)
+                                {
+                                    points.Add(new Point(x, y));
+                                }
+
+                                src++;
+                                mask++;
+                            }
+                        }
+                    }
+
+                    TargetPointSorter.Sort(points, this.random, this.parameters.MatchContext);
+                }
+
+                this.targetPoints = points.MoveToImmutable();
+            }
         }
 
         private unsafe void PrepareSourcePoints()
         {
-            int sourcePointsSize = 0;
-
-            for (int y = 0; y < this.source.Height; y++)
+            using (IBitmapLock<ColorBgra32> sourceLock = this.source.Lock(BitmapLockOptions.Read))
+            using (IBitmapLock<ColorAlpha8> sourceMaskLock = this.sourceMask.Lock(BitmapLockOptions.Read))
             {
-                ColorBgra* src = this.source.GetRowPointerUnchecked(y);
-                byte* mask = this.sourceMask.GetRowAddressUnchecked(y);
+                RegionPtr<ColorBgra32> sourceRegion = sourceLock.AsRegionPtr();
+                RegionPtr<ColorAlpha8> sourceMaskRegion = sourceMaskLock.AsRegionPtr();
 
-                for (int x = 0; x < this.source.Width; x++)
+                RegionRowPtrCollection<ColorBgra32> sourceRows = sourceRegion.Rows;
+                RegionRowPtrCollection<ColorAlpha8> sourceMaskRows = sourceMaskRegion.Rows;
+
+                SizeInt32 size = sourceRegion.Size;
+
+                int sourcePointsSize = 0;
+
+                for (int y = 0; y < size.Height; y++)
                 {
-                    if (*mask == MaskFullySelected && src->A > 0)
+                    ColorBgra32* src = sourceRows[y].Ptr;
+                    ColorAlpha8* mask = sourceMaskRows[y].Ptr;
+
+                    for (int x = 0; x < size.Width; x++)
                     {
-                        sourcePointsSize++;
-                    }
-
-                    src++;
-                    mask++;
-                }
-            }
-
-            ImmutableArray<Point>.Builder points = ImmutableArray.CreateBuilder<Point>(sourcePointsSize);
-
-            if (sourcePointsSize > 0)
-            {
-                for (int y = 0; y < this.source.Height; y++)
-                {
-                    ColorBgra* src = this.source.GetRowPointerUnchecked(y);
-                    byte* mask = this.sourceMask.GetRowAddressUnchecked(y);
-
-                    for (int x = 0; x < this.source.Width; x++)
-                    {
-                        if (*mask == MaskFullySelected && src->A > 0)
+                        if (*mask == ColorAlpha8.Opaque && src->A > 0)
                         {
-                            points.Add(new Point(x, y));
+                            sourcePointsSize++;
                         }
 
                         src++;
                         mask++;
                     }
                 }
-            }
 
-            this.sourcePoints = points.MoveToImmutable();
+                ImmutableArray<Point>.Builder points = ImmutableArray.CreateBuilder<Point>(sourcePointsSize);
+
+                if (sourcePointsSize > 0)
+                {
+                    for (int y = 0; y < size.Height; y++)
+                    {
+                        ColorBgra32* src = sourceRows[y].Ptr;
+                        ColorAlpha8* mask = sourceMaskRows[y].Ptr;
+
+                        for (int x = 0; x < size.Width; x++)
+                        {
+                            if (*mask == ColorAlpha8.Opaque && src->A > 0)
+                            {
+                                points.Add(new Point(x, y));
+                            }
+
+                            src++;
+                            mask++;
+                        }
+                    }
+                }
+
+                this.sourcePoints = points.MoveToImmutable();
+            }
         }
 
         private Point RandomSourcePoint()
@@ -432,7 +471,10 @@ namespace ContentAwareFill
             return this.sourcePoints[index];
         }
 
-        private bool TryPoint(Point point, BettermentKind bettermentKind)
+        private bool TryPoint(Point point,
+                              BettermentKind bettermentKind,
+                              RegionPtr<ColorBgra32> sourceRegion,
+                              RegionPtr<ColorAlpha8> sourceMaskRegion)
         {
             uint sum = 0;
 
@@ -440,7 +482,7 @@ namespace ContentAwareFill
             {
                 Point offset = point.Add(this.neighbors[i].offset);
 
-                if (ClippedOrMaskedSource(offset))
+                if (ClippedOrMaskedSource(offset, sourceMaskRegion))
                 {
                     // The original code used the map_diff_table in the following calculation.
                     // sum += MaxWeight * ColorChannelCount + map_diff_table[0] * map_match_bpp
@@ -451,7 +493,7 @@ namespace ContentAwareFill
                 }
                 else
                 {
-                    ColorBgra sourcePixel = this.source.GetPoint(offset.X, offset.Y);
+                    ColorBgra sourcePixel = sourceRegion[offset.X, offset.Y];
                     ColorBgra targetPixel = this.neighbors[i].pixel;
 
                     if (i > 0)
@@ -478,13 +520,13 @@ namespace ContentAwareFill
             return sum <= 0;
         }
 
-        private bool WrapOrClip(Surface image, ref Point point)
+        private bool WrapOrClip(SizeInt32 size, ref Point point)
         {
             while (point.X < 0)
             {
                 if (this.parameters.TileHorizontal)
                 {
-                    point.X += image.Width;
+                    point.X += size.Width;
                 }
                 else
                 {
@@ -492,11 +534,11 @@ namespace ContentAwareFill
                 }
             }
 
-            while (point.X >= image.Width)
+            while (point.X >= size.Width)
             {
                 if (this.parameters.TileHorizontal)
                 {
-                    point.X -= image.Width;
+                    point.X -= size.Width;
                 }
                 else
                 {
@@ -508,7 +550,7 @@ namespace ContentAwareFill
             {
                 if (this.parameters.TileVertical)
                 {
-                    point.Y += image.Height;
+                    point.Y += size.Height;
                 }
                 else
                 {
@@ -516,11 +558,11 @@ namespace ContentAwareFill
                 }
             }
 
-            while (point.Y >= image.Height)
+            while (point.Y >= size.Height)
             {
                 if (this.parameters.TileVertical)
                 {
-                    point.Y -= image.Height;
+                    point.Y -= size.Height;
                 }
                 else
                 {
@@ -537,7 +579,11 @@ namespace ContentAwareFill
         /// <param name="pass">The pass.</param>
         /// <param name="abortCallback">The abort callback.</param>
         /// <returns>The match count of the image synthesis; or <c>null</c> if the user canceled the operation.</returns>
-        private int? Synthesize(int pass, Func<bool> abortCallback)
+        private int? Synthesize(int pass,
+                                Func<bool> abortCallback,
+                                RegionPtr<ColorBgra32> sourceRegion,
+                                RegionPtr<ColorAlpha8> sourceMaskRegion,
+                                RegionPtr<ColorBgra32> targetRegion)
         {
             int length = this.repetitionParameters[pass].end;
             int repeatCountBetters = 0;
@@ -579,16 +625,20 @@ namespace ContentAwareFill
                     {
                         Point sourcePoint = neighbor.sourceOf.Subtract(neighbor.offset);
 
-                        if (ClippedOrMaskedSource(sourcePoint))
+                        if (ClippedOrMaskedSource(sourcePoint, sourceMaskRegion))
                         {
                             continue;
                         }
+
                         if (this.tried[sourcePoint] == targetIndex)
                         {
                             continue;
                         }
 
-                        perfectMatch = TryPoint(sourcePoint, BettermentKind.NeighborSource);
+                        perfectMatch = TryPoint(sourcePoint,
+                                                BettermentKind.NeighborSource,
+                                                sourceRegion,
+                                                sourceMaskRegion);
                         if (perfectMatch)
                         {
                             break;
@@ -602,7 +652,10 @@ namespace ContentAwareFill
                 {
                     for (uint i = 0; i < this.parameters.Trys; i++)
                     {
-                        perfectMatch = TryPoint(RandomSourcePoint(), BettermentKind.RandomSource);
+                        perfectMatch = TryPoint(RandomSourcePoint(),
+                                                BettermentKind.RandomSource,
+                                                sourceRegion,
+                                                sourceMaskRegion);
                         if (perfectMatch)
                         {
                             break;
@@ -616,7 +669,7 @@ namespace ContentAwareFill
                     {
                         repeatCountBetters++;
 
-                        this.target[position] = this.source[this.bestPoint];
+                        targetRegion[position] = sourceRegion[this.bestPoint];
                         this.sourceOf[position] = this.bestPoint;
                     }
                 }

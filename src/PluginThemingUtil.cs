@@ -20,54 +20,15 @@
 *
 */
 
-using PaintDotNet.Effects;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Reflection;
 using System.Windows.Forms;
 
 namespace ContentAwareFill
 {
     internal static class PluginThemingUtil
     {
-        private static Action<EffectConfigDialog, bool> useAppThemeSetter;
-        private static bool initAppThemeSetter = false;
-
-        /// <summary>
-        /// Enables theming for the specified dialog.
-        /// </summary>
-        /// <param name="dialog">The dialog.</param>
-        /// <exception cref="ArgumentNullException"><paramref name="dialog"/> is null.</exception>
-        public static void EnableEffectDialogTheme(EffectConfigDialog dialog)
-        {
-            if (dialog == null)
-            {
-                throw new ArgumentNullException(nameof(dialog));
-            }
-
-            try
-            {
-                if (!initAppThemeSetter)
-                {
-                    initAppThemeSetter = true;
-
-                    PropertyInfo propertyInfo = typeof(EffectConfigDialog).GetProperty("UseAppThemeColors");
-                    if (propertyInfo != null)
-                    {
-                        useAppThemeSetter = (Action<EffectConfigDialog, bool>)Delegate.CreateDelegate(typeof(Action<EffectConfigDialog, bool>), propertyInfo.GetSetMethod());
-                    }
-                }
-
-                useAppThemeSetter?.Invoke(dialog, true);
-            }
-            catch
-            {
-                // Ignore any exceptions that are thrown when trying to enable the dialog theming.
-                // The dialog should be shown to the user even if theming could not be enabled.
-            }
-        }
-
         /// <summary>
         /// Updates the background color of the controls.
         /// </summary>
