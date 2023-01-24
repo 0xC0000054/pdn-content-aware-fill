@@ -21,7 +21,6 @@
 */
 
 using PaintDotNet.Rendering;
-using System.Drawing;
 
 namespace ContentAwareFill
 {
@@ -41,7 +40,7 @@ namespace ContentAwareFill
             }
         }
 
-        public T this[Point target]
+        public T this[Point2Int32 target]
         {
             get
             {

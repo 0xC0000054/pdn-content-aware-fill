@@ -20,22 +20,22 @@
 *
 */
 
+using PaintDotNet.Rendering;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 
 namespace ContentAwareFill
 {
     internal static class PointCollectionUtil
     {
-        public static Rectangle GetBounds(IEnumerable<Point> points)
+        public static RectInt32 GetBounds(IEnumerable<Point2Int32> points)
         {
             int left = int.MaxValue;
             int top = int.MaxValue;
             int right = 0;
             int bottom = 0;
 
-            foreach (Point item in points)
+            foreach (Point2Int32 item in points)
             {
                 left = Math.Min(left, item.X);
                 top = Math.Min(top, item.Y);
@@ -43,17 +43,17 @@ namespace ContentAwareFill
                 bottom = Math.Max(bottom, item.Y);
             }
 
-            return Rectangle.FromLTRB(left, top, right, bottom);
+            return RectInt32.FromEdges(left, top, right, bottom);
         }
 
-        public static Point GetCenter(IEnumerable<Point> points)
+        public static Point2Int32 GetCenter(IEnumerable<Point2Int32> points)
         {
-            Rectangle bounds = GetBounds(points);
+            RectInt32 bounds = GetBounds(points);
 
             int centerX = ((bounds.Right - bounds.Left) / 2) + bounds.Left;
             int centerY = ((bounds.Bottom - bounds.Top) / 2) + bounds.Top;
 
-            return new Point(centerX, centerY);
+            return new Point2Int32(centerX, centerY);
         }
     }
 }

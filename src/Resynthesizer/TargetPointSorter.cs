@@ -45,17 +45,17 @@
 *
 */
 
+using PaintDotNet.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
-using System.Drawing;
 
 namespace ContentAwareFill
 {
     internal static class TargetPointSorter
     {
-        internal static void Sort(ImmutableArray<Point>.Builder points, Random random, MatchContextType matchContextType)
+        internal static void Sort(ImmutableArray<Point2Int32>.Builder points, Random random, MatchContextType matchContextType)
         {
             switch (matchContextType)
             {
@@ -86,7 +86,7 @@ namespace ContentAwareFill
             }
         }
 
-        private static void OrderTargetPointsRandom(ImmutableArray<Point>.Builder points, Random random)
+        private static void OrderTargetPointsRandom(ImmutableArray<Point2Int32>.Builder points, Random random)
         {
             int count = points.Count;
 
@@ -98,7 +98,7 @@ namespace ContentAwareFill
             }
         }
 
-        private static void TargetPointsToOffsets(ImmutableArray<Point>.Builder points, Point center)
+        private static void TargetPointsToOffsets(ImmutableArray<Point2Int32>.Builder points, Point2Int32 center)
         {
             for (int i = 0; i < points.Count; i++)
             {
@@ -106,7 +106,7 @@ namespace ContentAwareFill
             }
         }
 
-        private static void TargetPointsFromOffsets(ImmutableArray<Point>.Builder points, Point center)
+        private static void TargetPointsFromOffsets(ImmutableArray<Point2Int32>.Builder points, Point2Int32 center)
         {
             for (int i = 0; i < points.Count; i++)
             {
@@ -114,7 +114,7 @@ namespace ContentAwareFill
             }
         }
 
-        private static void RandomizeBandsTargetPoints(ImmutableArray<Point>.Builder points, Random random)
+        private static void RandomizeBandsTargetPoints(ImmutableArray<Point2Int32>.Builder points, Random random)
         {
             int last = points.Count - 1;
             int halfBand = (int)(points.Count * ResynthesizerConstants.BandFraction);
@@ -131,9 +131,11 @@ namespace ContentAwareFill
             }
         }
 
-        private static void OrderTargetPointsRandomDirectional(ImmutableArray<Point>.Builder points, Random random, IComparer<Point> pointComparer)
+        private static void OrderTargetPointsRandomDirectional(ImmutableArray<Point2Int32>.Builder points,
+                                                               Random random,
+                                                               IComparer<Point2Int32> pointComparer)
         {
-            Point center = PointCollectionUtil.GetCenter(points);
+            Point2Int32 center = PointCollectionUtil.GetCenter(points);
 
             TargetPointsToOffsets(points, center);
 

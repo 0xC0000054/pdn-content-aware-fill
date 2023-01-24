@@ -45,7 +45,7 @@
 *
 */
 
-using System.Drawing;
+using PaintDotNet.Rendering;
 
 namespace ContentAwareFill
 {
@@ -58,7 +58,7 @@ namespace ContentAwareFill
             this.outward = outward;
         }
 
-        public override int Compare(Point point1, Point point2)
+        public override int Compare(Point2Int32 point1, Point2Int32 point2)
         {
             int point1Squared = (point1.Y * point1.Y);
             int point2Squared = (point2.Y * point2.Y);

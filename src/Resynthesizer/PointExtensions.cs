@@ -20,20 +20,20 @@
 *
 */
 
-using System.Drawing;
+using PaintDotNet.Rendering;
 
 namespace ContentAwareFill
 {
     internal static class PointExtensions
     {
-        public static Point Add(this Point point, Point value)
+        public static Point2Int32 Add(this Point2Int32 point, Point2Int32 value)
         {
-            return new Point(point.X + value.X, point.Y + value.Y);
+            return new Point2Int32(point.X + value.X, point.Y + value.Y);
         }
 
-        public static Point Subtract(this Point point, Point value)
+        public static Point2Int32 Subtract(this Point2Int32 point, Point2Int32 value)
         {
-            return new Point(point.X - value.X, point.Y - value.Y);
+            return new Point2Int32(point.X - value.X, point.Y - value.Y);
         }
     }
 }

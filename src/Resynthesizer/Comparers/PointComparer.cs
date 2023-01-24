@@ -20,12 +20,12 @@
 *
 */
 
+using PaintDotNet.Rendering;
 using System.Collections.Generic;
-using System.Drawing;
 
 namespace ContentAwareFill
 {
-    internal abstract class PointComparer : IComparer<Point>
+    internal abstract class PointComparer : IComparer<Point2Int32>
     {
         private static readonly CartesianPointComparer lessCartesian = new(false);
         private static readonly CartesianPointComparer moreCartesian = new(true);
@@ -82,16 +82,16 @@ namespace ContentAwareFill
             }
         }
 
-        internal static PointComparer CreateInwardConcentric(IEnumerable<Point> points)
+        internal static PointComparer CreateInwardConcentric(IEnumerable<Point2Int32> points)
         {
             return new DirectionalPointComparer(points, false);
         }
 
-        internal static PointComparer CreateOutwardConcentric(IEnumerable<Point> points)
+        internal static PointComparer CreateOutwardConcentric(IEnumerable<Point2Int32> points)
         {
             return new DirectionalPointComparer(points, true);
         }
 
-        public abstract int Compare(Point point1, Point point2);
+        public abstract int Compare(Point2Int32 point1, Point2Int32 point2);
     }
 }

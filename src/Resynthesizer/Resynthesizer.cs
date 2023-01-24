@@ -51,8 +51,6 @@ using PaintDotNet.Imaging;
 using PaintDotNet.Rendering;
 using System;
 using System.Collections.Immutable;
-using System.Drawing;
-using System.Runtime.InteropServices;
 
 namespace ContentAwareFill
 {
@@ -77,14 +75,14 @@ namespace ContentAwareFill
         private RepetitionParameter[] repetitionParameters;
         private PointIndexedArray<int> tried;
         private PointIndexedArray<bool> hasValue;
-        private PointIndexedArray<Point> sourceOf;
-        private ImmutableArray<Point> sortedOffsets;
-        private ImmutableArray<Point> targetPoints;
-        private ImmutableArray<Point> sourcePoints;
+        private PointIndexedArray<Point2Int32> sourceOf;
+        private ImmutableArray<Point2Int32> sortedOffsets;
+        private ImmutableArray<Point2Int32> targetPoints;
+        private ImmutableArray<Point2Int32> sourcePoints;
         private int targetTriesCount;
         private int totalTargets;
         private uint best;
-        private Point bestPoint;
+        private Point2Int32 bestPoint;
         private BettermentKind latestBettermentKind;
 
         /// <summary>
@@ -141,7 +139,7 @@ namespace ContentAwareFill
             this.repetitionParameters = new RepetitionParameter[ResynthesizerConstants.MaxPasses];
             this.tried = new PointIndexedArray<int>(this.target.Size, -1);
             this.hasValue = new PointIndexedArray<bool>(this.target.Size, false);
-            this.sourceOf = new PointIndexedArray<Point>(this.target.Size, new Point(-1, -1));
+            this.sourceOf = new PointIndexedArray<Point2Int32>(this.target.Size, new Point2Int32(-1, -1));
             this.progressCallback = progressCallback;
         }
 
@@ -245,7 +243,7 @@ namespace ContentAwareFill
             return true;
         }
 
-        private static bool ClippedOrMaskedSource(Point point, RegionPtr<ColorAlpha8> sourceMaskRegion)
+        private static bool ClippedOrMaskedSource(Point2Int32 point, RegionPtr<ColorAlpha8> sourceMaskRegion)
         {
             return point.X < 0 ||
                    point.Y < 0 ||
@@ -277,7 +275,7 @@ namespace ContentAwareFill
             return Math.Log((d * d) + 1.0);
         }
 
-        private void PrepareNeighbors(Point position)
+        private void PrepareNeighbors(Point2Int32 position)
         {
             this.neighborCount = 0;
 
@@ -288,8 +286,8 @@ namespace ContentAwareFill
 
                 for (int i = 0; i < this.sortedOffsets.Length; i++)
                 {
-                    Point offset = this.sortedOffsets[i];
-                    Point neighborPoint = position.Add(offset);
+                    Point2Int32 offset = this.sortedOffsets[i];
+                    Point2Int32 neighborPoint = position.Add(offset);
 
                     if (WrapOrClip(targetSize, ref neighborPoint) && this.hasValue[neighborPoint])
                     {
@@ -331,13 +329,13 @@ namespace ContentAwareFill
 
             int length = ((2 * width) - 1) * ((2 * height) - 1);
 
-            ImmutableArray<Point>.Builder offsets = ImmutableArray.CreateBuilder<Point>(length);
+            ImmutableArray<Point2Int32>.Builder offsets = ImmutableArray.CreateBuilder<Point2Int32>(length);
 
             for (int y = -height + 1; y < height; y++)
             {
                 for (int x = -width + 1; x < width; x++)
                 {
-                    offsets.Add(new Point(x, y));
+                    offsets.Add(new Point2Int32(x, y));
                 }
             }
 
@@ -367,7 +365,7 @@ namespace ContentAwareFill
                     }
                 }
 
-                ImmutableArray<Point>.Builder points = ImmutableArray.CreateBuilder<Point>(targetPointsSize);
+                ImmutableArray<Point2Int32>.Builder points = ImmutableArray.CreateBuilder<Point2Int32>(targetPointsSize);
 
                 if (targetPointsSize > 0)
                 {
@@ -390,7 +388,7 @@ namespace ContentAwareFill
 
                                 if (isSelectedTarget)
                                 {
-                                    points.Add(new Point(x, y));
+                                    points.Add(new Point2Int32(x, y));
                                 }
 
                                 src++;
@@ -438,7 +436,7 @@ namespace ContentAwareFill
                     }
                 }
 
-                ImmutableArray<Point>.Builder points = ImmutableArray.CreateBuilder<Point>(sourcePointsSize);
+                ImmutableArray<Point2Int32>.Builder points = ImmutableArray.CreateBuilder<Point2Int32>(sourcePointsSize);
 
                 if (sourcePointsSize > 0)
                 {
@@ -451,7 +449,7 @@ namespace ContentAwareFill
                         {
                             if (*mask == ColorAlpha8.Opaque && src->A > 0)
                             {
-                                points.Add(new Point(x, y));
+                                points.Add(new Point2Int32(x, y));
                             }
 
                             src++;
@@ -464,14 +462,14 @@ namespace ContentAwareFill
             }
         }
 
-        private Point RandomSourcePoint()
+        private Point2Int32 RandomSourcePoint()
         {
             int index = this.random.Next(0, this.sourcePoints.Length);
 
             return this.sourcePoints[index];
         }
 
-        private bool TryPoint(Point point,
+        private bool TryPoint(Point2Int32 point,
                               BettermentKind bettermentKind,
                               RegionPtr<ColorBgra32> sourceRegion,
                               RegionPtr<ColorAlpha8> sourceMaskRegion)
@@ -480,7 +478,7 @@ namespace ContentAwareFill
 
             for (int i = 0; i < this.neighborCount; i++)
             {
-                Point offset = point.Add(this.neighbors[i].offset);
+                Point2Int32 offset = point.Add(this.neighbors[i].offset);
 
                 if (ClippedOrMaskedSource(offset, sourceMaskRegion))
                 {
@@ -520,7 +518,7 @@ namespace ContentAwareFill
             return sum <= 0;
         }
 
-        private bool WrapOrClip(SizeInt32 size, ref Point point)
+        private bool WrapOrClip(SizeInt32 size, ref Point2Int32 point)
         {
             while (point.X < 0)
             {
@@ -608,7 +606,7 @@ namespace ContentAwareFill
                     }
                 }
 
-                Point position = this.targetPoints[targetIndex];
+                Point2Int32 position = this.targetPoints[targetIndex];
 
                 this.hasValue[position] = true;
 
@@ -623,7 +621,7 @@ namespace ContentAwareFill
                     Neighbor neighbor = this.neighbors[neighborIndex];
                     if (neighbor.sourceOf.X != -1)
                     {
-                        Point sourcePoint = neighbor.sourceOf.Subtract(neighbor.offset);
+                        Point2Int32 sourcePoint = neighbor.sourceOf.Subtract(neighbor.offset);
 
                         if (ClippedOrMaskedSource(sourcePoint, sourceMaskRegion))
                         {
@@ -681,10 +679,10 @@ namespace ContentAwareFill
         private struct Neighbor
         {
             public readonly ColorBgra pixel;
-            public readonly Point offset;
-            public readonly Point sourceOf;
+            public readonly Point2Int32 offset;
+            public readonly Point2Int32 sourceOf;
 
-            public Neighbor(ColorBgra pixel, Point offset, Point sourceOf)
+            public Neighbor(ColorBgra pixel, Point2Int32 offset, Point2Int32 sourceOf)
             {
                 this.pixel = pixel;
                 this.offset = offset;

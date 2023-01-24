@@ -45,7 +45,7 @@
 *
 */
 
-using System.Drawing;
+using PaintDotNet.Rendering;
 
 namespace ContentAwareFill
 {
@@ -58,7 +58,7 @@ namespace ContentAwareFill
             this.moreCartesian = moreCartesian;
         }
 
-        public override int Compare(Point point1, Point point2)
+        public override int Compare(Point2Int32 point1, Point2Int32 point2)
         {
             int point1Cartesian = (point1.X * point1.X) + (point1.Y * point1.Y);
             int point2Cartesian = (point2.X * point2.X) + (point2.Y * point2.Y);

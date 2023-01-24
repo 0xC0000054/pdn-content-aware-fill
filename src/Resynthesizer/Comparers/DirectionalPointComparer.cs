@@ -45,9 +45,9 @@
 *
 */
 
+using PaintDotNet.Rendering;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 
 namespace ContentAwareFill
 {
@@ -56,7 +56,7 @@ namespace ContentAwareFill
         private uint[] maxCartesianAlongRay;
         private readonly bool outward;
 
-        public DirectionalPointComparer(IEnumerable<Point> targetPoints, bool outward)
+        public DirectionalPointComparer(IEnumerable<Point2Int32> targetPoints, bool outward)
         {
             if (targetPoints == null)
             {
@@ -65,11 +65,11 @@ namespace ContentAwareFill
 
             this.maxCartesianAlongRay = new uint[401];
 
-            Point center = PointCollectionUtil.GetCenter(targetPoints);
+            Point2Int32 center = PointCollectionUtil.GetCenter(targetPoints);
 
-            foreach (Point point in targetPoints)
+            foreach (Point2Int32 point in targetPoints)
             {
-                Point offset = point.Subtract(center);
+                Point2Int32 offset = point.Subtract(center);
 
                 uint cartesian = (uint)((offset.X * offset.X) + (offset.Y * offset.Y));
 
@@ -82,7 +82,7 @@ namespace ContentAwareFill
             this.outward = outward;
         }
 
-        public override int Compare(Point point1, Point point2)
+        public override int Compare(Point2Int32 point1, Point2Int32 point2)
         {
             float point1Proportion = ProportionInward(point1);
             float point2Proportion = ProportionInward(point2);
@@ -97,14 +97,14 @@ namespace ContentAwareFill
             }
         }
 
-        private float ProportionInward(Point point)
+        private float ProportionInward(Point2Int32 point)
         {
             uint ray = GetRadial(point);
 
             return (float)((point.X * point.X) + (point.Y * point.Y)) / this.maxCartesianAlongRay[ray];
         }
 
-        private static uint GetRadial(Point point)
+        private static uint GetRadial(Point2Int32 point)
         {
             return (uint)((Math.Atan2(point.Y, point.X) * 200 / Math.PI) + 200);
         }
