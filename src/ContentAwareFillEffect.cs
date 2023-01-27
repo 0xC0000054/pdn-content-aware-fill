@@ -21,6 +21,7 @@
 */
 
 using PaintDotNet;
+using PaintDotNet.AppModel;
 using PaintDotNet.Effects;
 using PaintDotNet.Imaging;
 using PaintDotNet.Rendering;
@@ -129,7 +130,7 @@ namespace ContentAwareFill
                     }
                     catch (ResynthizerException ex)
                     {
-                        MessageBox.Show(ex.Message, StaticName, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, 0);
+                        this.Services.GetService<IExceptionDialogService>().ShowErrorDialog(null, ex);
                     }
                 }
             }

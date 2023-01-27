@@ -22,6 +22,7 @@
 
 using ContentAwareFill.Properties;
 using PaintDotNet;
+using PaintDotNet.AppModel;
 using PaintDotNet.Effects;
 using PaintDotNet.Imaging;
 using System;
@@ -110,7 +111,7 @@ namespace ContentAwareFill
             // When there is no active selection Paint.NET acts as if the whole image/layer is selected.
             if (ContentAwareFillEffect.IsWholeImageSelected(this.Environment))
             {
-                if (ShowMessage(Properties.Resources.WholeImageSelected, MessageBoxIcon.None) == DialogResult.OK)
+                if (ShowErrorMessage(Resources.WholeImageSelected) == DialogResult.OK)
                 {
                     Close();
                 }
@@ -206,20 +207,36 @@ namespace ContentAwareFill
             }
         }
 
-        private DialogResult ShowMessage(string message, MessageBoxIcon icon)
+        private DialogResult ShowErrorMessage(string message)
         {
-            MessageBoxOptions options = this.RightToLeft == RightToLeft.Yes ? MessageBoxOptions.RtlReading : 0;
-
             if (this.InvokeRequired)
             {
-                return (DialogResult)Invoke(new Func<string, DialogResult>((string text) =>
-                       MessageBox.Show(this, text, this.Text, MessageBoxButtons.OK, icon, MessageBoxDefaultButton.Button1, options)),
+                Invoke(new Action<string>((string text) =>
+                       this.Services.GetService<IExceptionDialogService>().ShowErrorDialog(this, text, string.Empty)),
                        message);
             }
             else
             {
-                return MessageBox.Show(this, message, this.Text, MessageBoxButtons.OK, icon, MessageBoxDefaultButton.Button1, options);
+                this.Services.GetService<IExceptionDialogService>().ShowErrorDialog(this, message, string.Empty);
             }
+
+            return DialogResult.OK;
+        }
+
+        private DialogResult ShowErrorMessage(Exception exception)
+        {
+            if (this.InvokeRequired)
+            {
+                Invoke(new Action<Exception>((Exception ex) =>
+                       this.Services.GetService<IExceptionDialogService>().ShowErrorDialog(this, ex)),
+                       exception);
+            }
+            else
+            {
+                this.Services.GetService<IExceptionDialogService>().ShowErrorDialog(this, exception);
+            }
+
+            return DialogResult.OK;
         }
 
         private void okButton_Click(object sender, EventArgs e)
@@ -349,7 +366,7 @@ namespace ContentAwareFill
 
                 if (e.Error != null)
                 {
-                    ShowMessage(e.Error.Message, MessageBoxIcon.Error);
+                    ShowErrorMessage(e.Error);
                 }
                 else
                 {
