@@ -682,7 +682,7 @@ namespace ContentAwareFill
             return repeatCountBetters;
         }
 
-        private struct Neighbor
+        private readonly struct Neighbor
         {
             public readonly ColorBgra pixel;
             public readonly Point2Int32 offset;
@@ -696,7 +696,7 @@ namespace ContentAwareFill
             }
         }
 
-        private struct RepetitionParameter
+        private readonly struct RepetitionParameter
         {
             public readonly int start;
             public readonly int end;
