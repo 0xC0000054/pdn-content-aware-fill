@@ -26,7 +26,7 @@ namespace ContentAwareFill
 {
     internal sealed class PointIndexedArray<T>
     {
-        private T[] items;
+        private readonly T[] items;
         private readonly int stride;
 
         public PointIndexedArray(SizeInt32 size, T defaultValue)

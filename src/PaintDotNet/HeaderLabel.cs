@@ -25,10 +25,10 @@ namespace ContentAwareFill
             TextFormatFlags.NoPrefix |
             TextFormatFlags.SingleLine;
 
-        private int leftMargin = 2;
+        private readonly int leftMargin = 2;
         private int rightMargin = 8;
 
-        private EtchedLine etchedLine;
+        private readonly EtchedLine etchedLine;
 
         [DefaultValue(8)]
         public int RightMargin

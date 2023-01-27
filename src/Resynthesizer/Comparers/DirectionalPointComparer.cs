@@ -53,7 +53,7 @@ namespace ContentAwareFill
 {
     internal sealed class DirectionalPointComparer : PointComparer
     {
-        private uint[] maxCartesianAlongRay;
+        private readonly uint[] maxCartesianAlongRay;
         private readonly bool outward;
 
         public DirectionalPointComparer(IEnumerable<Point2Int32> targetPoints, bool outward)

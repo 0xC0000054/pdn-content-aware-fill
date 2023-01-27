@@ -70,12 +70,12 @@ namespace ContentAwareFill
         private IBitmap<ColorAlpha8> targetMask;
         private IBitmap<ColorAlpha8> sourceMask;
 
-        private Neighbor[] neighbors;
+        private readonly Neighbor[] neighbors;
         private int neighborCount;
-        private RepetitionParameter[] repetitionParameters;
-        private PointIndexedArray<int> tried;
-        private PointIndexedArray<bool> hasValue;
-        private PointIndexedArray<Point2Int32> sourceOf;
+        private readonly RepetitionParameter[] repetitionParameters;
+        private readonly PointIndexedArray<int> tried;
+        private readonly PointIndexedArray<bool> hasValue;
+        private readonly PointIndexedArray<Point2Int32> sourceOf;
         private ImmutableArray<Point2Int32> sortedOffsets;
         private ImmutableArray<Point2Int32> targetPoints;
         private ImmutableArray<Point2Int32> sourcePoints;
