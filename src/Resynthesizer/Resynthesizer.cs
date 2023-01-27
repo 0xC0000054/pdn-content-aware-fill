@@ -497,8 +497,8 @@ namespace ContentAwareFill
                 }
                 else
                 {
-                    ColorBgra sourcePixel = sourceRegion[offset.X, offset.Y];
-                    ColorBgra targetPixel = this.neighbors[i].pixel;
+                    ColorBgra32 sourcePixel = sourceRegion[offset.X, offset.Y];
+                    ColorBgra32 targetPixel = this.neighbors[i].pixel;
 
                     if (i > 0)
                     {
@@ -684,11 +684,11 @@ namespace ContentAwareFill
 
         private readonly struct Neighbor
         {
-            public readonly ColorBgra pixel;
+            public readonly ColorBgra32 pixel;
             public readonly Point2Int32 offset;
             public readonly Point2Int32 sourceOf;
 
-            public Neighbor(ColorBgra pixel, Point2Int32 offset, Point2Int32 sourceOf)
+            public Neighbor(ColorBgra32 pixel, Point2Int32 offset, Point2Int32 sourceOf)
             {
                 this.pixel = pixel;
                 this.offset = offset;
