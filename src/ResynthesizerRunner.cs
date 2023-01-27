@@ -27,7 +27,6 @@ using PaintDotNet.Imaging;
 using PaintDotNet.Rendering;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 
 namespace ContentAwareFill
 {
@@ -88,7 +87,7 @@ namespace ContentAwareFill
 
             IBitmap<ColorBgra32> output = null;
 
-            Rectangle expandedBounds = RenderSourceMask();
+            RectInt32 expandedBounds = RenderSourceMask();
             RectInt32 originalBounds = this.environment.Selection.RenderBounds;
 
             if (this.targetMask is null)
@@ -96,11 +95,11 @@ namespace ContentAwareFill
                 this.targetMask = BitmapUtil.CreateFromBitmapSource(this.imagingFactory, this.environment.Selection.MaskBitmap);
             }
 
-            Size croppedSourceSize = this.sampleFrom switch
+            SizeInt32 croppedSourceSize = this.sampleFrom switch
             {
-                SampleSource.Sides => new Size(expandedBounds.X + expandedBounds.Width, originalBounds.Y + originalBounds.Height),
-                SampleSource.TopAndBottom => new Size(originalBounds.X + originalBounds.Width, expandedBounds.Y + expandedBounds.Height),
-                SampleSource.AllAround => new Size(expandedBounds.X + expandedBounds.Width, expandedBounds.Y + expandedBounds.Height),
+                SampleSource.Sides => new SizeInt32(expandedBounds.X + expandedBounds.Width, originalBounds.Y + originalBounds.Height),
+                SampleSource.TopAndBottom => new SizeInt32(originalBounds.X + originalBounds.Width, expandedBounds.Y + expandedBounds.Height),
+                SampleSource.AllAround => new SizeInt32(expandedBounds.X + expandedBounds.Width, expandedBounds.Y + expandedBounds.Height),
                 _ => throw new InvalidOperationException("Unsupported SampleFrom enumeration value: " + this.sampleFrom.ToString()),
             };
 

@@ -23,7 +23,6 @@
 using PaintDotNet.Imaging;
 using PaintDotNet.Rendering;
 using System;
-using System.Drawing;
 using System.Runtime.InteropServices;
 
 namespace ContentAwareFill
@@ -61,7 +60,7 @@ namespace ContentAwareFill
                 if (sourceRoi.HasValue)
                 {
                     RectInt32 roi = sourceRoi.Value;
-                    Size size = destination.Size;
+                    SizeInt32 size = destination.Size;
 
                     int copyWidth = Math.Min(size.Width, roi.Width);
                     int copyHeight = Math.Min(size.Height, roi.Height);
