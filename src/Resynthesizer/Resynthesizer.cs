@@ -167,6 +167,12 @@ namespace ContentAwareFill
                 this.target = null;
             }
 
+            if (this.source != null)
+            {
+                this.source.Dispose();
+                this.source = null;
+            }
+
             if (this.targetMask != null)
             {
                 this.targetMask.Dispose();
