@@ -219,7 +219,7 @@ namespace ContentAwareFill
 
             IDirect2DFactory d2dFactory = this.serviceProvider.GetService<IDirect2DFactory>();
 
-            using (PaintDotNet.Direct2D1.IDeviceContext deviceContext = d2dFactory.CreateBitmapDeviceContext(this.sourceMask))
+            using (IDeviceContext deviceContext = d2dFactory.CreateBitmapDeviceContext(this.sourceMask))
             {
                 // PrimitiveBlend.Copy is required for Direct2D mask to out the original selection.
                 //

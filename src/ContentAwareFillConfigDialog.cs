@@ -288,7 +288,7 @@ namespace ContentAwareFill
 
         private void donateLabel_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            this.Services.GetService<PaintDotNet.AppModel.IShellService>().LaunchUrl(this, "https://forums.getpaint.net/index.php?showtopic=112730");
+            this.Services.GetService<IShellService>().LaunchUrl(this, "https://forums.getpaint.net/index.php?showtopic=112730");
         }
 
         private void autoRenderCb_CheckedChanged(object sender, EventArgs e)
