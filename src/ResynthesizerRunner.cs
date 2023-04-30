@@ -222,7 +222,7 @@ namespace ContentAwareFill
 
             using (IDeviceContext deviceContext = d2dFactory.CreateBitmapDeviceContext(this.sourceMask))
             {
-                // PrimitiveBlend.Copy is required for Direct2D mask to out the original selection.
+                // PrimitiveBlend.Copy is required for Direct2D to mask out the original selection.
                 deviceContext.PrimitiveBlend = PrimitiveBlend.Copy;
 
                 using (ISolidColorBrush selectedRegionBrush = deviceContext.CreateSolidColorBrush(Colors.White))
