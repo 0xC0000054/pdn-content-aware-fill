@@ -28,6 +28,7 @@ using PaintDotNet.Imaging;
 using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace ContentAwareFill
@@ -46,6 +47,11 @@ namespace ContentAwareFill
         private bool setRenderingStatusText;
         private IBitmap<ColorBgra32> output;
         private ResynthesizerRunner resynthesizer;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage(
+            "Usage",
+            "CA2213:Disposable fields should be disposed",
+            Justification = "False positive with the analyzer.")]
+        private CancellationTokenSource resynthesizerTokenSource;
 
         public ContentAwareFillConfigDialog()
         {
@@ -88,7 +94,7 @@ namespace ContentAwareFill
 
                 if (this.DialogResult == DialogResult.Cancel)
                 {
-                    this.backgroundWorker.CancelAsync();
+                    this.resynthesizerTokenSource.Cancel();
                 }
             }
 
@@ -306,11 +312,12 @@ namespace ContentAwareFill
             if (this.backgroundWorker.IsBusy)
             {
                 this.restartBackgroundWorker = true;
-                this.backgroundWorker.CancelAsync();
+                this.resynthesizerTokenSource.Cancel();
             }
             else
             {
                 this.resynthesizer ??= new ResynthesizerRunner(this.Environment, this.Services);
+                this.resynthesizerTokenSource = new CancellationTokenSource();
 
                 this.setRenderingStatusText = false;
                 this.resynthesizer.SetParameters(this.sampleSizeTrackBar.Value,
@@ -325,7 +332,8 @@ namespace ContentAwareFill
         {
             BackgroundWorker worker = (BackgroundWorker)sender;
 
-            IBitmap<ColorBgra32> output = this.resynthesizer.Run(() => worker.CancellationPending, worker.ReportProgress);
+            IBitmap<ColorBgra32> output = this.resynthesizer.Run(this.resynthesizerTokenSource.Token,
+                                                                 worker.ReportProgress);
 
             if (output != null)
             {
@@ -350,12 +358,19 @@ namespace ContentAwareFill
 
         private void backgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            if (this.resynthesizerTokenSource != null)
+            {
+                this.resynthesizerTokenSource.Dispose();
+                this.resynthesizerTokenSource = null;
+            }
+
             if (this.restartBackgroundWorker)
             {
                 this.restartBackgroundWorker = false;
                 this.resynthesizer.SetParameters(this.sampleSizeTrackBar.Value,
                                                  (SampleSource)this.sampleFromCombo.SelectedIndex,
                                                  (FillDirection)this.fillDirectionCombo.SelectedIndex);
+                this.resynthesizerTokenSource = new CancellationTokenSource();
 
                 this.backgroundWorker.RunWorkerAsync();
             }

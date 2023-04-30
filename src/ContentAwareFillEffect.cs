@@ -112,8 +112,6 @@ namespace ContentAwareFill
                     token.Output = null;
                 }
 
-                IBitmapEffectEnvironment environment = this.Environment;
-
                 // This plugin does not support processing a selection of the whole image, it needs some unselected pixels
                 // to replace the contents of the selected area.
                 // When there is no active selection Paint.NET acts as if the whole image/layer is selected.
@@ -125,7 +123,7 @@ namespace ContentAwareFill
                         {
                             resynthesizer.SetParameters(token.SampleSize, token.SampleFrom, token.FillDirection);
 
-                            token.Output = resynthesizer.Run(() => this.IsCancelRequested);
+                            token.Output = resynthesizer.Run(this.CancellationToken);
                         }
                     }
                     catch (ResynthizerException ex)

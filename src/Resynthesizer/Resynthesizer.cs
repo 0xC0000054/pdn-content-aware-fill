@@ -51,6 +51,7 @@ using PaintDotNet.Imaging;
 using PaintDotNet.Rendering;
 using System;
 using System.Collections.Immutable;
+using System.Threading;
 
 namespace ContentAwareFill
 {
@@ -60,6 +61,7 @@ namespace ContentAwareFill
 
         private readonly ResynthesizerParameters parameters;
         private readonly Random random;
+        private readonly CancellationToken cancellationToken;
         private readonly Action<int> progressCallback;
         private readonly ImmutableArray<ushort> diffTable;
 
@@ -113,6 +115,7 @@ namespace ContentAwareFill
                              RectInt32 sourceRoi,
                              SizeInt32 croppedSourceSize,
                              IBitmap<ColorAlpha8> targetMask,
+                             CancellationToken cancellationToken,
                              Action<int> progressCallback,
                              IImagingFactory imagingFactory)
         {
@@ -140,6 +143,7 @@ namespace ContentAwareFill
             this.tried = new PointIndexedArray<int>(this.target.Size, -1);
             this.hasValue = new PointIndexedArray<bool>(this.target.Size, false);
             this.sourceOf = new PointIndexedArray<Point2Int32>(this.target.Size, new Point2Int32(-1, -1));
+            this.cancellationToken = cancellationToken;
             this.progressCallback = progressCallback;
         }
 
@@ -189,21 +193,14 @@ namespace ContentAwareFill
         /// <summary>
         /// Performs the content the aware fill.
         /// </summary>
-        /// <param name="abortCallback">The abort callback.</param>
-        /// <returns><c>true</c> on success; otherwise <c>false</c> if the user canceled rendering.</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="abortCallback"/> is null.</exception>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
         /// <exception cref="ResynthizerException">
         /// The source selection is empty.
         /// or
         /// The destination layer is empty.
         /// </exception>
-        public bool ContentAwareFill(Func<bool> abortCallback)
+        public void ContentAwareFill()
         {
-            if (abortCallback == null)
-            {
-                throw new ArgumentNullException(nameof(abortCallback));
-            }
-
             PrepareTargetPoints(this.parameters.MatchContext != MatchContextType.None);
             // The constructor handles the setup performed by prepare_target_sources.
             PrepareSourcePoints();
@@ -232,21 +229,14 @@ namespace ContentAwareFill
 
                 for (int i = 0; i < ResynthesizerConstants.MaxPasses; i++)
                 {
-                    int? betters = Synthesize(i, abortCallback, sourceRegion, sourceMaskRegion, targetRegion);
+                    int betters = Synthesize(i, sourceRegion, sourceMaskRegion, targetRegion);
 
-                    if (!betters.HasValue)
-                    {
-                        return false;
-                    }
-
-                    if (((float)betters.Value / this.targetPoints.Length) < ResynthesizerConstants.TerminateFraction)
+                    if (((float)betters / this.targetPoints.Length) < ResynthesizerConstants.TerminateFraction)
                     {
                         break;
                     }
                 }
             }
-
-            return true;
         }
 
         private static bool ClippedOrMaskedSource(Point2Int32 point, RegionPtr<ColorAlpha8> sourceMaskRegion)
@@ -484,6 +474,8 @@ namespace ContentAwareFill
 
             for (int i = 0; i < this.neighborCount; i++)
             {
+                this.cancellationToken.ThrowIfCancellationRequested();
+
                 Point2Int32 offset = point.Add(this.neighbors[i].offset);
 
                 if (ClippedOrMaskedSource(offset, sourceMaskRegion))
@@ -581,13 +573,15 @@ namespace ContentAwareFill
         /// The core function that performs the image synthesis.
         /// </summary>
         /// <param name="pass">The pass.</param>
-        /// <param name="abortCallback">The abort callback.</param>
-        /// <returns>The match count of the image synthesis; or <c>null</c> if the user canceled the operation.</returns>
-        private int? Synthesize(int pass,
-                                Func<bool> abortCallback,
-                                RegionPtr<ColorBgra32> sourceRegion,
-                                RegionPtr<ColorAlpha8> sourceMaskRegion,
-                                RegionPtr<ColorBgra32> targetRegion)
+        /// <param name="sourceRegion">The source region.</param>
+        /// <param name="sourceMaskRegion">The source mask region.</param>
+        /// <param name="targetRegion">The target region.</param>
+        /// <returns>The match count of the image synthesis.</returns>
+        /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
+        private int Synthesize(int pass,
+                               RegionPtr<ColorBgra32> sourceRegion,
+                               RegionPtr<ColorAlpha8> sourceMaskRegion,
+                               RegionPtr<ColorBgra32> targetRegion)
         {
             int length = this.repetitionParameters[pass].end;
             int repeatCountBetters = 0;
@@ -595,13 +589,11 @@ namespace ContentAwareFill
 
             for (int targetIndex = 0; targetIndex < length; targetIndex++)
             {
+                this.cancellationToken.ThrowIfCancellationRequested();
+
                 // Report progress in increments of 4096.
                 if ((targetIndex & 4095) == 0)
                 {
-                    if (abortCallback())
-                    {
-                        return null;
-                    }
                     if (this.progressCallback != null)
                     {
                         this.targetTriesCount += 4096;
@@ -624,6 +616,8 @@ namespace ContentAwareFill
 
                 for (int neighborIndex = 0; neighborIndex < this.neighborCount; neighborIndex++)
                 {
+                    this.cancellationToken.ThrowIfCancellationRequested();
+
                     Neighbor neighbor = this.neighbors[neighborIndex];
                     if (neighbor.sourceOf.X != -1)
                     {

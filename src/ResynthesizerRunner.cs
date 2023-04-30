@@ -27,6 +27,7 @@ using PaintDotNet.Imaging;
 using PaintDotNet.Rendering;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace ContentAwareFill
 {
@@ -71,21 +72,15 @@ namespace ContentAwareFill
         /// <summary>
         /// Runs the Resynthesizer command.
         /// </summary>
-        /// <param name="abortCallback">The abort callback.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <param name="progressCallback">The progress callback.</param>
         /// <returns>
         ///   The output if Resynthesizer completed successfully; otherwise, <see langword="null" /> if it was canceled.
         /// </returns>
-        /// <exception cref="ArgumentNullException"><paramref name="abortCallback"/> is null.</exception>
         /// <exception cref="InvalidOperationException">Unsupported SampleFrom enumeration value.</exception>
-        public IBitmap<ColorBgra32> Run(Func<bool> abortCallback, Action<int> progressCallback = null)
+        public IBitmap<ColorBgra32> Run(CancellationToken cancellationToken, Action<int> progressCallback = null)
         {
-            if (abortCallback is null)
-            {
-                throw new ArgumentNullException(nameof(abortCallback));
-            }
-
-            IBitmap<ColorBgra32> output = null;
+            IBitmap<ColorBgra32> output;
 
             RectInt32 expandedBounds = RenderSourceMask();
             RectInt32 originalBounds = this.environment.Selection.RenderBounds;
@@ -107,19 +102,25 @@ namespace ContentAwareFill
 
             ResynthesizerParameters resynthesizerParameters = new(false, false, matchContext, 0.0, 0.117, 16, 500);
 
-            using (Resynthesizer synth = new(resynthesizerParameters,
-                                             this.environment.GetSourceBitmapBgra32(),
-                                             this.sourceMask,
-                                             expandedBounds,
-                                             croppedSourceSize,
-                                             this.targetMask,
-                                             progressCallback,
-                                             this.imagingFactory))
+            try
             {
-                if (synth.ContentAwareFill(abortCallback))
+                using (Resynthesizer synth = new(resynthesizerParameters,
+                                                 this.environment.GetSourceBitmapBgra32(),
+                                                 this.sourceMask,
+                                                 expandedBounds,
+                                                 croppedSourceSize,
+                                                 this.targetMask,
+                                                 cancellationToken,
+                                                 progressCallback,
+                                                 this.imagingFactory))
                 {
+                    synth.ContentAwareFill();
                     output = BitmapUtil.CreateFromBitmapSource(this.imagingFactory, synth.Target);
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                output = null;
             }
 
             return output;
