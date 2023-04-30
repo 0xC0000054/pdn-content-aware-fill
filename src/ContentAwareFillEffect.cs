@@ -161,7 +161,7 @@ namespace ContentAwareFill
             {
                 using (IBitmapLock<ColorBgra32> dst = output.LockBgra32())
                 {
-                    sourceBitmap.CopyPixels(dst.Buffer, dst.BufferStride, dst.BufferSize, output.Bounds);
+                    this.sourceBitmap.CopyPixels(dst.Buffer, dst.BufferStride, dst.BufferSize, output.Bounds);
                 }
             }
         }
