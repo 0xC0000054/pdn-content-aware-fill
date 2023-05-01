@@ -316,6 +316,64 @@ namespace ContentAwareFill
             }
         }
 
+        private unsafe void PrepareSourcePoints()
+        {
+            using (IBitmapLock<ColorBgra32> sourceLock = this.source.Lock(BitmapLockOptions.Read))
+            using (IBitmapLock<ColorAlpha8> sourceMaskLock = this.sourceMask.Lock(BitmapLockOptions.Read))
+            {
+                RegionPtr<ColorBgra32> sourceRegion = sourceLock.AsRegionPtr();
+                RegionPtr<ColorAlpha8> sourceMaskRegion = sourceMaskLock.AsRegionPtr();
+
+                RegionRowPtrCollection<ColorBgra32> sourceRows = sourceRegion.Rows;
+                RegionRowPtrCollection<ColorAlpha8> sourceMaskRows = sourceMaskRegion.Rows;
+
+                SizeInt32 size = sourceRegion.Size;
+
+                int sourcePointsSize = 0;
+
+                for (int y = 0; y < size.Height; y++)
+                {
+                    ColorBgra32* src = sourceRows[y].Ptr;
+                    ColorAlpha8* mask = sourceMaskRows[y].Ptr;
+
+                    for (int x = 0; x < size.Width; x++)
+                    {
+                        if (*mask == ColorAlpha8.Opaque && src->A > 0)
+                        {
+                            sourcePointsSize++;
+                        }
+
+                        src++;
+                        mask++;
+                    }
+                }
+
+                ImmutableArray<Point2Int32>.Builder points = ImmutableArray.CreateBuilder<Point2Int32>(sourcePointsSize);
+
+                if (sourcePointsSize > 0)
+                {
+                    for (int y = 0; y < size.Height; y++)
+                    {
+                        ColorBgra32* src = sourceRows[y].Ptr;
+                        ColorAlpha8* mask = sourceMaskRows[y].Ptr;
+
+                        for (int x = 0; x < size.Width; x++)
+                        {
+                            if (*mask == ColorAlpha8.Opaque && src->A > 0)
+                            {
+                                points.Add(new Point2Int32(x, y));
+                            }
+
+                            src++;
+                            mask++;
+                        }
+                    }
+                }
+
+                this.sourcePoints = points.MoveToImmutable();
+            }
+        }
+
         private void PrepareSortedOffsets()
         {
             SizeInt32 sourceSize = this.source.Size;
@@ -400,173 +458,11 @@ namespace ContentAwareFill
             }
         }
 
-        private unsafe void PrepareSourcePoints()
-        {
-            using (IBitmapLock<ColorBgra32> sourceLock = this.source.Lock(BitmapLockOptions.Read))
-            using (IBitmapLock<ColorAlpha8> sourceMaskLock = this.sourceMask.Lock(BitmapLockOptions.Read))
-            {
-                RegionPtr<ColorBgra32> sourceRegion = sourceLock.AsRegionPtr();
-                RegionPtr<ColorAlpha8> sourceMaskRegion = sourceMaskLock.AsRegionPtr();
-
-                RegionRowPtrCollection<ColorBgra32> sourceRows = sourceRegion.Rows;
-                RegionRowPtrCollection<ColorAlpha8> sourceMaskRows = sourceMaskRegion.Rows;
-
-                SizeInt32 size = sourceRegion.Size;
-
-                int sourcePointsSize = 0;
-
-                for (int y = 0; y < size.Height; y++)
-                {
-                    ColorBgra32* src = sourceRows[y].Ptr;
-                    ColorAlpha8* mask = sourceMaskRows[y].Ptr;
-
-                    for (int x = 0; x < size.Width; x++)
-                    {
-                        if (*mask == ColorAlpha8.Opaque && src->A > 0)
-                        {
-                            sourcePointsSize++;
-                        }
-
-                        src++;
-                        mask++;
-                    }
-                }
-
-                ImmutableArray<Point2Int32>.Builder points = ImmutableArray.CreateBuilder<Point2Int32>(sourcePointsSize);
-
-                if (sourcePointsSize > 0)
-                {
-                    for (int y = 0; y < size.Height; y++)
-                    {
-                        ColorBgra32* src = sourceRows[y].Ptr;
-                        ColorAlpha8* mask = sourceMaskRows[y].Ptr;
-
-                        for (int x = 0; x < size.Width; x++)
-                        {
-                            if (*mask == ColorAlpha8.Opaque && src->A > 0)
-                            {
-                                points.Add(new Point2Int32(x, y));
-                            }
-
-                            src++;
-                            mask++;
-                        }
-                    }
-                }
-
-                this.sourcePoints = points.MoveToImmutable();
-            }
-        }
-
         private Point2Int32 RandomSourcePoint()
         {
             int index = this.random.Next(0, this.sourcePoints.Length);
 
             return this.sourcePoints[index];
-        }
-
-        private bool TryPoint(Point2Int32 point,
-                              BettermentKind bettermentKind,
-                              RegionPtr<ColorBgra32> sourceRegion,
-                              RegionPtr<ColorAlpha8> sourceMaskRegion)
-        {
-            uint sum = 0;
-
-            for (int i = 0; i < this.neighborCount; i++)
-            {
-                this.cancellationToken.ThrowIfCancellationRequested();
-
-                Point2Int32 offset = point.Add(this.neighbors[i].offset);
-
-                if (ClippedOrMaskedSource(offset, sourceMaskRegion))
-                {
-                    // The original code used the map_diff_table in the following calculation.
-                    // sum += MaxWeight * ColorChannelCount + map_diff_table[0] * map_match_bpp
-                    //
-                    // As the map_match_bpp variable would always be zero in this plug-in the
-                    // above calculation can be simplified to remove the map_diff_table.
-                    sum += ResynthesizerConstants.MaxWeight * ColorChannelCount;
-                }
-                else
-                {
-                    ColorBgra32 sourcePixel = sourceRegion[offset.X, offset.Y];
-                    ColorBgra32 targetPixel = this.neighbors[i].pixel;
-
-                    if (i > 0)
-                    {
-                        sum += this.diffTable[256 + targetPixel.B - sourcePixel.B];
-                        sum += this.diffTable[256 + targetPixel.G - sourcePixel.G];
-                        sum += this.diffTable[256 + targetPixel.R - sourcePixel.R];
-                    }
-                    // The original code would add the map_diff_table values to the sum when
-                    // the map image is used.
-                    // That code is not used for the content aware fill functionality.
-                }
-
-                if (sum >= this.best)
-                {
-                    return false;
-                }
-            }
-
-            this.best = sum;
-            this.latestBettermentKind = bettermentKind;
-            this.bestPoint = point;
-
-            return sum <= 0;
-        }
-
-        private bool WrapOrClip(SizeInt32 size, ref Point2Int32 point)
-        {
-            while (point.X < 0)
-            {
-                if (this.parameters.TileHorizontal)
-                {
-                    point.X += size.Width;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            while (point.X >= size.Width)
-            {
-                if (this.parameters.TileHorizontal)
-                {
-                    point.X -= size.Width;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            while (point.Y < 0)
-            {
-                if (this.parameters.TileVertical)
-                {
-                    point.Y += size.Height;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            while (point.Y >= size.Height)
-            {
-                if (this.parameters.TileVertical)
-                {
-                    point.Y -= size.Height;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -674,6 +570,110 @@ namespace ContentAwareFill
             }
 
             return repeatCountBetters;
+        }
+
+        private bool TryPoint(Point2Int32 point,
+                              BettermentKind bettermentKind,
+                              RegionPtr<ColorBgra32> sourceRegion,
+                              RegionPtr<ColorAlpha8> sourceMaskRegion)
+        {
+            uint sum = 0;
+
+            for (int i = 0; i < this.neighborCount; i++)
+            {
+                this.cancellationToken.ThrowIfCancellationRequested();
+
+                Point2Int32 offset = point.Add(this.neighbors[i].offset);
+
+                if (ClippedOrMaskedSource(offset, sourceMaskRegion))
+                {
+                    // The original code used the map_diff_table in the following calculation.
+                    // sum += MaxWeight * ColorChannelCount + map_diff_table[0] * map_match_bpp
+                    //
+                    // As the map_match_bpp variable would always be zero in this plug-in the
+                    // above calculation can be simplified to remove the map_diff_table.
+                    sum += ResynthesizerConstants.MaxWeight * ColorChannelCount;
+                }
+                else
+                {
+                    ColorBgra32 sourcePixel = sourceRegion[offset.X, offset.Y];
+                    ColorBgra32 targetPixel = this.neighbors[i].pixel;
+
+                    if (i > 0)
+                    {
+                        sum += this.diffTable[256 + targetPixel.B - sourcePixel.B];
+                        sum += this.diffTable[256 + targetPixel.G - sourcePixel.G];
+                        sum += this.diffTable[256 + targetPixel.R - sourcePixel.R];
+                    }
+                    // The original code would add the map_diff_table values to the sum when
+                    // the map image is used.
+                    // That code is not used for the content aware fill functionality.
+                }
+
+                if (sum >= this.best)
+                {
+                    return false;
+                }
+            }
+
+            this.best = sum;
+            this.latestBettermentKind = bettermentKind;
+            this.bestPoint = point;
+
+            return sum <= 0;
+        }
+
+        private bool WrapOrClip(SizeInt32 size, ref Point2Int32 point)
+        {
+            while (point.X < 0)
+            {
+                if (this.parameters.TileHorizontal)
+                {
+                    point.X += size.Width;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            while (point.X >= size.Width)
+            {
+                if (this.parameters.TileHorizontal)
+                {
+                    point.X -= size.Width;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            while (point.Y < 0)
+            {
+                if (this.parameters.TileVertical)
+                {
+                    point.Y += size.Height;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            while (point.Y >= size.Height)
+            {
+                if (this.parameters.TileVertical)
+                {
+                    point.Y -= size.Height;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private readonly struct Neighbor
