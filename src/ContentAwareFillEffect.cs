@@ -27,7 +27,6 @@ using PaintDotNet.Imaging;
 using PaintDotNet.Rendering;
 using System;
 using System.Drawing;
-using System.Windows.Forms;
 
 namespace ContentAwareFill
 {
@@ -54,7 +53,7 @@ namespace ContentAwareFill
             }
         }
 
-        public ContentAwareFillEffect() : base(StaticName, StaticImage, "Selection", new BitmapEffectOptions { IsConfigurable = true })
+        public ContentAwareFillEffect() : base(StaticName, StaticImage, "Selection", BitmapEffectOptions.Create() with { IsConfigurable = true })
         {
             this.repeatEffect = true;
         }

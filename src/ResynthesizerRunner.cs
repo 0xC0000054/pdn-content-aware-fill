@@ -225,14 +225,14 @@ namespace ContentAwareFill
                 // PrimitiveBlend.Copy is required for Direct2D to mask out the original selection.
                 deviceContext.PrimitiveBlend = PrimitiveBlend.Copy;
 
-                using (ISolidColorBrush selectedRegionBrush = deviceContext.CreateSolidColorBrush(Colors.White))
-                using (ISolidColorBrush unselectedRegionBrush = deviceContext.CreateSolidColorBrush(Colors.TransparentBlack))
+                using (ISolidColorBrush selectedRegionBrush = deviceContext.CreateSolidColorBrush(SrgbColors.White))
+                using (ISolidColorBrush unselectedRegionBrush = deviceContext.CreateSolidColorBrush(SrgbColors.Transparent))
                 using (deviceContext.UseBeginDraw())
                 {
                     IReadOnlyList<RectInt32> selectionRects = this.environment.Selection.RenderScans;
                     RectInt32 surfaceBounds = this.sourceMask.Bounds();
 
-                    deviceContext.Clear(Colors.TransparentBlack);
+                    deviceContext.Clear(SrgbColors.Transparent);
 
                     foreach (RectInt32 rect in selectionRects)
                     {
