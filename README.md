@@ -15,6 +15,7 @@ This plugin is based on the GIMP [Resynthesizer](https://github.com/bootchk/resy
   --------|----------
   Classic | C:\Program Files\Paint.NET\Effects    
   Microsoft Store | Documents\paint.net App Files\Effects
+  Portable | <Paint.NET folder>\Effects
 
 3. Restart Paint.NET.
 4. The plug-in will now be available as the Content Aware Fill menu item in the Selection category of the Paint.NET Effects menu.
