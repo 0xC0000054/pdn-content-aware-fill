@@ -80,7 +80,7 @@ namespace ContentAwareFill
         private int neighborCount;
         private readonly RepetitionParameter[] repetitionParameters;
         private PointIndexedArray<int> tried;
-        private PointIndexedArray<bool> hasValue;
+        private readonly PointIndexedBitArray hasValue;
         private PointIndexedArray<Point2Int32> sourceOf;
         private ImmutableArray<Point2Int32> sortedOffsets;
         private ImmutableArray<Point2Int32> targetPoints;
@@ -145,7 +145,7 @@ namespace ContentAwareFill
             this.neighbors = new Neighbor[Neighbors];
             this.repetitionParameters = new RepetitionParameter[ResynthesizerConstants.MaxPasses];
             this.tried = new PointIndexedArray<int>(this.targetSize, -1, cancellationToken);
-            this.hasValue = new PointIndexedArray<bool>(this.targetSize, false, cancellationToken);
+            this.hasValue = PointIndexedBitArray.CreateFalse(this.targetSize);
             this.sourceOf = new PointIndexedArray<Point2Int32>(this.targetSize, new Point2Int32(-1, -1), cancellationToken);
             this.cancellationToken = cancellationToken;
             this.progressCallback = progressCallback;
@@ -174,7 +174,6 @@ namespace ContentAwareFill
             DisposableUtil.Free(ref this.targetMask);
             DisposableUtil.Free(ref this.sourceMask);
             DisposableUtil.Free(ref this.tried);
-            DisposableUtil.Free(ref this.hasValue);
             DisposableUtil.Free(ref this.sourceOf);
         }
 
