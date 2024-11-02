@@ -21,6 +21,7 @@
 */
 
 using PaintDotNet.Rendering;
+using System;
 using System.Threading;
 
 namespace ContentAwareFill
@@ -35,11 +36,11 @@ namespace ContentAwareFill
             this.items = new T[size.Width * size.Height];
             this.stride = size.Width;
 
-            for (int i = 0; i < this.items.Length; i++)
+            for (int y = 0; y < size.Height; y++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                this.items[i] = defaultValue;
+                new Span<T>(this.items, y * this.stride, size.Width).Fill(defaultValue);
             }
         }
 
