@@ -12,6 +12,9 @@ insert_final_newline                                  = true
 vsspell_section_id = 30a86b75973f41d3b6fe30b8f7950859
 vsspell_ignored_words_30a86b75973f41d3b6fe30b8f7950859 = File:IgnoredWords.dic
 
+# Disable IDE0130:Namespace does not match folder structure
+dotnet_diagnostic.IDE0130.severity = none
+
 # Newline settings
 csharp_new_line_before_open_brace                     = all
 csharp_new_line_before_else                           = true
