@@ -425,10 +425,10 @@ namespace ContentAwareFill
                     }
                 }
 
-                ImmutableArray<Point2Int32>.Builder points = ImmutableArray.CreateBuilder<Point2Int32>(targetPointsSize);
-
                 if (targetPointsSize > 0)
                 {
+                    ImmutableArray<Point2Int32>.Builder points = ImmutableArray.CreateBuilder<Point2Int32>(targetPointsSize);
+
                     using (IBitmapLock<ColorBgra32> targetLock = this.target.Lock(BitmapLockOptions.Read))
                     {
                         RegionPtr<ColorBgra32> targetRegion = targetLock.AsRegionPtr();
@@ -460,9 +460,12 @@ namespace ContentAwareFill
                     }
 
                     TargetPointSorter.Sort(points, this.random, this.matchContext);
+                    this.targetPoints = points.MoveToImmutable();
                 }
-
-                this.targetPoints = points.MoveToImmutable();
+                else
+                {
+                    this.targetPoints = ImmutableArray<Point2Int32>.Empty;
+                }
             }
         }
 
