@@ -311,7 +311,7 @@ namespace ContentAwareFill
 
                 SizeInt32 size = sourceRegion.Size;
 
-                int sourcePointsSize = 0;
+                ulong sourcePointsSize = 0;
 
                 for (int y = 0; y < size.Height; y++)
                 {
@@ -332,10 +332,10 @@ namespace ContentAwareFill
                     }
                 }
 
-                ImmutableArray<Point2Int32>.Builder points = ImmutableArray.CreateBuilder<Point2Int32>(sourcePointsSize);
-
                 if (sourcePointsSize > 0)
                 {
+                    ImmutableArray<Point2Int32>.Builder points = ImmutableArray.CreateBuilder<Point2Int32>(checked((int)sourcePointsSize));
+
                     for (int y = 0; y < size.Height; y++)
                     {
                         this.cancellationToken.ThrowIfCancellationRequested();
@@ -354,9 +354,13 @@ namespace ContentAwareFill
                             mask++;
                         }
                     }
-                }
 
-                this.sourcePoints = points.MoveToImmutable();
+                    this.sourcePoints = points.MoveToImmutable();
+                }
+                else
+                {
+                    this.sourcePoints = ImmutableArray<Point2Int32>.Empty;
+                }
             }
         }
 
@@ -367,9 +371,9 @@ namespace ContentAwareFill
             int width = sourceSize.Width;
             int height = sourceSize.Height;
 
-            int length = ((2 * width) - 1) * ((2 * height) - 1);
+            ulong length = ((2 * (ulong)width) - 1) * ((2 * (ulong)height) - 1);
 
-            ImmutableArray<Point2Int32>.Builder offsets = ImmutableArray.CreateBuilder<Point2Int32>(length);
+            ImmutableArray<Point2Int32>.Builder offsets = ImmutableArray.CreateBuilder<Point2Int32>(checked((int)length));
 
             for (int y = -height + 1; y < height; y++)
             {
@@ -392,7 +396,7 @@ namespace ContentAwareFill
             {
                 RegionPtr<ColorAlpha8> targetMaskRegion = targetMaskLock.AsRegionPtr();
 
-                int targetPointsSize = 0;
+                ulong targetPointsSize = 0;
 
                 SizeInt32 targetSize = this.target.Size;
 
@@ -411,7 +415,7 @@ namespace ContentAwareFill
 
                 if (targetPointsSize > 0)
                 {
-                    ImmutableArray<Point2Int32>.Builder points = ImmutableArray.CreateBuilder<Point2Int32>(targetPointsSize);
+                    ImmutableArray<Point2Int32>.Builder points = ImmutableArray.CreateBuilder<Point2Int32>(checked((int)targetPointsSize));
 
                     using (IBitmapLock<ColorBgra32> targetLock = this.target.Lock(BitmapLockOptions.Read))
                     {
