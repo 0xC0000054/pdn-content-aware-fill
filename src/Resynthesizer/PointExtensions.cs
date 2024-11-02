@@ -21,11 +21,13 @@
 */
 
 using PaintDotNet.Rendering;
+using System.Runtime.CompilerServices;
 
 namespace ContentAwareFill
 {
     internal static class PointExtensions
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Point2Int32 Add(this Point2Int32 point, Point2Int32 value)
         {
             return new Point2Int32(point.X + value.X, point.Y + value.Y);
