@@ -21,6 +21,7 @@
 */
 
 using PaintDotNet.Rendering;
+using System.Threading;
 
 namespace ContentAwareFill
 {
@@ -29,13 +30,15 @@ namespace ContentAwareFill
         private readonly T[] items;
         private readonly int stride;
 
-        public PointIndexedArray(SizeInt32 size, T defaultValue)
+        public PointIndexedArray(SizeInt32 size, T defaultValue, CancellationToken cancellationToken)
         {
             this.items = new T[size.Width * size.Height];
             this.stride = size.Width;
 
             for (int i = 0; i < this.items.Length; i++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 this.items[i] = defaultValue;
             }
         }

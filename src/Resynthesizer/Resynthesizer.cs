@@ -119,9 +119,9 @@ namespace ContentAwareFill
                              RectInt32 sourceRoi,
                              SizeInt32 croppedSourceSize,
                              IBitmap<ColorAlpha8> targetMask,
-                             CancellationToken cancellationToken,
                              Action<int> progressCallback,
-                             IImagingFactory imagingFactory)
+                             IImagingFactory imagingFactory,
+                             CancellationToken cancellationToken)
         {
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(sourceMask);
@@ -144,9 +144,9 @@ namespace ContentAwareFill
             this.diffTable = MakeDiffTable();
             this.neighbors = new Neighbor[Neighbors];
             this.repetitionParameters = new RepetitionParameter[ResynthesizerConstants.MaxPasses];
-            this.tried = new PointIndexedArray<int>(this.target.Size, -1);
-            this.hasValue = new PointIndexedArray<bool>(this.target.Size, false);
-            this.sourceOf = new PointIndexedArray<Point2Int32>(this.target.Size, new Point2Int32(-1, -1));
+            this.tried = new PointIndexedArray<int>(this.target.Size, -1, cancellationToken);
+            this.hasValue = new PointIndexedArray<bool>(this.target.Size, false, cancellationToken);
+            this.sourceOf = new PointIndexedArray<Point2Int32>(this.target.Size, new Point2Int32(-1, -1), cancellationToken);
             this.cancellationToken = cancellationToken;
             this.progressCallback = progressCallback;
         }
@@ -331,6 +331,8 @@ namespace ContentAwareFill
 
                 for (int y = 0; y < size.Height; y++)
                 {
+                    this.cancellationToken.ThrowIfCancellationRequested();
+
                     ColorBgra32* src = sourceRows[y].Ptr;
                     ColorAlpha8* mask = sourceMaskRows[y].Ptr;
 
@@ -352,6 +354,8 @@ namespace ContentAwareFill
                 {
                     for (int y = 0; y < size.Height; y++)
                     {
+                        this.cancellationToken.ThrowIfCancellationRequested();
+
                         ColorBgra32* src = sourceRows[y].Ptr;
                         ColorAlpha8* mask = sourceMaskRows[y].Ptr;
 
@@ -385,6 +389,8 @@ namespace ContentAwareFill
 
             for (int y = -height + 1; y < height; y++)
             {
+                this.cancellationToken.ThrowIfCancellationRequested();
+
                 for (int x = -width + 1; x < width; x++)
                 {
                     offsets.Add(new Point2Int32(x, y));
@@ -408,6 +414,8 @@ namespace ContentAwareFill
 
                 foreach (RegionRowPtr<ColorAlpha8> row in targetMaskRegion.Rows)
                 {
+                    this.cancellationToken.ThrowIfCancellationRequested();
+
                     foreach (ColorAlpha8 pixel in row)
                     {
                         if (pixel != ColorAlpha8.Transparent)
@@ -429,6 +437,8 @@ namespace ContentAwareFill
 
                         for (int y = 0; y < targetSize.Height; y++)
                         {
+                            this.cancellationToken.ThrowIfCancellationRequested();
+
                             ColorBgra32* src = targetRows[y].Ptr;
                             ColorAlpha8* mask = targetMaskRows[y].Ptr;
 

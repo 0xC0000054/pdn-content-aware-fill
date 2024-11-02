@@ -81,36 +81,32 @@ namespace ContentAwareFill
         public IBitmap<ColorBgra32> Run(CancellationToken cancellationToken, Action<int> progressCallback = null)
         {
             IBitmap<ColorBgra32> output;
-
-            RectInt32 expandedBounds = RenderSourceMask();
-            RectInt32 originalBounds = this.environment.Selection.RenderBounds;
-
-            if (this.targetMask is null)
-            {
-                this.targetMask = BitmapUtil.CreateFromBitmapSource(this.imagingFactory, this.environment.Selection.MaskBitmap);
-            }
-
-            SizeInt32 croppedSourceSize = this.sampleFrom switch
-            {
-                SampleSource.Sides => new SizeInt32(expandedBounds.X + expandedBounds.Width, originalBounds.Y + originalBounds.Height),
-                SampleSource.TopAndBottom => new SizeInt32(originalBounds.X + originalBounds.Width, expandedBounds.Y + expandedBounds.Height),
-                SampleSource.AllAround => new SizeInt32(expandedBounds.X + expandedBounds.Width, expandedBounds.Y + expandedBounds.Height),
-                _ => throw new InvalidOperationException("Unsupported SampleFrom enumeration value: " + this.sampleFrom.ToString()),
-            };
-
-            MatchContextType matchContext = GetMatchContextType();
-
             try
             {
+                RectInt32 expandedBounds = RenderSourceMask(cancellationToken);
+                RectInt32 originalBounds = this.environment.Selection.RenderBounds;
+
+                this.targetMask ??= BitmapUtil.CreateFromBitmapSource(this.imagingFactory, this.environment.Selection.MaskBitmap);
+
+                SizeInt32 croppedSourceSize = this.sampleFrom switch
+                {
+                    SampleSource.Sides => new SizeInt32(expandedBounds.X + expandedBounds.Width, originalBounds.Y + originalBounds.Height),
+                    SampleSource.TopAndBottom => new SizeInt32(originalBounds.X + originalBounds.Width, expandedBounds.Y + expandedBounds.Height),
+                    SampleSource.AllAround => new SizeInt32(expandedBounds.X + expandedBounds.Width, expandedBounds.Y + expandedBounds.Height),
+                    _ => throw new InvalidOperationException("Unsupported SampleFrom enumeration value: " + this.sampleFrom.ToString()),
+                };
+
+                MatchContextType matchContext = GetMatchContextType();
+
                 using (Resynthesizer synth = new(matchContext,
                                                  this.environment.GetSourceBitmapBgra32(),
                                                  this.sourceMask,
                                                  expandedBounds,
                                                  croppedSourceSize,
                                                  this.targetMask,
-                                                 cancellationToken,
                                                  progressCallback,
-                                                 this.imagingFactory))
+                                                 this.imagingFactory,
+                                                 cancellationToken))
                 {
                     synth.ContentAwareFill();
                     output = BitmapUtil.CreateFromBitmapSource(this.imagingFactory, synth.Target);
@@ -210,7 +206,7 @@ namespace ContentAwareFill
             return MatchContextType.None;
         }
 
-        private unsafe RectInt32 RenderSourceMask()
+        private unsafe RectInt32 RenderSourceMask(CancellationToken cancellationToken)
         {
             this.sourceMask ??= this.imagingFactory.CreateBitmap<ColorAlpha8>(this.environment.Document.Size);
 
@@ -234,6 +230,8 @@ namespace ContentAwareFill
 
                     foreach (RectInt32 rect in selectionRects)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
+
                         RectInt32 expandedRect = RectInt32.Inflate(rect, this.sampleSize, this.sampleSize);
                         RectInt32 selectedArea = RectInt32.Intersect(expandedRect, surfaceBounds);
 
@@ -247,6 +245,8 @@ namespace ContentAwareFill
                     // when there is more than one scan rectangle.
                     foreach (RectInt32 rect in selectionRects)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
+
                         deviceContext.FillRectangle(rect, unselectedRegionBrush);
                     }
                 }
