@@ -125,7 +125,7 @@ namespace ContentAwareFill
                             token.Output = resynthesizer.Run(this.CancellationToken);
                         }
                     }
-                    catch (ResynthizerException ex)
+                    catch (ResynthesizerException ex)
                     {
                         this.Services.GetService<IExceptionDialogService>().ShowErrorDialog(null, ex);
                     }

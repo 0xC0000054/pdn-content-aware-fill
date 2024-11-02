@@ -26,13 +26,13 @@ using System.Runtime.Serialization;
 namespace ContentAwareFill
 {
     [Serializable]
-    internal sealed class ResynthizerException : Exception
+    internal sealed class ResynthesizerException : Exception
     {
-        public ResynthizerException(string message) : base(message)
+        public ResynthesizerException(string message) : base(message)
         {
         }
 
-        private ResynthizerException(SerializationInfo info, StreamingContext context) : base(info, context)
+        private ResynthesizerException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }

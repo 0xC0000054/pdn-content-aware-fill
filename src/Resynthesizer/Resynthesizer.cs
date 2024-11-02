@@ -181,7 +181,7 @@ namespace ContentAwareFill
         /// Performs the content the aware fill.
         /// </summary>
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
-        /// <exception cref="ResynthizerException">
+        /// <exception cref="ResynthesizerException">
         /// The source selection is empty.
         /// or
         /// The destination layer is empty.
@@ -194,12 +194,12 @@ namespace ContentAwareFill
 
             if (this.sourcePoints.Length == 0)
             {
-                throw new ResynthizerException(Properties.Resources.SourcePointsEmpty);
+                throw new ResynthesizerException(Properties.Resources.SourcePointsEmpty);
             }
 
             if (this.targetPoints.Length == 0)
             {
-                throw new ResynthizerException(Properties.Resources.TargetPointsEmpty);
+                throw new ResynthesizerException(Properties.Resources.TargetPointsEmpty);
             }
 
             PrepareSortedOffsets();
