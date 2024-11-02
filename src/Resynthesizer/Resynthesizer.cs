@@ -58,8 +58,10 @@ namespace ContentAwareFill
     internal sealed class Resynthesizer : IDisposable
     {
         private const int ColorChannelCount = 3;
+        private const int Neighbors = 16;
+        private const double SensitivityToOutliers = 0.117;
+        private const int Trys = 500;
 
-        private readonly ResynthesizerParameters parameters;
         private readonly Random random;
         private readonly CancellationToken cancellationToken;
         private readonly Action<int> progressCallback;
@@ -72,6 +74,8 @@ namespace ContentAwareFill
         private IBitmap<ColorAlpha8> targetMask;
         private IBitmap<ColorAlpha8> sourceMask;
 
+        private readonly MatchContextType matchContext;
+        private readonly SizeInt32 targetSize;
         private readonly Neighbor[] neighbors;
         private int neighborCount;
         private readonly RepetitionParameter[] repetitionParameters;
@@ -90,7 +94,7 @@ namespace ContentAwareFill
         /// <summary>
         /// Initializes a new instance of the <see cref="Resynthesizer"/> class.
         /// </summary>
-        /// <param name="parameters">The parameters.</param>
+        /// <param name="matchContext">The match context.</param>
         /// <param name="source">The source.</param>
         /// <param name="sourceMask">The source mask.</param>
         /// <param name="sourceRoi">The source region of interest.</param>
@@ -109,7 +113,7 @@ namespace ContentAwareFill
         /// or
         /// <paramref name="imagingFactory"/> is null.
         /// </exception>
-        public Resynthesizer(ResynthesizerParameters parameters,
+        public Resynthesizer(MatchContextType matchContext,
                              IEffectInputBitmap<ColorBgra32> source,
                              IBitmap<ColorAlpha8> sourceMask,
                              RectInt32 sourceRoi,
@@ -119,7 +123,6 @@ namespace ContentAwareFill
                              Action<int> progressCallback,
                              IImagingFactory imagingFactory)
         {
-            ArgumentNullException.ThrowIfNull(parameters);
             ArgumentNullException.ThrowIfNull(source);
             ArgumentNullException.ThrowIfNull(sourceMask);
             ArgumentNullException.ThrowIfNull(targetMask);
@@ -130,15 +133,16 @@ namespace ContentAwareFill
                 throw new ArgumentException("The target mask size does not match the source image.");
             }
 
-            this.parameters = parameters;
+            this.matchContext = matchContext;
             this.target = BitmapUtil.CreateFromBitmapSource(imagingFactory, source);
+            this.targetSize = this.target.Size;
             this.source = BitmapUtil.CreateFromBitmapSource(imagingFactory, source, croppedSourceSize, sourceRoi);
             this.sourceMask = BitmapUtil.CreateFromBitmapSource(imagingFactory, sourceMask, croppedSourceSize, sourceRoi, clear: true);
             this.targetMask = targetMask.CreateRefT();
 
             this.random = new Random(1198472);
-            this.diffTable = MakeDiffTable(parameters);
-            this.neighbors = new Neighbor[parameters.Neighbors];
+            this.diffTable = MakeDiffTable();
+            this.neighbors = new Neighbor[Neighbors];
             this.repetitionParameters = new RepetitionParameter[ResynthesizerConstants.MaxPasses];
             this.tried = new PointIndexedArray<int>(this.target.Size, -1);
             this.hasValue = new PointIndexedArray<bool>(this.target.Size, false);
@@ -201,7 +205,7 @@ namespace ContentAwareFill
         /// </exception>
         public void ContentAwareFill()
         {
-            PrepareTargetPoints(this.parameters.MatchContext != MatchContextType.None);
+            PrepareTargetPoints(this.matchContext != MatchContextType.None);
             // The constructor handles the setup performed by prepare_target_sources.
             PrepareSourcePoints();
 
@@ -248,15 +252,15 @@ namespace ContentAwareFill
                    sourceMaskRegion[point.X, point.Y] != ColorAlpha8.Opaque;
         }
 
-        private static ImmutableArray<ushort> MakeDiffTable(ResynthesizerParameters parameters)
+        private static ImmutableArray<ushort> MakeDiffTable()
         {
             ImmutableArray<ushort>.Builder diffTable = ImmutableArray.CreateBuilder<ushort>(512);
 
-            double valueDivisor = NegLogCauchy(1.0 / parameters.SensitivityToOutliers);
+            double valueDivisor = NegLogCauchy(1.0 / SensitivityToOutliers);
 
             for (int i = -256; i < 256; i++)
             {
-                double value = NegLogCauchy(i / 256.0 / parameters.SensitivityToOutliers) / valueDivisor * ResynthesizerConstants.MaxWeight;
+                double value = NegLogCauchy(i / 256.0 / SensitivityToOutliers) / valueDivisor * ResynthesizerConstants.MaxWeight;
 
                 diffTable.Insert(256 + i, (ushort)value);
                 // The original code populated a map diff table array that is used to when mapping between images.
@@ -278,21 +282,20 @@ namespace ContentAwareFill
             using (IBitmapLock<ColorBgra32> bitmapLock = this.target.Lock(BitmapLockOptions.Read))
             {
                 RegionPtr<ColorBgra32> region = bitmapLock.AsRegionPtr();
-                SizeInt32 targetSize = region.Size;
 
                 for (int i = 0; i < this.sortedOffsets.Length; i++)
                 {
                     Point2Int32 offset = this.sortedOffsets[i];
                     Point2Int32 neighborPoint = position.Add(offset);
 
-                    if (WrapOrClip(targetSize, ref neighborPoint) && this.hasValue[neighborPoint])
+                    if (InTargetBounds(neighborPoint) && this.hasValue[neighborPoint])
                     {
                         this.neighbors[this.neighborCount] = new Neighbor(region[neighborPoint.X, neighborPoint.Y],
                                                                           offset,
                                                                           this.sourceOf[neighborPoint]);
                         this.neighborCount++;
 
-                        if (this.neighborCount >= this.parameters.Neighbors)
+                        if (this.neighborCount >= Neighbors)
                         {
                             break;
                         }
@@ -451,7 +454,7 @@ namespace ContentAwareFill
                         }
                     }
 
-                    TargetPointSorter.Sort(points, this.random, this.parameters.MatchContext);
+                    TargetPointSorter.Sort(points, this.random, this.matchContext);
                 }
 
                 this.targetPoints = points.MoveToImmutable();
@@ -544,7 +547,7 @@ namespace ContentAwareFill
 
                 if (!perfectMatch)
                 {
-                    for (uint i = 0; i < this.parameters.Trys; i++)
+                    for (uint i = 0; i < Trys; i++)
                     {
                         perfectMatch = TryPoint(RandomSourcePoint(),
                                                 BettermentKind.RandomSource,
@@ -623,57 +626,12 @@ namespace ContentAwareFill
             return sum <= 0;
         }
 
-        private bool WrapOrClip(SizeInt32 size, ref Point2Int32 point)
+        private bool InTargetBounds(Point2Int32 point)
         {
-            while (point.X < 0)
-            {
-                if (this.parameters.TileHorizontal)
-                {
-                    point.X += size.Width;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            while (point.X >= size.Width)
-            {
-                if (this.parameters.TileHorizontal)
-                {
-                    point.X -= size.Width;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            while (point.Y < 0)
-            {
-                if (this.parameters.TileVertical)
-                {
-                    point.Y += size.Height;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            while (point.Y >= size.Height)
-            {
-                if (this.parameters.TileVertical)
-                {
-                    point.Y -= size.Height;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return point.X >= 0
+                && point.X < this.targetSize.Width
+                && point.Y >= 0
+                && point.Y < this.targetSize.Height;
         }
 
         private readonly struct Neighbor

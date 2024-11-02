@@ -100,11 +100,9 @@ namespace ContentAwareFill
 
             MatchContextType matchContext = GetMatchContextType();
 
-            ResynthesizerParameters resynthesizerParameters = new(false, false, matchContext, 0.0, 0.117, 16, 500);
-
             try
             {
-                using (Resynthesizer synth = new(resynthesizerParameters,
+                using (Resynthesizer synth = new(matchContext,
                                                  this.environment.GetSourceBitmapBgra32(),
                                                  this.sourceMask,
                                                  expandedBounds,
