@@ -225,7 +225,7 @@ namespace ContentAwareFill
 
             using (IBitmapLock<ColorBgra32> sourceLock = this.source.Lock(BitmapLockOptions.Read))
             using (IBitmapLock<ColorAlpha8> sourceMaskLock = this.sourceMask.Lock(BitmapLockOptions.Read))
-            using (IBitmapLock<ColorBgra32> targetLock = this.target.Lock(BitmapLockOptions.Write))
+            using (IBitmapLock<ColorBgra32> targetLock = this.target.Lock(BitmapLockOptions.ReadWrite))
             {
                 RegionPtr<ColorBgra32> sourceRegion = sourceLock.AsRegionPtr();
                 RegionPtr<ColorAlpha8> sourceMaskRegion = sourceMaskLock.AsRegionPtr();
@@ -275,30 +275,25 @@ namespace ContentAwareFill
             return Math.Log((d * d) + 1.0);
         }
 
-        private void PrepareNeighbors(Point2Int32 position)
+        private void PrepareNeighbors(RegionPtr<ColorBgra32> targetRegion, Point2Int32 position)
         {
             this.neighborCount = 0;
 
-            using (IBitmapLock<ColorBgra32> bitmapLock = this.target.Lock(BitmapLockOptions.Read))
+            for (int i = 0; i < this.sortedOffsets.Length; i++)
             {
-                RegionPtr<ColorBgra32> region = bitmapLock.AsRegionPtr();
+                Point2Int32 offset = this.sortedOffsets[i];
+                Point2Int32 neighborPoint = position.Add(offset);
 
-                for (int i = 0; i < this.sortedOffsets.Length; i++)
+                if (InTargetBounds(neighborPoint) && this.hasValue[neighborPoint])
                 {
-                    Point2Int32 offset = this.sortedOffsets[i];
-                    Point2Int32 neighborPoint = position.Add(offset);
+                    this.neighbors[this.neighborCount] = new Neighbor(targetRegion[neighborPoint.X, neighborPoint.Y],
+                                                                      offset,
+                                                                      this.sourceOf[neighborPoint]);
+                    this.neighborCount++;
 
-                    if (InTargetBounds(neighborPoint) && this.hasValue[neighborPoint])
+                    if (this.neighborCount >= Neighbors)
                     {
-                        this.neighbors[this.neighborCount] = new Neighbor(region[neighborPoint.X, neighborPoint.Y],
-                                                                          offset,
-                                                                          this.sourceOf[neighborPoint]);
-                        this.neighborCount++;
-
-                        if (this.neighborCount >= Neighbors)
-                        {
-                            break;
-                        }
+                        break;
                     }
                 }
             }
@@ -507,7 +502,7 @@ namespace ContentAwareFill
 
                 this.hasValue[position] = true;
 
-                PrepareNeighbors(position);
+                PrepareNeighbors(targetRegion, position);
 
                 this.best = uint.MaxValue;
                 this.latestBettermentKind = BettermentKind.None;
