@@ -319,7 +319,6 @@ namespace ContentAwareFill
                 this.resynthesizer ??= new ResynthesizerRunner(this.Environment, this.Services);
                 this.resynthesizerTokenSource = new CancellationTokenSource();
 
-                this.setRenderingStatusText = false;
                 this.resynthesizer.SetParameters(this.sampleSizeTrackBar.Value,
                                                  (SampleSource)this.sampleFromCombo.SelectedIndex,
                                                  (FillDirection)this.fillDirectionCombo.SelectedIndex);
@@ -330,6 +329,13 @@ namespace ContentAwareFill
 
         private void backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
+            Invoke(() =>
+            {
+                this.toolStripStatusLabel1.Text = Resources.StatusInitializingText;
+                this.toolStripProgressBar1.Style = ProgressBarStyle.Marquee;
+                this.setRenderingStatusText = false;
+            });
+
             BackgroundWorker worker = (BackgroundWorker)sender;
 
             IBitmap<ColorBgra32> output = this.resynthesizer.Run(this.resynthesizerTokenSource.Token,
@@ -350,6 +356,7 @@ namespace ContentAwareFill
             if (!this.setRenderingStatusText)
             {
                 this.setRenderingStatusText = true;
+                this.toolStripProgressBar1.Style = ProgressBarStyle.Continuous;
                 this.toolStripStatusLabel1.Text = Resources.StatusRenderingText;
             }
 

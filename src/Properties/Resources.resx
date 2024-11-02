@@ -112,10 +112,10 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="WholeImageSelected" xml:space="preserve">
     <value>There is no active selection or the entire image is selected.
@@ -128,7 +128,7 @@ This plugin requires that a portion of the image remain unselected so that it ca
   <data name="TargetPointsEmpty" xml:space="preserve">
     <value>The target layer is empty. Does the selection include any non-transparent pixels?</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="ResetIcon_96" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Icons\ResetIcon-96.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -137,5 +137,8 @@ This plugin requires that a portion of the image remain unselected so that it ca
   </data>
   <data name="StatusRenderingText" xml:space="preserve">
     <value>Rendering...</value>
+  </data>
+  <data name="StatusInitializingText" xml:space="preserve">
+    <value>Initializing...</value>
   </data>
 </root>

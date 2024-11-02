@@ -80,6 +80,15 @@ namespace ContentAwareFill.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Initializing....
+        /// </summary>
+        internal static string StatusInitializingText {
+            get {
+                return ResourceManager.GetString("StatusInitializingText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Ready.
         /// </summary>
         internal static string StatusReadyText {
