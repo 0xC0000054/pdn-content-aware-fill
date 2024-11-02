@@ -79,9 +79,9 @@ namespace ContentAwareFill
         private readonly Neighbor[] neighbors;
         private int neighborCount;
         private readonly RepetitionParameter[] repetitionParameters;
-        private readonly PointIndexedArray<int> tried;
-        private readonly PointIndexedArray<bool> hasValue;
-        private readonly PointIndexedArray<Point2Int32> sourceOf;
+        private PointIndexedArray<int> tried;
+        private PointIndexedArray<bool> hasValue;
+        private PointIndexedArray<Point2Int32> sourceOf;
         private ImmutableArray<Point2Int32> sortedOffsets;
         private ImmutableArray<Point2Int32> targetPoints;
         private ImmutableArray<Point2Int32> sourcePoints;
@@ -144,9 +144,9 @@ namespace ContentAwareFill
             this.diffTable = MakeDiffTable();
             this.neighbors = new Neighbor[Neighbors];
             this.repetitionParameters = new RepetitionParameter[ResynthesizerConstants.MaxPasses];
-            this.tried = new PointIndexedArray<int>(this.target.Size, -1, cancellationToken);
-            this.hasValue = new PointIndexedArray<bool>(this.target.Size, false, cancellationToken);
-            this.sourceOf = new PointIndexedArray<Point2Int32>(this.target.Size, new Point2Int32(-1, -1), cancellationToken);
+            this.tried = new PointIndexedArray<int>(this.targetSize, -1, cancellationToken);
+            this.hasValue = new PointIndexedArray<bool>(this.targetSize, false, cancellationToken);
+            this.sourceOf = new PointIndexedArray<Point2Int32>(this.targetSize, new Point2Int32(-1, -1), cancellationToken);
             this.cancellationToken = cancellationToken;
             this.progressCallback = progressCallback;
         }
@@ -169,29 +169,13 @@ namespace ContentAwareFill
 
         public void Dispose()
         {
-            if (this.target != null)
-            {
-                this.target.Dispose();
-                this.target = null;
-            }
-
-            if (this.source != null)
-            {
-                this.source.Dispose();
-                this.source = null;
-            }
-
-            if (this.targetMask != null)
-            {
-                this.targetMask.Dispose();
-                this.targetMask = null;
-            }
-
-            if (this.sourceMask != null)
-            {
-                this.sourceMask.Dispose();
-                this.sourceMask = null;
-            }
+            DisposableUtil.Free(ref this.target);
+            DisposableUtil.Free(ref this.source);
+            DisposableUtil.Free(ref this.targetMask);
+            DisposableUtil.Free(ref this.sourceMask);
+            DisposableUtil.Free(ref this.tried);
+            DisposableUtil.Free(ref this.hasValue);
+            DisposableUtil.Free(ref this.sourceOf);
         }
 
         /// <summary>

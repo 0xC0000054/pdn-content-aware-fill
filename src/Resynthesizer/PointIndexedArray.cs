@@ -20,27 +20,31 @@
 *
 */
 
+using ContentAwareFill.Collections;
+using PaintDotNet;
 using PaintDotNet.Rendering;
 using System;
 using System.Threading;
 
 namespace ContentAwareFill
 {
-    internal sealed class PointIndexedArray<T>
+    internal sealed unsafe class PointIndexedArray<T> : Disposable where T : unmanaged
     {
-        private readonly T[] items;
-        private readonly int stride;
+        private NativeArray<T> items;
+        private readonly uint stride;
 
         public PointIndexedArray(SizeInt32 size, T defaultValue, CancellationToken cancellationToken)
         {
-            this.items = new T[size.Width * size.Height];
-            this.stride = size.Width;
+            this.stride = checked((uint)size.Width);
+            uint height = checked((uint)size.Height);
 
-            for (int y = 0; y < size.Height; y++)
+            this.items = new((nuint)this.stride * height);
+
+            for (uint y = 0; y < height; y++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                new Span<T>(this.items, y * this.stride, size.Width).Fill(defaultValue);
+                new Span<T>(this.items.GetAddress((nuint)y * this.stride), size.Width).Fill(defaultValue);
             }
         }
 
@@ -58,14 +62,14 @@ namespace ContentAwareFill
 
         public T GetValue(int x, int y)
         {
-            int index = (y * this.stride) + x;
+            nuint index = ((nuint)checked((uint)y) * this.stride) + checked((uint)x);
 
             return this.items[index];
         }
 
         public void SetValue(int x, int y, T value)
         {
-            int index = (y * this.stride) + x;
+            nuint index = ((nuint)checked((uint)y) * this.stride) + checked((uint)x);
 
             this.items[index] = value;
         }
