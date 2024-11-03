@@ -135,8 +135,7 @@ namespace ContentAwareFill
             if (token.Output != null)
             {
                 this.output ??= this.Environment.ImagingFactory.CreateBitmap<ColorBgra32>(this.Environment.Document.Size);
-
-                BitmapUtil.CopyFromBitmapSource(token.Output, this.output);
+                this.output = token.Output.ToBitmap();
             }
             else
             {

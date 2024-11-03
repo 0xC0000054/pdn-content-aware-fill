@@ -86,7 +86,7 @@ namespace ContentAwareFill
                 RectInt32 expandedBounds = RenderSourceMask(cancellationToken);
                 RectInt32 originalBounds = this.environment.Selection.RenderBounds;
 
-                this.targetMask ??= BitmapUtil.CreateFromBitmapSource(this.imagingFactory, this.environment.Selection.MaskBitmap);
+                this.targetMask ??= this.environment.Selection.MaskBitmap.ToBitmap();
 
                 SizeInt32 croppedSourceSize = this.sampleFrom switch
                 {
@@ -109,7 +109,7 @@ namespace ContentAwareFill
                                                  cancellationToken))
                 {
                     synth.ContentAwareFill();
-                    output = BitmapUtil.CreateFromBitmapSource(this.imagingFactory, synth.Target);
+                    output = synth.Target.ToBitmap();
                 }
             }
             catch (OperationCanceledException)

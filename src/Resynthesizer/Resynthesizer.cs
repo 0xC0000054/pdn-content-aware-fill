@@ -134,7 +134,7 @@ namespace ContentAwareFill
             }
 
             this.matchContext = matchContext;
-            this.target = BitmapUtil.CreateFromBitmapSource(imagingFactory, source);
+            this.target = source.ToBitmap();
             this.targetSize = this.target.Size;
             this.source = BitmapUtil.CreateFromBitmapSource(imagingFactory, source, croppedSourceSize, sourceRoi);
             this.sourceMask = BitmapUtil.CreateFromBitmapSource(imagingFactory, sourceMask, croppedSourceSize, sourceRoi, clear: true);
