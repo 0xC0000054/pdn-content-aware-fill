@@ -20,56 +20,65 @@
 *
 */
 
+using PaintDotNet;
+using PaintDotNet.Effects;
 using PaintDotNet.Imaging;
 using PaintDotNet.Rendering;
 using System;
-using System.Runtime.InteropServices;
 
 namespace ContentAwareFill
 {
     internal static class BitmapUtil
     {
-        internal static unsafe IBitmap<TPixel> CreateFromBitmapSource<TPixel>(IImagingFactory imagingFactory,
-                                                                              IBitmapSource<TPixel> source,
-                                                                              SizeInt32? size = null,
-                                                                              RectInt32? sourceRoi = null,
-                                                                              bool clear = false) where TPixel : unmanaged, INaturalPixelInfo
+        internal static unsafe IBitmap<TPixel> CreateFromBitmap<TPixel>(IImagingFactory imagingFactory,
+                                                                        IEffectInputBitmap<TPixel> source,
+                                                                        SizeInt32 size,
+                                                                        RectInt32 sourceRoi) where TPixel : unmanaged, INaturalPixelInfo
 
         {
-            IBitmap<TPixel> bitmap = imagingFactory.CreateBitmap<TPixel>(size ?? source.Size);
+            IBitmap<TPixel> destination = imagingFactory.CreateBitmap<TPixel>(size);
 
-            CopyFromBitmapSource(source, bitmap, sourceRoi, clear);
+            using (IBitmapLock<TPixel> sourceLock = source.Lock(GetSourceRect(size, sourceRoi)))
+            using (IBitmapLock<TPixel> destinationLock = destination.Lock(BitmapLockOptions.Write))
+            {
+                sourceLock.AsRegionPtr().CopyTo(destinationLock.AsRegionPtr());
+            }
 
-            return bitmap;
+            return destination;
         }
 
-        internal static unsafe void CopyFromBitmapSource<TPixel>(IBitmapSource<TPixel> source,
-                                                                 IBitmap<TPixel> destination,
-                                                                 RectInt32? sourceRoi = null,
-                                                                 bool clear = false) where TPixel : unmanaged, INaturalPixelInfo
+        internal static unsafe IBitmap<TPixel> CreateFromBitmap<TPixel>(IImagingFactory imagingFactory,
+                                                                        IBitmap<TPixel> source,
+                                                                        SizeInt32 size,
+                                                                        RectInt32 sourceRoi,
+                                                                        bool clear = false) where TPixel : unmanaged, INaturalPixelInfo
+
         {
-            using (IBitmapLock<TPixel> bitmapLock = destination.Lock(BitmapLockOptions.Write))
+            IBitmap<TPixel> destination = imagingFactory.CreateBitmap<TPixel>(size);
+
+            using (IBitmapLock<TPixel> sourceLock = source.Lock(GetSourceRect(size, sourceRoi), BitmapLockOptions.Read))
+            using (IBitmapLock<TPixel> destinationLock = destination.Lock(BitmapLockOptions.Write))
             {
+                RegionPtr<TPixel> sourceRegion = sourceLock.AsRegionPtr();
+                RegionPtr<TPixel> destRegion = destinationLock.AsRegionPtr();
+
                 if (clear)
                 {
-                    NativeMemory.Clear(bitmapLock.Buffer, bitmapLock.BufferSize);
+                    destRegion.Clear();
                 }
 
-                RectInt32? srcRect = null;
-
-                if (sourceRoi.HasValue)
-                {
-                    RectInt32 roi = sourceRoi.Value;
-                    SizeInt32 size = destination.Size;
-
-                    int copyWidth = Math.Min(size.Width, roi.Width);
-                    int copyHeight = Math.Min(size.Height, roi.Height);
-
-                    srcRect = new RectInt32(roi.Location, copyWidth, copyHeight);
-                }
-
-                source.CopyPixels(bitmapLock.Buffer, bitmapLock.BufferStride, bitmapLock.BufferSize, srcRect);
+                sourceRegion.CopyTo(destRegion);
             }
+
+            return destination;
+        }
+
+        private static RectInt32 GetSourceRect(SizeInt32 destinationSize, RectInt32 sourceRoi)
+        {
+            int copyWidth = Math.Min(destinationSize.Width, sourceRoi.Width);
+            int copyHeight = Math.Min(destinationSize.Height, sourceRoi.Height);
+
+            return new(sourceRoi.Location, copyWidth, copyHeight);
         }
     }
 }

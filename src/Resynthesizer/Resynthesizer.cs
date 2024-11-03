@@ -136,8 +136,8 @@ namespace ContentAwareFill
             this.matchContext = matchContext;
             this.target = source.ToBitmap();
             this.targetSize = this.target.Size;
-            this.source = BitmapUtil.CreateFromBitmapSource(imagingFactory, source, croppedSourceSize, sourceRoi);
-            this.sourceMask = BitmapUtil.CreateFromBitmapSource(imagingFactory, sourceMask, croppedSourceSize, sourceRoi, clear: true);
+            this.source = BitmapUtil.CreateFromBitmap(imagingFactory, source, croppedSourceSize, sourceRoi);
+            this.sourceMask = BitmapUtil.CreateFromBitmap(imagingFactory, sourceMask, croppedSourceSize, sourceRoi, clear: true);
             this.targetMask = targetMask.CreateRefT();
 
             this.random = new Random(1198472);
