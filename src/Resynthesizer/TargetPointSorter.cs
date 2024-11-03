@@ -45,17 +45,18 @@
 *
 */
 
+using Collections.Pooled;
 using PaintDotNet.Rendering;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.ComponentModel;
 
 namespace ContentAwareFill
 {
     internal static class TargetPointSorter
     {
-        internal static void Sort(ImmutableArray<Point2Int32>.Builder points, Random random, MatchContextType matchContextType)
+        internal static void Sort(PooledList<Point2Int32> points, Random random, MatchContextType matchContextType)
         {
             switch (matchContextType)
             {
@@ -64,29 +65,35 @@ namespace ContentAwareFill
                     OrderTargetPointsRandom(points, random);
                     break;
                 case MatchContextType.InwardConcentric:
-                    OrderTargetPointsRandomDirectional(points, random, PointComparer.CreateInwardConcentric(points));
+                    using (DirectionalPointComparer comparer = new(points, outward: false))
+                    {
+                        OrderTargetPointsRandomDirectional(points, random, comparer);
+                    }
                     break;
                 case MatchContextType.InwardHorizontal:
-                    OrderTargetPointsRandomDirectional(points, random, PointComparer.InwardHorizontal);
+                    OrderTargetPointsRandomDirectional(points, random, new HorizontalPointComparer(outward: false));
                     break;
                 case MatchContextType.InwardVertical:
-                    OrderTargetPointsRandomDirectional(points, random, PointComparer.InwardVertical);
+                    OrderTargetPointsRandomDirectional(points, random, new VerticalPointComparer(outward: false));
                     break;
                 case MatchContextType.OutwardConcentric:
-                    OrderTargetPointsRandomDirectional(points, random, PointComparer.CreateOutwardConcentric(points));
+                    using (DirectionalPointComparer comparer = new(points, outward: true))
+                    {
+                        OrderTargetPointsRandomDirectional(points, random, comparer);
+                    }
                     break;
                 case MatchContextType.OutwardHorizontal:
-                    OrderTargetPointsRandomDirectional(points, random, PointComparer.OutwardHorizontal);
+                    OrderTargetPointsRandomDirectional(points, random, new HorizontalPointComparer(outward: true));
                     break;
                 case MatchContextType.OutwardVertical:
-                    OrderTargetPointsRandomDirectional(points, random, PointComparer.OutwardVertical);
+                    OrderTargetPointsRandomDirectional(points, random, new VerticalPointComparer(outward: true));
                     break;
                 default:
                     throw new InvalidEnumArgumentException(nameof(matchContextType), (int)matchContextType, typeof(MatchContextType));
             }
         }
 
-        private static void OrderTargetPointsRandom(ImmutableArray<Point2Int32>.Builder points, Random random)
+        private static void OrderTargetPointsRandom(PooledList<Point2Int32> points, Random random)
         {
             int count = points.Count;
 
@@ -98,7 +105,7 @@ namespace ContentAwareFill
             }
         }
 
-        private static void TargetPointsToOffsets(ImmutableArray<Point2Int32>.Builder points, Point2Int32 center)
+        private static void TargetPointsToOffsets(PooledList<Point2Int32> points, Point2Int32 center)
         {
             for (int i = 0; i < points.Count; i++)
             {
@@ -106,7 +113,7 @@ namespace ContentAwareFill
             }
         }
 
-        private static void TargetPointsFromOffsets(ImmutableArray<Point2Int32>.Builder points, Point2Int32 center)
+        private static void TargetPointsFromOffsets(PooledList<Point2Int32> points, Point2Int32 center)
         {
             for (int i = 0; i < points.Count; i++)
             {
@@ -114,7 +121,7 @@ namespace ContentAwareFill
             }
         }
 
-        private static void RandomizeBandsTargetPoints(ImmutableArray<Point2Int32>.Builder points, Random random)
+        private static void RandomizeBandsTargetPoints(PooledList<Point2Int32> points, Random random)
         {
             int last = points.Count - 1;
             int halfBand = (int)(points.Count * ResynthesizerConstants.BandFraction);
@@ -131,15 +138,15 @@ namespace ContentAwareFill
             }
         }
 
-        private static void OrderTargetPointsRandomDirectional(ImmutableArray<Point2Int32>.Builder points,
-                                                               Random random,
-                                                               IComparer<Point2Int32> pointComparer)
+        private static void OrderTargetPointsRandomDirectional<TComparer>(PooledList<Point2Int32> points,
+                                                                          Random random,
+                                                                          TComparer pointComparer) where TComparer : struct, IComparer<Point2Int32>
         {
             Point2Int32 center = PointCollectionUtil.GetCenter(points);
 
             TargetPointsToOffsets(points, center);
 
-            points.Sort(pointComparer);
+            points.Span.Sort(pointComparer.Compare);
 
             TargetPointsFromOffsets(points, center);
 

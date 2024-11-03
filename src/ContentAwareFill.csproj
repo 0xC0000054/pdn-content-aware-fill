@@ -31,6 +31,11 @@
     <EmbeddedResource Include="Resources\Icons\ResetIcon-96.png" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Collections.Pooled" Version="1.0.82">
+      <GeneratePathProperty>True</GeneratePathProperty>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="PaintDotNet.Base">
       <HintPath>..\..\..\..\..\..\..\Program Files\paint.net\PaintDotNet.Base.dll</HintPath>
     </Reference>
@@ -74,6 +79,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;D:\Program Files\paint.net\Effects&quot; /y" />
+    <Exec Command="copy &quot;$(TargetPath)&quot; &quot;D:\Program Files\paint.net\Effects\ContentAwareFill&quot; /y" />
+    <Exec Command="copy &quot;$(PkgCollections_Pooled)\lib\netcoreapp2.1\Collections.Pooled.dll&quot; &quot;D:\Program Files\paint.net\Effects\ContentAwareFill&quot; /y" />
   </Target>
 </Project>

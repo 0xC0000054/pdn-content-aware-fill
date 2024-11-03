@@ -47,14 +47,17 @@
 
 using PaintDotNet.Rendering;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace ContentAwareFill
 {
-    internal sealed class DirectionalPointComparer : PointComparer
+    internal struct DirectionalPointComparer : IComparer<Point2Int32>, IDisposable
     {
         private readonly uint[] maxCartesianAlongRay;
         private readonly bool outward;
+        private int disposed;
 
         public DirectionalPointComparer(IEnumerable<Point2Int32> targetPoints, bool outward)
         {
@@ -63,7 +66,7 @@ namespace ContentAwareFill
                 throw new ArgumentNullException(nameof(targetPoints));
             }
 
-            this.maxCartesianAlongRay = new uint[401];
+            this.maxCartesianAlongRay = ArrayPool<uint>.Shared.Rent(401);
 
             Point2Int32 center = PointCollectionUtil.GetCenter(targetPoints);
 
@@ -82,8 +85,10 @@ namespace ContentAwareFill
             this.outward = outward;
         }
 
-        public override int Compare(Point2Int32 point1, Point2Int32 point2)
+        public int Compare(Point2Int32 point1, Point2Int32 point2)
         {
+            ObjectDisposedException.ThrowIf(Thread.VolatileRead(ref this.disposed) == 1, null);
+
             float point1Proportion = ProportionInward(point1);
             float point2Proportion = ProportionInward(point2);
 
@@ -97,7 +102,15 @@ namespace ContentAwareFill
             }
         }
 
-        private float ProportionInward(Point2Int32 point)
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref this.disposed, 1) == 0)
+            {
+                ArrayPool<uint>.Shared.Return(this.maxCartesianAlongRay);
+            }
+        }
+
+        private readonly float ProportionInward(Point2Int32 point)
         {
             uint ray = GetRadial(point);
 

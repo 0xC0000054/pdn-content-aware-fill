@@ -45,12 +45,13 @@
 *
 */
 
+using Collections.Pooled;
+using ContentAwareFill.Collections;
 using PaintDotNet;
 using PaintDotNet.Effects;
 using PaintDotNet.Imaging;
 using PaintDotNet.Rendering;
 using System;
-using System.Collections.Immutable;
 using System.Threading;
 
 namespace ContentAwareFill
@@ -65,7 +66,7 @@ namespace ContentAwareFill
         private readonly Random random;
         private readonly CancellationToken cancellationToken;
         private readonly Action<int> progressCallback;
-        private readonly ImmutableArray<ushort> diffTable;
+        private readonly ImmutablePooledList<ushort> diffTable;
 
 #pragma warning disable IDE0032 // Use auto property
         private IBitmap<ColorBgra32> target;
@@ -82,9 +83,9 @@ namespace ContentAwareFill
         private PointIndexedArray<int> tried;
         private readonly PointIndexedBitArray hasValue;
         private PointIndexedArray<Point2Int32> sourceOf;
-        private ImmutableArray<Point2Int32> sortedOffsets;
-        private ImmutableArray<Point2Int32> targetPoints;
-        private ImmutableArray<Point2Int32> sourcePoints;
+        private ImmutablePooledList<Point2Int32> sortedOffsets;
+        private ImmutablePooledList<Point2Int32> targetPoints;
+        private ImmutablePooledList<Point2Int32> sourcePoints;
         private int targetTriesCount;
         private int totalTargets;
         private uint best;
@@ -192,12 +193,12 @@ namespace ContentAwareFill
             // The constructor handles the setup performed by prepare_target_sources.
             PrepareSourcePoints();
 
-            if (this.sourcePoints.Length == 0)
+            if (this.sourcePoints.Count == 0)
             {
                 throw new ResynthesizerException(Properties.Resources.SourcePointsEmpty);
             }
 
-            if (this.targetPoints.Length == 0)
+            if (this.targetPoints.Count == 0)
             {
                 throw new ResynthesizerException(Properties.Resources.TargetPointsEmpty);
             }
@@ -218,7 +219,7 @@ namespace ContentAwareFill
                 {
                     int betters = Synthesize(i, sourceRegion, sourceMaskRegion, targetRegion);
 
-                    if (((float)betters / this.targetPoints.Length) < ResynthesizerConstants.TerminateFraction)
+                    if (((float)betters / this.targetPoints.Count) < ResynthesizerConstants.TerminateFraction)
                     {
                         break;
                     }
@@ -235,9 +236,9 @@ namespace ContentAwareFill
                    sourceMaskRegion[point.X, point.Y] != ColorAlpha8.Opaque;
         }
 
-        private static ImmutableArray<ushort> MakeDiffTable()
+        private static ImmutablePooledList<ushort> MakeDiffTable()
         {
-            ImmutableArray<ushort>.Builder diffTable = ImmutableArray.CreateBuilder<ushort>(512);
+            PooledList<ushort> diffTable = new(512);
 
             double valueDivisor = NegLogCauchy(1.0 / SensitivityToOutliers);
 
@@ -245,12 +246,12 @@ namespace ContentAwareFill
             {
                 double value = NegLogCauchy(i / 256.0 / SensitivityToOutliers) / valueDivisor * ResynthesizerConstants.MaxWeight;
 
-                diffTable.Insert(256 + i, (ushort)value);
+                diffTable.Add((ushort)value);
                 // The original code populated a map diff table array that is used to when mapping between images.
                 // This is not required for the content aware fill functionality.
             }
 
-            return diffTable.MoveToImmutable();
+            return new ImmutablePooledList<ushort>(diffTable);
         }
 
         private static double NegLogCauchy(double d)
@@ -262,7 +263,7 @@ namespace ContentAwareFill
         {
             this.neighborCount = 0;
 
-            for (int i = 0; i < this.sortedOffsets.Length; i++)
+            for (int i = 0; i < this.sortedOffsets.Count; i++)
             {
                 Point2Int32 offset = this.sortedOffsets[i];
                 Point2Int32 neighborPoint = position.Add(offset);
@@ -284,9 +285,9 @@ namespace ContentAwareFill
 
         private void PrepareRepetitionParameters()
         {
-            this.repetitionParameters[0] = new RepetitionParameter(0, this.targetPoints.Length);
+            this.repetitionParameters[0] = new RepetitionParameter(0, this.targetPoints.Count);
 
-            this.totalTargets = this.targetPoints.Length;
+            this.totalTargets = this.targetPoints.Count;
             int n = this.totalTargets;
 
             for (int i = 1; i < ResynthesizerConstants.MaxPasses; i++)
@@ -333,7 +334,7 @@ namespace ContentAwareFill
 
                 if (sourcePointsSize > 0)
                 {
-                    ImmutableArray<Point2Int32>.Builder points = ImmutableArray.CreateBuilder<Point2Int32>(checked((int)sourcePointsSize));
+                    PooledList<Point2Int32> points = new(checked((int)sourcePointsSize));
 
                     for (int y = 0; y < size.Height; y++)
                     {
@@ -354,11 +355,11 @@ namespace ContentAwareFill
                         }
                     }
 
-                    this.sourcePoints = points.MoveToImmutable();
+                    this.sourcePoints = new ImmutablePooledList<Point2Int32>(points);
                 }
                 else
                 {
-                    this.sourcePoints = ImmutableArray<Point2Int32>.Empty;
+                    this.sourcePoints = ImmutablePooledList<Point2Int32>.Empty;
                 }
             }
         }
@@ -372,7 +373,7 @@ namespace ContentAwareFill
 
             ulong length = ((2 * (ulong)width) - 1) * ((2 * (ulong)height) - 1);
 
-            ImmutableArray<Point2Int32>.Builder offsets = ImmutableArray.CreateBuilder<Point2Int32>(checked((int)length));
+            PooledList<Point2Int32> offsets = new(checked((int)length));
 
             for (int y = -height + 1; y < height; y++)
             {
@@ -384,9 +385,11 @@ namespace ContentAwareFill
                 }
             }
 
-            offsets.Sort(PointComparer.LessCartesian);
+            CartesianPointComparer comparer = new(moreCartesian: false);
 
-            this.sortedOffsets = offsets.MoveToImmutable();
+            offsets.Span.Sort(comparer.Compare);
+
+            this.sortedOffsets = new ImmutablePooledList<Point2Int32>(offsets);
         }
 
         private unsafe void PrepareTargetPoints(bool useContext)
@@ -414,7 +417,7 @@ namespace ContentAwareFill
 
                 if (targetPointsSize > 0)
                 {
-                    ImmutableArray<Point2Int32>.Builder points = ImmutableArray.CreateBuilder<Point2Int32>(checked((int)targetPointsSize));
+                    PooledList<Point2Int32> points = new(checked((int)targetPointsSize));
 
                     using (IBitmapLock<ColorBgra32> targetLock = this.target.Lock(BitmapLockOptions.Read))
                     {
@@ -447,18 +450,18 @@ namespace ContentAwareFill
                     }
 
                     TargetPointSorter.Sort(points, this.random, this.matchContext);
-                    this.targetPoints = points.MoveToImmutable();
+                    this.targetPoints = new ImmutablePooledList<Point2Int32>(points);
                 }
                 else
                 {
-                    this.targetPoints = ImmutableArray<Point2Int32>.Empty;
+                    this.targetPoints = ImmutablePooledList<Point2Int32>.Empty;
                 }
             }
         }
 
         private Point2Int32 RandomSourcePoint()
         {
-            int index = this.random.Next(0, this.sourcePoints.Length);
+            int index = this.random.Next(0, this.sourcePoints.Count);
 
             return this.sourcePoints[index];
         }

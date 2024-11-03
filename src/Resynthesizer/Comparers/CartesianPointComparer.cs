@@ -46,10 +46,11 @@
 */
 
 using PaintDotNet.Rendering;
+using System.Collections.Generic;
 
 namespace ContentAwareFill
 {
-    internal sealed class CartesianPointComparer : PointComparer
+    internal readonly struct CartesianPointComparer : IComparer<Point2Int32>
     {
         private readonly bool moreCartesian;
 
@@ -58,7 +59,7 @@ namespace ContentAwareFill
             this.moreCartesian = moreCartesian;
         }
 
-        public override int Compare(Point2Int32 point1, Point2Int32 point2)
+        public int Compare(Point2Int32 point1, Point2Int32 point2)
         {
             int point1Cartesian = (point1.X * point1.X) + (point1.Y * point1.Y);
             int point2Cartesian = (point2.X * point2.X) + (point2.Y * point2.Y);

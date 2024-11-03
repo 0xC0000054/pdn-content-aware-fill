@@ -9,7 +9,7 @@ This plugin is based on the GIMP [Resynthesizer](https://github.com/bootchk/resy
 ##  How to install the plugin
 
 1. Exit Paint.NET.
-2. Place ContentAwareFill.dll in the Paint.NET Effects folder which is usually located in one the following locations depending on the Paint.NET version you have installed.
+2. Place the ContentAwareFill folder in the Paint.NET Effects folder which is usually located in one the following locations depending on the Paint.NET version you have installed.
 
   Paint.NET Version |  Effects Folder Location
   --------|----------
