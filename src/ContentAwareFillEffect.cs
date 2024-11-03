@@ -34,8 +34,10 @@ namespace ContentAwareFill
     public sealed class ContentAwareFillEffect : BitmapEffect<ContentAwareFillConfigToken>
     {
         private bool repeatEffect;
+#pragma warning disable CA2213 // Disposable fields should be disposed
         private IBitmap<ColorBgra32> output;
         private IBitmapSource<ColorBgra32> sourceBitmap;
+#pragma warning restore CA2213 // Disposable fields should be disposed
 
         internal static string StaticName
         {
@@ -63,6 +65,17 @@ namespace ContentAwareFill
             this.repeatEffect = false;
 
             return new ContentAwareFillConfigDialog();
+        }
+
+        protected override void OnDispose(bool disposing)
+        {
+            if (disposing)
+            {
+                DisposableUtil.Free(ref this.output);
+                DisposableUtil.Free(ref this.sourceBitmap);
+            }
+
+            base.OnDispose(disposing);
         }
 
         /// <summary>
