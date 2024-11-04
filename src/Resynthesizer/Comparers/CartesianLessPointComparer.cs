@@ -50,28 +50,14 @@ using System.Collections.Generic;
 
 namespace ContentAwareFill
 {
-    internal readonly struct CartesianPointComparer : IComparer<Point2Int32>
+    internal readonly struct CartesianLessPointComparer : IComparer<Point2Int32>
     {
-        private readonly bool moreCartesian;
-
-        public CartesianPointComparer(bool moreCartesian)
-        {
-            this.moreCartesian = moreCartesian;
-        }
-
         public int Compare(Point2Int32 point1, Point2Int32 point2)
         {
             int point1Cartesian = (point1.X * point1.X) + (point1.Y * point1.Y);
             int point2Cartesian = (point2.X * point2.X) + (point2.Y * point2.Y);
 
-            if (this.moreCartesian)
-            {
-                return point2Cartesian.CompareTo(point1Cartesian);
-            }
-            else
-            {
-                return point1Cartesian.CompareTo(point2Cartesian);
-            }
+            return point1Cartesian.CompareTo(point2Cartesian);
         }
     }
 }

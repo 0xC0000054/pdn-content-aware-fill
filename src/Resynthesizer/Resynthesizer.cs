@@ -443,7 +443,7 @@ namespace ContentAwareFill
                 }
             }
 
-            CartesianPointComparer comparer = new(moreCartesian: false);
+            CartesianLessPointComparer comparer = new();
 
             offsets.Span.Sort(comparer.Compare);
 
