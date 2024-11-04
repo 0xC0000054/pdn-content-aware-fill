@@ -58,7 +58,7 @@ using System.Threading.Tasks;
 
 namespace ContentAwareFill
 {
-    internal sealed class Resynthesizer : IDisposable
+    internal sealed class Resynthesizer : Disposable
     {
         private const int ColorChannelCount = 3;
         private const int Neighbors = 16;
@@ -164,16 +164,6 @@ namespace ContentAwareFill
             }
         }
 
-        public void Dispose()
-        {
-            DisposableUtil.Free(ref this.target);
-            DisposableUtil.Free(ref this.source);
-            DisposableUtil.Free(ref this.targetMask);
-            DisposableUtil.Free(ref this.sourceMask);
-            DisposableUtil.Free(ref this.tried);
-            DisposableUtil.Free(ref this.sourceOf);
-        }
-
         /// <summary>
         /// Performs the content the aware fill.
         /// </summary>
@@ -273,6 +263,21 @@ namespace ContentAwareFill
                     throw new OperationCanceledException();
                 }
             }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                DisposableUtil.Free(ref this.target);
+                DisposableUtil.Free(ref this.source);
+                DisposableUtil.Free(ref this.targetMask);
+                DisposableUtil.Free(ref this.sourceMask);
+                DisposableUtil.Free(ref this.tried);
+                DisposableUtil.Free(ref this.sourceOf);
+            }
+
+                base.Dispose(disposing);
         }
 
         private static bool ClippedOrMaskedSource(Point2Int32 point, RegionPtr<ColorAlpha8> sourceMaskRegion)
