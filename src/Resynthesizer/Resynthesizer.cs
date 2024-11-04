@@ -63,7 +63,6 @@ namespace ContentAwareFill
         private const double SensitivityToOutliers = 0.117;
         private const int Trys = 500;
 
-        private readonly Random random;
         private readonly CancellationToken cancellationToken;
         private readonly Action<int> progressCallback;
         private readonly ImmutablePooledList<ushort> diffTable;
@@ -136,7 +135,6 @@ namespace ContentAwareFill
             this.sourceMask = BitmapUtil.CreateFromBitmap(imagingFactory, sourceMask, croppedSourceSize, sourceRoi, clear: true);
             this.targetMask = targetMask.CreateRefT();
 
-            this.random = new Random(1198472);
             this.diffTable = MakeDiffTable();
             this.repetitionParameters = new RepetitionParameter[ResynthesizerConstants.MaxPasses];
             this.tried = new PointIndexedArray<int>(this.targetSize, -1, cancellationToken);
@@ -448,7 +446,7 @@ namespace ContentAwareFill
                         }
                     }
 
-                    TargetPointSorter.Sort(points, this.random, this.matchContext);
+                    TargetPointSorter.Sort(points, this.matchContext);
                     this.targetPoints = new ImmutablePooledList<Point2Int32>(points);
                 }
                 else
@@ -460,7 +458,7 @@ namespace ContentAwareFill
 
         private Point2Int32 RandomSourcePoint()
         {
-            int index = this.random.Next(0, this.sourcePoints.Count);
+            int index = ResynthesizerRandom.ThreadInstance.Next(0, this.sourcePoints.Count);
 
             return this.sourcePoints[index];
         }
