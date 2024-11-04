@@ -77,8 +77,6 @@ namespace ContentAwareFill
 
         private readonly MatchContextType matchContext;
         private readonly SizeInt32 targetSize;
-        private readonly Neighbor[] neighbors;
-        private int neighborCount;
         private readonly RepetitionParameter[] repetitionParameters;
         private PointIndexedArray<int> tried;
         private readonly PointIndexedBitArray hasValue;
@@ -88,9 +86,6 @@ namespace ContentAwareFill
         private ImmutablePooledList<Point2Int32> sourcePoints;
         private int targetTriesCount;
         private int totalTargets;
-        private uint best;
-        private Point2Int32 bestPoint;
-        private BettermentKind latestBettermentKind;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Resynthesizer"/> class.
@@ -143,7 +138,6 @@ namespace ContentAwareFill
 
             this.random = new Random(1198472);
             this.diffTable = MakeDiffTable();
-            this.neighbors = new Neighbor[Neighbors];
             this.repetitionParameters = new RepetitionParameter[ResynthesizerConstants.MaxPasses];
             this.tried = new PointIndexedArray<int>(this.targetSize, -1, cancellationToken);
             this.hasValue = PointIndexedBitArray.CreateFalse(this.targetSize);
@@ -259,9 +253,12 @@ namespace ContentAwareFill
             return Math.Log((d * d) + 1.0);
         }
 
-        private void PrepareNeighbors(RegionPtr<ColorBgra32> targetRegion, Point2Int32 position)
+        private int PrepareNeighbors(
+            RegionPtr<ColorBgra32> targetRegion,
+            Point2Int32 position,
+            Span<Neighbor> neighbors)
         {
-            this.neighborCount = 0;
+            int neighborCount = 0;
 
             for (int i = 0; i < this.sortedOffsets.Count; i++)
             {
@@ -270,17 +267,19 @@ namespace ContentAwareFill
 
                 if (InTargetBounds(neighborPoint) && this.hasValue[neighborPoint])
                 {
-                    this.neighbors[this.neighborCount] = new Neighbor(targetRegion[neighborPoint.X, neighborPoint.Y],
+                    neighbors[neighborCount] = new Neighbor(targetRegion[neighborPoint.X, neighborPoint.Y],
                                                                       offset,
                                                                       this.sourceOf[neighborPoint]);
-                    this.neighborCount++;
+                    neighborCount++;
 
-                    if (this.neighborCount >= Neighbors)
+                    if (neighborCount >= Neighbors)
                     {
                         break;
                     }
                 }
             }
+
+            return neighborCount;
         }
 
         private void PrepareRepetitionParameters()
@@ -484,6 +483,8 @@ namespace ContentAwareFill
             int repeatCountBetters = 0;
             bool perfectMatch;
 
+            Span<Neighbor> neighbors = stackalloc Neighbor[Neighbors];
+
             for (int targetIndex = 0; targetIndex < length; targetIndex++)
             {
                 this.cancellationToken.ThrowIfCancellationRequested();
@@ -505,17 +506,18 @@ namespace ContentAwareFill
 
                 this.hasValue[position] = true;
 
-                PrepareNeighbors(targetRegion, position);
+                int neighborCount = PrepareNeighbors(targetRegion, position, neighbors);
 
-                this.best = uint.MaxValue;
-                this.latestBettermentKind = BettermentKind.None;
+                uint best = uint.MaxValue;
+                BettermentKind latestBettermentKind = BettermentKind.None;
+                Point2Int32 bestPoint = Point2Int32.Zero;
                 perfectMatch = false;
 
-                for (int neighborIndex = 0; neighborIndex < this.neighborCount; neighborIndex++)
+                for (int neighborIndex = 0; neighborIndex < neighborCount; neighborIndex++)
                 {
                     this.cancellationToken.ThrowIfCancellationRequested();
 
-                    Neighbor neighbor = this.neighbors[neighborIndex];
+                    Neighbor neighbor = neighbors[neighborIndex];
                     if (neighbor.sourceOf.X != -1)
                     {
                         Point2Int32 sourcePoint = neighbor.sourceOf.Subtract(neighbor.offset);
@@ -530,12 +532,21 @@ namespace ContentAwareFill
                             continue;
                         }
 
+                        if (latestBettermentKind == BettermentKind.None)
+                        {
+                            latestBettermentKind = BettermentKind.NeighborSource;
+                        }
+
                         perfectMatch = TryPoint(sourcePoint,
-                                                BettermentKind.NeighborSource,
                                                 sourceRegion,
-                                                sourceMaskRegion);
+                                                sourceMaskRegion,
+                                                ref best,
+                                                ref bestPoint,
+                                                neighborCount,
+                                                neighbors);
                         if (perfectMatch)
                         {
+                            latestBettermentKind = BettermentKind.PerfectMatch;
                             break;
                         }
 
@@ -545,27 +556,33 @@ namespace ContentAwareFill
 
                 if (!perfectMatch)
                 {
+                    latestBettermentKind = BettermentKind.RandomSource;
+
                     for (uint i = 0; i < Trys; i++)
                     {
                         perfectMatch = TryPoint(RandomSourcePoint(),
-                                                BettermentKind.RandomSource,
                                                 sourceRegion,
-                                                sourceMaskRegion);
+                                                sourceMaskRegion,
+                                                ref best,
+                                                ref bestPoint,
+                                                neighborCount,
+                                                neighbors);
                         if (perfectMatch)
                         {
+                            latestBettermentKind = BettermentKind.PerfectMatch;
                             break;
                         }
                     }
                 }
 
-                if (this.latestBettermentKind != BettermentKind.None)
+                if (latestBettermentKind != BettermentKind.None)
                 {
-                    if (this.sourceOf[position] != this.bestPoint)
+                    if (this.sourceOf[position] != bestPoint)
                     {
                         repeatCountBetters++;
 
-                        targetRegion[position] = sourceRegion[this.bestPoint];
-                        this.sourceOf[position] = this.bestPoint;
+                        targetRegion[position] = sourceRegion[bestPoint];
+                        this.sourceOf[position] = bestPoint;
                     }
                 }
             }
@@ -574,17 +591,20 @@ namespace ContentAwareFill
         }
 
         private bool TryPoint(Point2Int32 point,
-                              BettermentKind bettermentKind,
                               RegionPtr<ColorBgra32> sourceRegion,
-                              RegionPtr<ColorAlpha8> sourceMaskRegion)
+                              RegionPtr<ColorAlpha8> sourceMaskRegion,
+                              ref uint best,
+                              ref Point2Int32 bestPoint,
+                              int neighborCount,
+                              ReadOnlySpan<Neighbor> neighbors)
         {
             uint sum = 0;
 
-            for (int i = 0; i < this.neighborCount; i++)
+            for (int i = 0; i < neighborCount; i++)
             {
                 this.cancellationToken.ThrowIfCancellationRequested();
 
-                Point2Int32 offset = point.Add(this.neighbors[i].offset);
+                Point2Int32 offset = point.Add(neighbors[i].offset);
 
                 if (ClippedOrMaskedSource(offset, sourceMaskRegion))
                 {
@@ -598,7 +618,7 @@ namespace ContentAwareFill
                 else
                 {
                     ColorBgra32 sourcePixel = sourceRegion[offset.X, offset.Y];
-                    ColorBgra32 targetPixel = this.neighbors[i].pixel;
+                    ColorBgra32 targetPixel = neighbors[i].pixel;
 
                     if (i > 0)
                     {
@@ -611,15 +631,14 @@ namespace ContentAwareFill
                     // That code is not used for the content aware fill functionality.
                 }
 
-                if (sum >= this.best)
+                if (sum >= best)
                 {
                     return false;
                 }
             }
 
-            this.best = sum;
-            this.latestBettermentKind = bettermentKind;
-            this.bestPoint = point;
+            best = sum;
+            bestPoint = point;
 
             return sum <= 0;
         }
