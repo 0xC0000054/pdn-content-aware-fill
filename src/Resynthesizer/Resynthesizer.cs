@@ -225,7 +225,7 @@ namespace ContentAwareFill
 
                         for (int threadIndex = 0; threadIndex < maxThreadCount; threadIndex++)
                         {
-                            tasks[i] = Task<int>.Factory.StartNew(Synthesize,
+                            tasks[threadIndex] = Task<int>.Factory.StartNew(Synthesize,
                                                                   new SynthesizeThreadState(sourceRegion,
                                                                                             sourceMaskRegion,
                                                                                             targetRegion,
@@ -237,7 +237,7 @@ namespace ContentAwareFill
 
                         for (int threadIndex = 0; threadIndex < maxThreadCount; threadIndex++)
                         {
-                            betters += tasks[i].Result;
+                            betters += tasks[threadIndex].Result;
                         }
 
                         if (((float)betters / this.targetPoints.Count) < ResynthesizerConstants.TerminateFraction)
