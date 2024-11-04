@@ -446,7 +446,7 @@ namespace ContentAwareFill
             CartesianLessPointComparer comparer = new();
 
             offsets.Span.Sort(comparer.Compare);
-
+            this.cancellationToken.ThrowIfCancellationRequested();
             this.sortedOffsets = new ImmutablePooledList<Point2Int32>(offsets);
         }
 
@@ -508,6 +508,7 @@ namespace ContentAwareFill
                     }
 
                     TargetPointSorter.Sort(points, this.matchContext);
+                    this.cancellationToken.ThrowIfCancellationRequested();
                     this.targetPoints = new ImmutablePooledList<Point2Int32>(points);
                 }
                 else
