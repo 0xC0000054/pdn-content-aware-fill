@@ -52,7 +52,9 @@ using PaintDotNet.Effects;
 using PaintDotNet.Imaging;
 using PaintDotNet.Rendering;
 using System;
+using System.Runtime.ExceptionServices;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ContentAwareFill
 {
@@ -65,6 +67,7 @@ namespace ContentAwareFill
 
         private readonly CancellationToken cancellationToken;
         private readonly Action<int> progressCallback;
+        private readonly object progressSync;
         private readonly ImmutablePooledList<ushort> diffTable;
 
 #pragma warning disable IDE0032 // Use auto property
@@ -142,6 +145,7 @@ namespace ContentAwareFill
             this.sourceOf = new PointIndexedArray<Point2Int32>(this.targetSize, new Point2Int32(-1, -1), cancellationToken);
             this.cancellationToken = cancellationToken;
             this.progressCallback = progressCallback;
+            this.progressSync = new object();
         }
 
         private enum BettermentKind
@@ -203,18 +207,70 @@ namespace ContentAwareFill
             using (IBitmapLock<ColorAlpha8> sourceMaskLock = this.sourceMask.Lock(BitmapLockOptions.Read))
             using (IBitmapLock<ColorBgra32> targetLock = this.target.Lock(BitmapLockOptions.ReadWrite))
             {
-                RegionPtr<ColorBgra32> sourceRegion = sourceLock.AsRegionPtr();
-                RegionPtr<ColorAlpha8> sourceMaskRegion = sourceMaskLock.AsRegionPtr();
-                RegionPtr<ColorBgra32> targetRegion = targetLock.AsRegionPtr();
-
-                for (int i = 0; i < ResynthesizerConstants.MaxPasses; i++)
+                try
                 {
-                    int betters = Synthesize(i, sourceRegion, sourceMaskRegion, targetRegion);
+                    RegionPtr<ColorBgra32> sourceRegion = sourceLock.AsRegionPtr();
+                    RegionPtr<ColorAlpha8> sourceMaskRegion = sourceMaskLock.AsRegionPtr();
+                    RegionPtr<ColorBgra32> targetRegion = targetLock.AsRegionPtr();
 
-                    if (((float)betters / this.targetPoints.Count) < ResynthesizerConstants.TerminateFraction)
+                    int betters = 0;
+
+                    int maxThreadCount = Environment.ProcessorCount;
+
+                    Task<int>[] tasks = new Task<int>[maxThreadCount];
+
+                    for (int i = 0; i < ResynthesizerConstants.MaxPasses; i++)
                     {
-                        break;
+                        int endIndex = this.repetitionParameters[i].end;
+
+                        for (int threadIndex = 0; threadIndex < maxThreadCount; threadIndex++)
+                        {
+                            tasks[i] = Task<int>.Factory.StartNew(Synthesize,
+                                                                  new SynthesizeThreadState(sourceRegion,
+                                                                                            sourceMaskRegion,
+                                                                                            targetRegion,
+                                                                                            threadIndex,
+                                                                                            endIndex,
+                                                                                            maxThreadCount),
+                                                                  this.cancellationToken);
+                        }
+
+                        for (int threadIndex = 0; threadIndex < maxThreadCount; threadIndex++)
+                        {
+                            betters += tasks[i].Result;
+                        }
+
+                        if (((float)betters / this.targetPoints.Count) < ResynthesizerConstants.TerminateFraction)
+                        {
+                            break;
+                        }
                     }
+                }
+                catch (AggregateException ex)
+                {
+                    var exceptions = ex.InnerExceptions;
+
+                    if (exceptions.Count == 1)
+                    {
+                        Exception exception = exceptions[0];
+
+                        if (exception is OperationCanceledException)
+                        {
+                            ExceptionDispatchInfo.Throw(exception);
+                        }
+                        else
+                        {
+                            throw new ResynthesizerException(exception.Message, exception);
+                        }
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                catch (TaskCanceledException)
+                {
+                    throw new OperationCanceledException();
                 }
             }
         }
@@ -472,25 +528,30 @@ namespace ContentAwareFill
         /// <param name="targetRegion">The target region.</param>
         /// <returns>The match count of the image synthesis.</returns>
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
-        private int Synthesize(int pass,
-                               RegionPtr<ColorBgra32> sourceRegion,
-                               RegionPtr<ColorAlpha8> sourceMaskRegion,
-                               RegionPtr<ColorBgra32> targetRegion)
+        private int Synthesize(object threadState)
         {
-            int length = this.repetitionParameters[pass].end;
+            SynthesizeThreadState state = (SynthesizeThreadState)threadState;
+
+            RegionPtr<ColorBgra32> sourceRegion = state.sourceRegion;
+            RegionPtr< ColorAlpha8 > sourceMaskRegion = state.sourceMaskRegion;
+            RegionPtr<ColorBgra32> targetRegion = state.targetRegion;
+            int targetStartIndex = state.startIndex;
+            int targetEndIndex = state.endIndex;
+            int threadCount = state.threadCount;
+
             int repeatCountBetters = 0;
             bool perfectMatch;
 
             Span<Neighbor> neighbors = stackalloc Neighbor[Neighbors];
 
-            for (int targetIndex = 0; targetIndex < length; targetIndex++)
+            for (int targetIndex = targetStartIndex; targetIndex < targetEndIndex; targetIndex += threadCount)
             {
                 this.cancellationToken.ThrowIfCancellationRequested();
 
                 // Report progress in increments of 4096.
-                if ((targetIndex & 4095) == 0)
+                if ((targetIndex & 4095) == 0 && this.progressCallback != null)
                 {
-                    if (this.progressCallback != null)
+                    lock (this.progressSync)
                     {
                         this.targetTriesCount += 4096;
 
@@ -672,6 +733,31 @@ namespace ContentAwareFill
             {
                 this.start = start;
                 this.end = end;
+            }
+        }
+
+        private sealed class SynthesizeThreadState
+        {
+            public readonly RegionPtr<ColorBgra32> sourceRegion;
+            public readonly RegionPtr<ColorAlpha8> sourceMaskRegion;
+            public readonly RegionPtr<ColorBgra32> targetRegion;
+            public readonly int startIndex;
+            public readonly int endIndex;
+            public readonly int threadCount;
+
+            public SynthesizeThreadState(RegionPtr<ColorBgra32> sourceRegion,
+                                         RegionPtr<ColorAlpha8> sourceMaskRegion,
+                                         RegionPtr<ColorBgra32> targetRegion,
+                                         int startIndex,
+                                         int endIndex,
+                                         int threadCount)
+            {
+                this.sourceRegion = sourceRegion;
+                this.sourceMaskRegion = sourceMaskRegion;
+                this.targetRegion = targetRegion;
+                this.startIndex = startIndex;
+                this.endIndex = endIndex;
+                this.threadCount = threadCount;
             }
         }
     }
