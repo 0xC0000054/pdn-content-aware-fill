@@ -52,7 +52,9 @@ using PaintDotNet.Effects;
 using PaintDotNet.Imaging;
 using PaintDotNet.Rendering;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -85,7 +87,7 @@ namespace ContentAwareFill
         private PointIndexedArray<int> tried;
         private readonly PointIndexedBitArray hasValue;
         private PointIndexedArray<Point2Int32> sourceOf;
-        private ImmutablePooledList<Point2Int32> sortedOffsets;
+        private ImmutableArray<Point2Int32> sortedOffsets;
         private ImmutablePooledList<Point2Int32> targetPoints;
         private ImmutablePooledList<Point2Int32> sourcePoints;
         private int targetTriesCount;
@@ -320,7 +322,7 @@ namespace ContentAwareFill
         {
             int neighborCount = 0;
 
-            for (int i = 0; i < this.sortedOffsets.Count; i++)
+            for (int i = 0; i < this.sortedOffsets.Length; i++)
             {
                 this.cancellationToken.ThrowIfCancellationRequested();
 
@@ -434,7 +436,7 @@ namespace ContentAwareFill
 
             ulong length = ((2 * (ulong)width) - 1) * ((2 * (ulong)height) - 1);
 
-            PooledList<Point2Int32> offsets = new(checked((int)length));
+            List<List<Point2Int32>> offsetsByDistance = new();
 
             for (int y = -height + 1; y < height; y++)
             {
@@ -442,15 +444,27 @@ namespace ContentAwareFill
 
                 for (int x = -width + 1; x < width; x++)
                 {
-                    offsets.Add(new Point2Int32(x, y));
+                    Point2Int32 point = new(x, y);
+                    int distance = (point.X * point.X) + (point.Y * point.Y); // can't be negative
+                    EnsureCount(offsetsByDistance, distance + 1);
+                    offsetsByDistance[distance] ??= new();
+                    offsetsByDistance[distance]!.Add(point);
                 }
             }
 
-            CartesianLessPointComparer comparer = new();
-
-            offsets.Span.Sort(comparer.Compare);
+            this.sortedOffsets = offsetsByDistance
+                .Where(l => l is not null)
+                .SelectMany(s => s)
+                .ToImmutableArray();
             this.cancellationToken.ThrowIfCancellationRequested();
-            this.sortedOffsets = new ImmutablePooledList<Point2Int32>(offsets);
+
+            static void EnsureCount<T>(IList<T> list, int count)
+            {
+                while (list.Count < count)
+                {
+                    list.Add(default);
+                }
+            }
         }
 
         private unsafe void PrepareTargetPoints(bool useContext)
