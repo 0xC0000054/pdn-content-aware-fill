@@ -55,6 +55,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -427,6 +428,7 @@ namespace ContentAwareFill
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         private void PrepareSortedOffsets()
         {
             SizeInt32 sourceSize = this.source.Size;
