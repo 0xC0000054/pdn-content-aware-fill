@@ -203,11 +203,11 @@ namespace ContentAwareFill
                     RegionPtr<ColorAlpha8> sourceMaskRegion = sourceMaskLock.AsRegionPtr();
                     RegionPtr<ColorBgra32> targetRegion = targetLock.AsRegionPtr();
 
-                    int betters = 0;
+                    uint betters = 0;
 
                     int maxThreadCount = Environment.ProcessorCount;
 
-                    Task<int>[] tasks = new Task<int>[maxThreadCount];
+                    Task<uint>[] tasks = new Task<uint>[maxThreadCount];
 
                     for (int i = 0; i < ResynthesizerConstants.MaxPasses; i++)
                     {
@@ -215,7 +215,7 @@ namespace ContentAwareFill
 
                         for (int threadIndex = 0; threadIndex < maxThreadCount; threadIndex++)
                         {
-                            tasks[threadIndex] = Task<int>.Factory.StartNew(Synthesize,
+                            tasks[threadIndex] = Task<uint>.Factory.StartNew(Synthesize,
                                                                   new SynthesizeThreadState(sourceRegion,
                                                                                             sourceMaskRegion,
                                                                                             targetRegion,
@@ -534,7 +534,7 @@ namespace ContentAwareFill
         /// <param name="targetRegion">The target region.</param>
         /// <returns>The match count of the image synthesis.</returns>
         /// <exception cref="OperationCanceledException">The operation has been canceled.</exception>
-        private int Synthesize(object threadState)
+        private uint Synthesize(object threadState)
         {
             SynthesizeThreadState state = (SynthesizeThreadState)threadState;
 
@@ -545,7 +545,7 @@ namespace ContentAwareFill
             int targetEndIndex = state.endIndex;
             int threadCount = state.threadCount;
 
-            int repeatCountBetters = 0;
+            uint repeatCountBetters = 0;
             bool perfectMatch;
 
             Span<Neighbor> neighbors = stackalloc Neighbor[Neighbors];
