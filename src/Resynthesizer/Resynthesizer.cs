@@ -52,6 +52,7 @@ using PaintDotNet.Effects;
 using PaintDotNet.Imaging;
 using PaintDotNet.Rendering;
 using System;
+using System.Collections.Immutable;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,10 +66,11 @@ namespace ContentAwareFill
         private const double SensitivityToOutliers = 0.117;
         private const int Trys = 500;
 
+        private static readonly ImmutableArray<ushort> DiffTable = MakeDiffTable();
+
         private readonly CancellationToken cancellationToken;
         private readonly Action<int> progressCallback;
         private readonly object progressSync;
-        private readonly ImmutablePooledList<ushort> diffTable;
 
 #pragma warning disable IDE0032 // Use auto property
         private IBitmap<ColorBgra32> target;
@@ -138,7 +140,6 @@ namespace ContentAwareFill
             this.sourceMask = BitmapUtil.CreateFromBitmap(imagingFactory, sourceMask, croppedSourceSize, sourceRoi, clear: true);
             this.targetMask = targetMask.CreateRefT();
 
-            this.diffTable = MakeDiffTable();
             this.repetitionParameters = new RepetitionParameter[ResynthesizerConstants.MaxPasses];
             this.tried = new PointIndexedArray<int>(this.targetSize, -1, cancellationToken);
             this.hasValue = PointIndexedBitArray.CreateFalse(this.targetSize);
@@ -289,9 +290,9 @@ namespace ContentAwareFill
                    sourceMaskRegion[point.X, point.Y] != ColorAlpha8.Opaque;
         }
 
-        private static ImmutablePooledList<ushort> MakeDiffTable()
+        private static ImmutableArray<ushort> MakeDiffTable()
         {
-            PooledList<ushort> diffTable = new(512);
+            ImmutableArray<ushort>.Builder diffTable = ImmutableArray.CreateBuilder<ushort>(512);
 
             double valueDivisor = NegLogCauchy(1.0 / SensitivityToOutliers);
 
@@ -304,7 +305,7 @@ namespace ContentAwareFill
                 // This is not required for the content aware fill functionality.
             }
 
-            return new ImmutablePooledList<ushort>(diffTable);
+            return diffTable.MoveToImmutable();
         }
 
         private static double NegLogCauchy(double d)
@@ -691,9 +692,9 @@ namespace ContentAwareFill
 
                     if (i > 0)
                     {
-                        sum += this.diffTable[256 + targetPixel.B - sourcePixel.B];
-                        sum += this.diffTable[256 + targetPixel.G - sourcePixel.G];
-                        sum += this.diffTable[256 + targetPixel.R - sourcePixel.R];
+                        sum += DiffTable[256 + targetPixel.B - sourcePixel.B];
+                        sum += DiffTable[256 + targetPixel.G - sourcePixel.G];
+                        sum += DiffTable[256 + targetPixel.R - sourcePixel.R];
                     }
                     // The original code would add the map_diff_table values to the sum when
                     // the map image is used.
