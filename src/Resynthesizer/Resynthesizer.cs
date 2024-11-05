@@ -321,6 +321,8 @@ namespace ContentAwareFill
 
             for (int i = 0; i < this.sortedOffsets.Count; i++)
             {
+                this.cancellationToken.ThrowIfCancellationRequested();
+
                 Point2Int32 offset = this.sortedOffsets[i];
                 Point2Int32 neighborPoint = position.Add(offset);
 
