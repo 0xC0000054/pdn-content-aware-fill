@@ -333,8 +333,8 @@ namespace ContentAwareFill
                 if (InTargetBounds(neighborPoint) && this.hasValue[neighborPoint])
                 {
                     neighbors[neighborCount] = new Neighbor(targetRegion[neighborPoint.X, neighborPoint.Y],
-                                                                      offset,
-                                                                      this.sourceOf[neighborPoint]);
+                                                            offset,
+                                                            this.sourceOf[neighborPoint]);
                     neighborCount++;
 
                     if (neighborCount >= Neighbors)
