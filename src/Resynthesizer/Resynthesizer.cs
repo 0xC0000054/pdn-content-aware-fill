@@ -436,8 +436,6 @@ namespace ContentAwareFill
             int width = sourceSize.Width;
             int height = sourceSize.Height;
 
-            ulong length = ((2 * (ulong)width) - 1) * ((2 * (ulong)height) - 1);
-
             List<List<Point2Int32>> offsetsByDistance = new();
 
             for (int y = -height + 1; y < height; y++)
