@@ -33,6 +33,7 @@ namespace ContentAwareFill
             return new Point2Int32(point.X + value.X, point.Y + value.Y);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Point2Int32 Subtract(this Point2Int32 point, Point2Int32 value)
         {
             return new Point2Int32(point.X - value.X, point.Y - value.Y);
