@@ -21,13 +21,14 @@
 */
 
 using Collections.Pooled;
+using PaintDotNet;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace ContentAwareFill.Collections
 {
-    internal readonly struct ImmutablePooledList<T> : IReadOnlyList<T>, IReadOnlyPooledList<T>
+    internal sealed class ImmutablePooledList<T> : Disposable, IReadOnlyList<T>, IReadOnlyPooledList<T>
     {
         private readonly PooledList<T> pooledList;
 
@@ -47,5 +48,15 @@ namespace ContentAwareFill.Collections
         public IEnumerator<T> GetEnumerator() => this.pooledList.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.pooledList.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
     }
 }

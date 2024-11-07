@@ -269,9 +269,11 @@ namespace ContentAwareFill
                 DisposableUtil.Free(ref this.sourceMask);
                 DisposableUtil.Free(ref this.tried);
                 DisposableUtil.Free(ref this.sourceOf);
+                DisposableUtil.Free(ref this.sourcePoints);
+                DisposableUtil.Free(ref this.targetPoints);
             }
 
-                base.Dispose(disposing);
+            base.Dispose(disposing);
         }
 
         private static bool ClippedOrMaskedSource(Point2Int32 point, RegionPtr<ColorAlpha8> sourceMaskRegion)
