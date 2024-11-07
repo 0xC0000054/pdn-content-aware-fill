@@ -644,8 +644,6 @@ namespace ContentAwareFill
 
                     for (uint i = 0; i < Trys; i++)
                     {
-                        this.cancellationToken.ThrowIfCancellationRequested();
-
                         perfectMatch = TryPoint(RandomSourcePoint(),
                                                 sourceRegion,
                                                 sourceMaskRegion,
