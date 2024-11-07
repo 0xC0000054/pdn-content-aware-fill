@@ -565,7 +565,6 @@ namespace ContentAwareFill
             int threadCount = state.threadCount;
 
             uint repeatCountBetters = 0;
-            bool perfectMatch;
 
             Span<Neighbor> neighbors = stackalloc Neighbor[Neighbors];
 
@@ -621,14 +620,13 @@ namespace ContentAwareFill
                             latestBettermentKind = BettermentKind.NeighborSource;
                         }
 
-                        perfectMatch = TryPoint(sourcePoint,
-                                                sourceRegion,
-                                                sourceMaskRegion,
-                                                ref best,
-                                                ref bestPoint,
-                                                neighborCount,
-                                                neighbors);
-                        if (perfectMatch)
+                        if (TryPoint(sourcePoint,
+                                     sourceRegion,
+                                     sourceMaskRegion,
+                                     ref best,
+                                     ref bestPoint,
+                                     neighborCount,
+                                     neighbors))
                         {
                             latestBettermentKind = BettermentKind.PerfectMatch;
                             break;
@@ -638,20 +636,19 @@ namespace ContentAwareFill
                     }
                 }
 
-                if (!perfectMatch)
+                if (latestBettermentKind != BettermentKind.PerfectMatch)
                 {
                     latestBettermentKind = BettermentKind.RandomSource;
 
-                    for (uint i = 0; i < Trys; i++)
+                    for (int i = 0; i < Trys; i++)
                     {
-                        perfectMatch = TryPoint(RandomSourcePoint(),
-                                                sourceRegion,
-                                                sourceMaskRegion,
-                                                ref best,
-                                                ref bestPoint,
-                                                neighborCount,
-                                                neighbors);
-                        if (perfectMatch)
+                        if (TryPoint(RandomSourcePoint(),
+                                     sourceRegion,
+                                     sourceMaskRegion,
+                                     ref best,
+                                     ref bestPoint,
+                                     neighborCount,
+                                     neighbors))
                         {
                             latestBettermentKind = BettermentKind.PerfectMatch;
                             break;
