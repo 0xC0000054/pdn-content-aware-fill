@@ -22,23 +22,26 @@
 
 using PaintDotNet.Rendering;
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace ContentAwareFill
 {
     internal readonly struct PointIndexedBitArray
     {
         private readonly ulong[] blocks;
-        private readonly uint stride;
+        private readonly int width;
+        private readonly int height;
 
         private PointIndexedBitArray(SizeInt32 size)
         {
-            this.stride = checked((uint)size.Width);
-            uint height = checked((uint)size.Height);
+            this.width = size.Width;
+            this.height = size.Height;
 
-            ulong area = (ulong)this.stride * height;
+            int area = checked(this.width * this.height);
 
-            ulong blockCount = area > 64 ? ((area - 1) / 64) + 1 : 1;
-            this.blocks = new ulong[checked((int)blockCount)];
+            int blockCount = area > 64 ? ((area - 1) / 64) + 1 : 1;
+            this.blocks = new ulong[blockCount];
         }
 
         public static PointIndexedBitArray CreateFalse(SizeInt32 size)
@@ -48,35 +51,31 @@ namespace ContentAwareFill
 
         public bool this[Point2Int32 target]
         {
-            get
-            {
-                return GetValue(target.X, target.Y);
-            }
-            set
-            {
-                SetValue(target.X, target.Y, value);
-            }
+            get => GetValue(target.X, target.Y);
+            set => SetValue(target.X, target.Y, value);
         }
 
         public bool GetValue(int x, int y)
         {
-            ulong index = ((ulong)checked((uint)y) * this.stride) + checked((uint)x);
+            CheckBounds(x, y);
 
-            (ulong blockIndex, ulong bitIndex) = Math.DivRem(index, 64);
+            int index = (y * this.width) + x;
 
-            ulong segment = this.blocks[blockIndex];
+            (int blockIndex, int bitIndex) = Div64Rem(index);
 
-            return (segment & (1UL << (int)bitIndex)) != 0;
+            return (this.blocks[blockIndex] & (1UL << bitIndex)) != 0;
         }
 
         public void SetValue(int x, int y, bool value)
         {
-            ulong index = ((ulong)checked((uint)y) * this.stride) + checked((uint)x);
+            CheckBounds(x, y);
 
-            (ulong blockIndex, ulong bitIndex) = Math.DivRem(index, 64);
+            int index = (y * this.width) + x;
+
+            (int blockIndex, int bitIndex) = Div64Rem(index);
 
             ref ulong segment = ref this.blocks[blockIndex];
-            ulong bit = 1UL << (int)bitIndex;
+            ulong bit = 1UL << bitIndex;
 
             if (value)
             {
@@ -85,6 +84,37 @@ namespace ContentAwareFill
             else
             {
                 segment &= ~bit;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static (int Quotent, int Remainder) Div64Rem(int number)
+        {
+            // The uint cast is required for the JIT to optimize the division by 64
+            // into a shift right by 6 in assembly.
+            // A lot of bit shifting tricks are only valid for unsigned values.
+            uint quotent = (uint)number / 64;
+            int remainder = number & 63; // Equivalent to number % 64, since 64 is a power of 2.
+
+            return ((int)quotent, remainder);
+        }
+
+        [DoesNotReturn]
+        private static void ThrowIndexOutOfRangeException()
+        {
+            throw new IndexOutOfRangeException();
+        }
+
+        private void CheckBounds(int x, int y)
+        {
+            if ((uint)x >= (uint)this.width)
+            {
+                ThrowIndexOutOfRangeException();
+            }
+
+            if ((uint)y >= (uint)this.height)
+            {
+                ThrowIndexOutOfRangeException();
             }
         }
     }
