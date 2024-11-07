@@ -46,19 +46,22 @@
 */
 
 using System;
-using System.Threading;
+using System.Runtime.CompilerServices;
 
 namespace ContentAwareFill
 {
     internal static class ResynthesizerRandom
     {
-        private static readonly ThreadLocal<Random> threadInstance = new(CreateThreadInstance);
+        [ThreadStatic]
+        private static Random threadInstance;
 
-        public static Random ThreadInstance => threadInstance.Value!;
+        public static Random ThreadInstance => threadInstance ?? Create();
 
-        private static Random CreateThreadInstance()
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private static Random Create()
         {
-            return new Random(1198472);
+            threadInstance = new Random(1198472);
+            return threadInstance;
         }
     }
 }
