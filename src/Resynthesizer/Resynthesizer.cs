@@ -179,19 +179,9 @@ namespace ContentAwareFill
         /// </exception>
         public void ContentAwareFill()
         {
-            PrepareTargetPoints(this.matchContext != MatchContextType.None);
+            PrepareTargetPoints();
             // The constructor handles the setup performed by prepare_target_sources.
             PrepareSourcePoints();
-
-            if (this.sourcePoints.Count == 0)
-            {
-                throw new ResynthesizerException(Properties.Resources.SourcePointsEmpty);
-            }
-
-            if (this.targetPoints.Count == 0)
-            {
-                throw new ResynthesizerException(Properties.Resources.TargetPointsEmpty);
-            }
 
             PrepareSortedOffsets();
             // The constructor handles the setup performed by prepare_tried.
@@ -362,6 +352,10 @@ namespace ContentAwareFill
             }
         }
 
+        /// <summary>
+        /// Prepares the source points.
+        /// </summary>
+        /// <exception cref="ResynthesizerException">The source region is empty.</exception>
         private unsafe void PrepareSourcePoints()
         {
             using (IBitmapLock<ColorBgra32> sourceLock = this.source.Lock(BitmapLockOptions.Read))
@@ -423,7 +417,7 @@ namespace ContentAwareFill
                 }
                 else
                 {
-                    this.sourcePoints = ImmutablePooledList<Point2Int32>.Empty;
+                    throw new ResynthesizerException(Properties.Resources.SourcePointsEmpty);
                 }
             }
         }
@@ -467,7 +461,11 @@ namespace ContentAwareFill
             }
         }
 
-        private unsafe void PrepareTargetPoints(bool useContext)
+        /// <summary>
+        /// Prepares the target points.
+        /// </summary>
+        /// <exception cref="ResynthesizerException">The target points are empty.</exception>
+        private unsafe void PrepareTargetPoints()
         {
             using (IBitmapLock<ColorAlpha8> targetMaskLock = this.targetMask.Lock(BitmapLockOptions.Read))
             {
@@ -493,6 +491,7 @@ namespace ContentAwareFill
                 if (targetPointsSize > 0)
                 {
                     PooledList<Point2Int32> points = new(checked((int)targetPointsSize));
+                    bool useContext = this.matchContext != MatchContextType.None;
 
                     using (IBitmapLock<ColorBgra32> targetLock = this.target.Lock(BitmapLockOptions.Read))
                     {
@@ -530,7 +529,7 @@ namespace ContentAwareFill
                 }
                 else
                 {
-                    this.targetPoints = ImmutablePooledList<Point2Int32>.Empty;
+                    throw new ResynthesizerException(Properties.Resources.TargetPointsEmpty);
                 }
             }
         }
