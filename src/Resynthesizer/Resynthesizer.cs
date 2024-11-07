@@ -594,7 +594,6 @@ namespace ContentAwareFill
                 uint best = uint.MaxValue;
                 BettermentKind latestBettermentKind = BettermentKind.None;
                 Point2Int32 bestPoint = Point2Int32.Zero;
-                perfectMatch = false;
 
                 for (int neighborIndex = 0; neighborIndex < neighborCount; neighborIndex++)
                 {
