@@ -276,6 +276,7 @@ namespace ContentAwareFill
             base.Dispose(disposing);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool ClippedOrMaskedSource(Point2Int32 point, RegionPtr<ColorAlpha8> sourceMaskRegion)
         {
             return point.X < 0 ||
@@ -728,6 +729,7 @@ namespace ContentAwareFill
             return sum <= 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool InTargetBounds(Point2Int32 point)
         {
             return point.X >= 0
