@@ -86,7 +86,7 @@
             this.okButton.Location = new System.Drawing.Point(170, 246);
             this.okButton.Name = "okButton";
             this.okButton.Size = new System.Drawing.Size(75, 23);
-            this.okButton.TabIndex = 7;
+            this.okButton.TabIndex = 11;
             this.okButton.Text = "Ok";
             this.okButton.UseVisualStyleBackColor = true;
             this.okButton.Click += okButton_Click;
@@ -152,7 +152,7 @@
             this.donateLabel.Location = new System.Drawing.Point(12, 250);
             this.donateLabel.Name = "donateLabel";
             this.donateLabel.Size = new System.Drawing.Size(48, 15);
-            this.donateLabel.TabIndex = 6;
+            this.donateLabel.TabIndex = 10;
             this.donateLabel.TabStop = true;
             this.donateLabel.Text = "Donate!";
             this.donateLabel.LinkClicked += donateLabel_LinkClicked;
@@ -165,7 +165,7 @@
             this.autoRenderCb.Location = new System.Drawing.Point(12, 221);
             this.autoRenderCb.Name = "autoRenderCb";
             this.autoRenderCb.Size = new System.Drawing.Size(138, 19);
-            this.autoRenderCb.TabIndex = 15;
+            this.autoRenderCb.TabIndex = 8;
             this.autoRenderCb.Text = "Render automatically";
             this.autoRenderCb.UseVisualStyleBackColor = true;
             this.autoRenderCb.CheckedChanged += autoRenderCb_CheckedChanged;
@@ -176,7 +176,7 @@
             this.applyButton.Location = new System.Drawing.Point(251, 217);
             this.applyButton.Name = "applyButton";
             this.applyButton.Size = new System.Drawing.Size(75, 23);
-            this.applyButton.TabIndex = 16;
+            this.applyButton.TabIndex = 9;
             this.applyButton.Text = "Apply";
             this.applyButton.UseVisualStyleBackColor = true;
             this.applyButton.Click += applyButton_Click;
@@ -195,7 +195,7 @@
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(337, 22);
             this.statusStrip1.SizingGrip = false;
-            this.statusStrip1.TabIndex = 17;
+            this.statusStrip1.TabStop = false;
             this.statusStrip1.Text = "statusStrip1";
             // 
             // toolStripStatusLabel1
@@ -215,7 +215,6 @@
             this.fillDirectionHeader.Location = new System.Drawing.Point(12, 115);
             this.fillDirectionHeader.Name = "fillDirectionHeader";
             this.fillDirectionHeader.Size = new System.Drawing.Size(310, 14);
-            this.fillDirectionHeader.TabIndex = 14;
             this.fillDirectionHeader.TabStop = false;
             this.fillDirectionHeader.Text = "Fill direction:";
             // 
@@ -225,7 +224,6 @@
             this.sampleFromHeader.Location = new System.Drawing.Point(12, 63);
             this.sampleFromHeader.Name = "sampleFromHeader";
             this.sampleFromHeader.Size = new System.Drawing.Size(310, 14);
-            this.sampleFromHeader.TabIndex = 12;
             this.sampleFromHeader.TabStop = false;
             this.sampleFromHeader.Text = "Sample from:";
             // 
@@ -235,7 +233,6 @@
             this.sampleSizeHeader.Location = new System.Drawing.Point(12, 17);
             this.sampleSizeHeader.Name = "sampleSizeHeader";
             this.sampleSizeHeader.Size = new System.Drawing.Size(310, 14);
-            this.sampleSizeHeader.TabIndex = 11;
             this.sampleSizeHeader.TabStop = false;
             this.sampleSizeHeader.Text = "Sample area size (in pixels):";
             // 
@@ -245,7 +242,6 @@
             this.seedHeader.Location = new System.Drawing.Point(13, 166);
             this.seedHeader.Name = "seedHeader";
             this.seedHeader.Size = new System.Drawing.Size(310, 14);
-            this.seedHeader.TabIndex = 18;
             this.seedHeader.TabStop = false;
             this.seedHeader.Text = "Seed";
             // 
@@ -255,7 +251,7 @@
             this.seedUpDown.Maximum = new decimal(new int[] { int.MaxValue, 0, 0, 0 });
             this.seedUpDown.Name = "seedUpDown";
             this.seedUpDown.Size = new System.Drawing.Size(152, 23);
-            this.seedUpDown.TabIndex = 19;
+            this.seedUpDown.TabIndex = 6;
             this.seedUpDown.ValueChanged += seedUpDown_ValueChanged;
             // 
             // seedResetButton
@@ -264,7 +260,7 @@
             this.seedResetButton.Location = new System.Drawing.Point(170, 186);
             this.seedResetButton.Name = "seedResetButton";
             this.seedResetButton.Size = new System.Drawing.Size(22, 20);
-            this.seedResetButton.TabIndex = 20;
+            this.seedResetButton.TabIndex = 7;
             this.seedResetButton.UseVisualStyleBackColor = true;
             this.seedResetButton.Click += seedResetButton_Click;
             // 
