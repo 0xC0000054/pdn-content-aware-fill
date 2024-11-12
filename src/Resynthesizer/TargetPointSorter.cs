@@ -56,46 +56,47 @@ namespace ContentAwareFill
 {
     internal static class TargetPointSorter
     {
-        internal static void Sort(PooledList<Point2Int32> points, MatchContextType matchContextType)
+        internal static void Sort(PooledList<Point2Int32> points, int randomSeed, MatchContextType matchContextType)
         {
             switch (matchContextType)
             {
                 case MatchContextType.None:
                 case MatchContextType.Random:
-                    OrderTargetPointsRandom(points, ResynthesizerRandom.ThreadInstance);
+                    OrderTargetPointsRandom(points, randomSeed);
                     break;
                 case MatchContextType.InwardConcentric:
                     using (DirectionalPointComparer comparer = new(points, outward: false))
                     {
-                        OrderTargetPointsRandomDirectional(points, comparer);
+                        OrderTargetPointsRandomDirectional(points, randomSeed, comparer);
                     }
                     break;
                 case MatchContextType.InwardHorizontal:
-                    OrderTargetPointsRandomDirectional(points, new HorizontalPointComparer(outward: false));
+                    OrderTargetPointsRandomDirectional(points, randomSeed, new HorizontalPointComparer(outward: false));
                     break;
                 case MatchContextType.InwardVertical:
-                    OrderTargetPointsRandomDirectional(points, new VerticalPointComparer(outward: false));
+                    OrderTargetPointsRandomDirectional(points, randomSeed, new VerticalPointComparer(outward: false));
                     break;
                 case MatchContextType.OutwardConcentric:
                     using (DirectionalPointComparer comparer = new(points, outward: true))
                     {
-                        OrderTargetPointsRandomDirectional(points, comparer);
+                        OrderTargetPointsRandomDirectional(points, randomSeed, comparer);
                     }
                     break;
                 case MatchContextType.OutwardHorizontal:
-                    OrderTargetPointsRandomDirectional(points, new HorizontalPointComparer(outward: true));
+                    OrderTargetPointsRandomDirectional(points, randomSeed, new HorizontalPointComparer(outward: true));
                     break;
                 case MatchContextType.OutwardVertical:
-                    OrderTargetPointsRandomDirectional(points, new VerticalPointComparer(outward: true));
+                    OrderTargetPointsRandomDirectional(points, randomSeed, new VerticalPointComparer(outward: true));
                     break;
                 default:
                     throw new InvalidEnumArgumentException(nameof(matchContextType), (int)matchContextType, typeof(MatchContextType));
             }
         }
 
-        private static void OrderTargetPointsRandom(PooledList<Point2Int32> points, Random random)
+        private static void OrderTargetPointsRandom(PooledList<Point2Int32> points, int randomSeed)
         {
             int count = points.Count;
+            Random random = new(randomSeed);
 
             for (int i = 0; i < count; i++)
             {
@@ -121,10 +122,11 @@ namespace ContentAwareFill
             }
         }
 
-        private static void RandomizeBandsTargetPoints(PooledList<Point2Int32> points, Random random)
+        private static void RandomizeBandsTargetPoints(PooledList<Point2Int32> points, int randomSeed)
         {
             int last = points.Count - 1;
             int halfBand = (int)(points.Count * ResynthesizerConstants.BandFraction);
+            Random random = new(randomSeed);
 
             for (int i = 0; i <= last; i++)
             {
@@ -139,6 +141,7 @@ namespace ContentAwareFill
         }
 
         private static void OrderTargetPointsRandomDirectional<TComparer>(PooledList<Point2Int32> points,
+                                                                          int randomSeed,
                                                                           TComparer pointComparer) where TComparer : struct, IComparer<Point2Int32>
         {
             Point2Int32 center = PointCollectionUtil.GetCenter(points);
@@ -149,7 +152,7 @@ namespace ContentAwareFill
 
             TargetPointsFromOffsets(points, center);
 
-            RandomizeBandsTargetPoints(points, ResynthesizerRandom.ThreadInstance);
+            RandomizeBandsTargetPoints(points, randomSeed);
         }
     }
 }

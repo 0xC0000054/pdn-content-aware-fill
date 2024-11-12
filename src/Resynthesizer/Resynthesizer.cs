@@ -71,6 +71,7 @@ namespace ContentAwareFill
 
         private static readonly ImmutableArray<ushort> DiffTable = MakeDiffTable();
 
+        private readonly int randomSeed;
         private readonly CancellationToken cancellationToken;
         private readonly Action<int> progressCallback;
         private readonly object progressSync;
@@ -143,6 +144,7 @@ namespace ContentAwareFill
             this.sourceMask = BitmapUtil.CreateFromBitmap(imagingFactory, sourceMask, croppedSourceSize, sourceRoi, clear: true);
             this.targetMask = targetMask.CreateRefT();
 
+            this.randomSeed = 1198472;
             this.repetitionParameters = new RepetitionParameter[ResynthesizerConstants.MaxPasses];
             this.tried = new PointIndexedArray<int>(this.targetSize, -1, cancellationToken);
             this.hasValue = PointIndexedBitArray.CreateFalse(this.targetSize);
@@ -215,7 +217,8 @@ namespace ContentAwareFill
                                                                                             targetRegion,
                                                                                             threadIndex,
                                                                                             endIndex,
-                                                                                            maxThreadCount),
+                                                                                            maxThreadCount,
+                                                                                            this.randomSeed),
                                                                   this.cancellationToken);
                         }
 
@@ -526,7 +529,7 @@ namespace ContentAwareFill
                         }
                     }
 
-                    TargetPointSorter.Sort(points, this.matchContext);
+                    TargetPointSorter.Sort(points, this.randomSeed, this.matchContext);
                     this.cancellationToken.ThrowIfCancellationRequested();
                     this.targetPoints = new ImmutablePooledList<Point2Int32>(points);
                 }
@@ -537,9 +540,9 @@ namespace ContentAwareFill
             }
         }
 
-        private Point2Int32 RandomSourcePoint()
+        private Point2Int32 RandomSourcePoint(SynthesizeThreadState state)
         {
-            int index = ResynthesizerRandom.ThreadInstance.Next(0, this.sourcePoints.Count);
+            int index = state.Random.Next(0, this.sourcePoints.Count);
 
             return this.sourcePoints[index];
         }
@@ -641,7 +644,7 @@ namespace ContentAwareFill
 
                     for (int i = 0; i < Trys; i++)
                     {
-                        if (TryPoint(RandomSourcePoint(),
+                        if (TryPoint(RandomSourcePoint(state),
                                      sourceRegion,
                                      sourceMaskRegion,
                                      ref best,
@@ -766,13 +769,16 @@ namespace ContentAwareFill
             public readonly int startIndex;
             public readonly int endIndex;
             public readonly int threadCount;
+            private readonly int randomSeed;
+            private Random random;
 
             public SynthesizeThreadState(RegionPtr<ColorBgra32> sourceRegion,
                                          RegionPtr<ColorAlpha8> sourceMaskRegion,
                                          RegionPtr<ColorBgra32> targetRegion,
                                          int startIndex,
                                          int endIndex,
-                                         int threadCount)
+                                         int threadCount,
+                                         int randomSeed)
             {
                 this.sourceRegion = sourceRegion;
                 this.sourceMaskRegion = sourceMaskRegion;
@@ -780,7 +786,11 @@ namespace ContentAwareFill
                 this.startIndex = startIndex;
                 this.endIndex = endIndex;
                 this.threadCount = threadCount;
+                this.randomSeed = randomSeed;
+                this.random = null;
             }
+
+            public Random Random => this.random ??= new Random(this.randomSeed);
         }
     }
 }
