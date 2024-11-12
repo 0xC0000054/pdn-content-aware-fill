@@ -64,6 +64,7 @@ namespace ContentAwareFill
 {
     internal sealed class Resynthesizer : Disposable
     {
+        public const int DefaultSeed = 1198472;
         private const int ColorChannelCount = 3;
         private const int Neighbors = 16;
         private const double SensitivityToOutliers = 0.117;
@@ -99,6 +100,7 @@ namespace ContentAwareFill
         /// Initializes a new instance of the <see cref="Resynthesizer"/> class.
         /// </summary>
         /// <param name="matchContext">The match context.</param>
+        /// <param name="seed">The seed to use for the random number generation.</param>
         /// <param name="source">The source.</param>
         /// <param name="sourceMask">The source mask.</param>
         /// <param name="sourceRoi">The source region of interest.</param>
@@ -118,6 +120,7 @@ namespace ContentAwareFill
         /// <paramref name="imagingFactory"/> is null.
         /// </exception>
         public Resynthesizer(MatchContextType matchContext,
+                             int seed,
                              IEffectInputBitmap<ColorBgra32> source,
                              IBitmap<ColorAlpha8> sourceMask,
                              RectInt32 sourceRoi,
@@ -144,7 +147,7 @@ namespace ContentAwareFill
             this.sourceMask = BitmapUtil.CreateFromBitmap(imagingFactory, sourceMask, croppedSourceSize, sourceRoi, clear: true);
             this.targetMask = targetMask.CreateRefT();
 
-            this.randomSeed = 1198472;
+            this.randomSeed = seed;
             this.repetitionParameters = new RepetitionParameter[ResynthesizerConstants.MaxPasses];
             this.tried = new PointIndexedArray<int>(this.targetSize, -1, cancellationToken);
             this.hasValue = PointIndexedBitArray.CreateFalse(this.targetSize);

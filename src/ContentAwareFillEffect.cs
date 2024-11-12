@@ -133,7 +133,10 @@ namespace ContentAwareFill
                     {
                         using (ResynthesizerRunner resynthesizer = new(this.Environment, this.Services))
                         {
-                            resynthesizer.SetParameters(token.SampleSize, token.SampleFrom, token.FillDirection);
+                            resynthesizer.SetParameters(token.SampleSize,
+                                                        token.SampleFrom,
+                                                        token.FillDirection,
+                                                        token.Seed);
 
                             token.Output = resynthesizer.Run(this.CancellationToken);
                         }

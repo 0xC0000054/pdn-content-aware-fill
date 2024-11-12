@@ -38,6 +38,7 @@ namespace ContentAwareFill
         private int sampleSize;
         private SampleSource sampleFrom;
         private FillDirection fillDirection;
+        private int seed;
         private readonly IEffectEnvironment environment;
         private readonly IServiceProvider serviceProvider;
 #pragma warning disable CA2213 // Disposable fields should be disposed
@@ -64,6 +65,7 @@ namespace ContentAwareFill
             this.sampleSize = 50;
             this.sampleFrom = SampleSource.Sides;
             this.fillDirection = FillDirection.InwardToCenter;
+            this.seed = Resynthesizer.DefaultSeed;
             this.environment = environment;
             this.serviceProvider = serviceProvider;
             this.imagingFactory = serviceProvider.GetService<IImagingFactory>();
@@ -99,6 +101,7 @@ namespace ContentAwareFill
                 MatchContextType matchContext = GetMatchContextType();
 
                 using (Resynthesizer synth = new(matchContext,
+                                                 this.seed,
                                                  this.environment.GetSourceBitmapBgra32(),
                                                  this.sourceMask,
                                                  expandedBounds,
@@ -126,14 +129,20 @@ namespace ContentAwareFill
         /// <param name="sampleSize">The sample area size.</param>
         /// <param name="sampleFrom">The area of the selection to sample.</param>
         /// <param name="fillDirection">The direction to fill the generated image.</param>
+        /// <param name="seed">The seed to use for the random number generation.</param>
         /// <exception cref="ArgumentOutOfRangeException">
         /// <paramref name="sampleSize"/> must be positive.
         /// or
         /// <paramref name="sampleFrom"/> is not a valid <see cref="SampleSource"/> value.
         /// or
         /// <paramref name="fillDirection"/> is not a valid <see cref="FillDirection"/> value.
+        /// or
+        /// <paramref name="seed"/> must be positive.
         /// </exception>
-        public void SetParameters(int sampleSize, SampleSource sampleFrom, FillDirection fillDirection)
+        public void SetParameters(int sampleSize,
+                                  SampleSource sampleFrom,
+                                  FillDirection fillDirection,
+                                  int seed)
         {
             if (sampleSize < 0)
             {
@@ -150,9 +159,15 @@ namespace ContentAwareFill
                 throw new ArgumentOutOfRangeException(nameof(fillDirection));
             }
 
+            if (seed < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(seed), "Must be positive.");
+            }
+
             this.sampleSize = sampleSize;
             this.sampleFrom = sampleFrom;
             this.fillDirection = fillDirection;
+            this.seed = seed;
         }
 
         protected override void Dispose(bool disposing)

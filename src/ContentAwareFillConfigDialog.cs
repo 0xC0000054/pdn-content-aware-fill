@@ -162,6 +162,7 @@ namespace ContentAwareFill
             return new ContentAwareFillConfigToken(50,
                                                    SampleSource.Sides,
                                                    FillDirection.InwardToCenter,
+                                                   Resynthesizer.DefaultSeed,
                                                    true,
                                                    null);
         }
@@ -174,6 +175,7 @@ namespace ContentAwareFill
             this.sampleSizeTrackBar.Value = token.SampleSize;
             this.sampleFromCombo.SelectedIndex = (int)token.SampleFrom;
             this.fillDirectionCombo.SelectedIndex = (int)token.FillDirection;
+            this.seedUpDown.Value = token.Seed;
             this.autoRenderCb.Checked = token.RenderAutomatically;
 
             PopIgnoreTokenChangedEvents();
@@ -182,8 +184,9 @@ namespace ContentAwareFill
         protected override void OnUpdateTokenFromDialog(ContentAwareFillConfigToken token)
         {
             token.SampleSize = this.sampleSizeTrackBar.Value;
-            token.SampleFrom =  (SampleSource)this.sampleFromCombo.SelectedIndex;
+            token.SampleFrom = (SampleSource)this.sampleFromCombo.SelectedIndex;
             token.FillDirection = (FillDirection)this.fillDirectionCombo.SelectedIndex;
+            token.Seed = (int)this.seedUpDown.Value;
             token.RenderAutomatically = this.autoRenderCb.Checked;
             token.Output = this.output;
         }
@@ -196,19 +199,19 @@ namespace ContentAwareFill
             {
                 if (dpi <= 120)
                 {
-                    this.resetButton.Image = new Bitmap(typeof(ContentAwareFillConfigDialog), "Resources.Icons.ResetIcon-120.png");
+                    this.sliderResetButton.Image = new Bitmap(typeof(ContentAwareFillConfigDialog), "Resources.Icons.ResetIcon-120.png");
                 }
                 else if (dpi <= 144)
                 {
-                    this.resetButton.Image = new Bitmap(typeof(ContentAwareFillConfigDialog), "Resources.Icons.ResetIcon-144.png");
+                    this.sliderResetButton.Image = new Bitmap(typeof(ContentAwareFillConfigDialog), "Resources.Icons.ResetIcon-144.png");
                 }
                 else if (dpi <= 192)
                 {
-                    this.resetButton.Image = new Bitmap(typeof(ContentAwareFillConfigDialog), "Resources.Icons.ResetIcon-192.png");
+                    this.sliderResetButton.Image = new Bitmap(typeof(ContentAwareFillConfigDialog), "Resources.Icons.ResetIcon-192.png");
                 }
                 else
                 {
-                    this.resetButton.Image = new Bitmap(typeof(ContentAwareFillConfigDialog), "Resources.Icons.ResetIcon-384.png");
+                    this.sliderResetButton.Image = new Bitmap(typeof(ContentAwareFillConfigDialog), "Resources.Icons.ResetIcon-384.png");
                 }
             }
         }
@@ -287,7 +290,7 @@ namespace ContentAwareFill
             UpdateConfigToken();
         }
 
-        private void resetButton_Click(object sender, EventArgs e)
+        private void sliderResetButton_Click(object sender, EventArgs e)
         {
             this.sampleSizeTrackBar.Value = 50;
         }
@@ -307,6 +310,16 @@ namespace ContentAwareFill
             StartBackgroundWorker();
         }
 
+        private void seedUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            UpdateConfigToken();
+        }
+
+        private void seedResetButton_Click(object sender, EventArgs e)
+        {
+            this.seedUpDown.Value = Resynthesizer.DefaultSeed;
+        }
+
         private void StartBackgroundWorker()
         {
             if (this.backgroundWorker.IsBusy)
@@ -321,7 +334,8 @@ namespace ContentAwareFill
 
                 this.resynthesizer.SetParameters(this.sampleSizeTrackBar.Value,
                                                  (SampleSource)this.sampleFromCombo.SelectedIndex,
-                                                 (FillDirection)this.fillDirectionCombo.SelectedIndex);
+                                                 (FillDirection)this.fillDirectionCombo.SelectedIndex,
+                                                 (int)this.seedUpDown.Value);
 
                 this.backgroundWorker.RunWorkerAsync();
             }
@@ -376,7 +390,8 @@ namespace ContentAwareFill
                 this.restartBackgroundWorker = false;
                 this.resynthesizer.SetParameters(this.sampleSizeTrackBar.Value,
                                                  (SampleSource)this.sampleFromCombo.SelectedIndex,
-                                                 (FillDirection)this.fillDirectionCombo.SelectedIndex);
+                                                 (FillDirection)this.fillDirectionCombo.SelectedIndex,
+                                                 (int)this.seedUpDown.Value);
                 this.resynthesizerTokenSource = new CancellationTokenSource();
 
                 this.backgroundWorker.RunWorkerAsync();

@@ -45,6 +45,12 @@ namespace ContentAwareFill
             set;
         }
 
+        public int Seed
+        {
+            get;
+            set;
+        }
+
         public bool RenderAutomatically
         {
             get;
@@ -60,12 +66,14 @@ namespace ContentAwareFill
         public ContentAwareFillConfigToken(int sampleSize,
                                            SampleSource sampleFrom,
                                            FillDirection fillDirection,
+                                           int seed,
                                            bool renderAutomatically,
                                            IBitmap<ColorBgra32> output)
         {
             this.SampleSize = sampleSize;
             this.SampleFrom = sampleFrom;
             this.FillDirection = fillDirection;
+            this.Seed = seed;
             this.RenderAutomatically = renderAutomatically;
             this.Output = output;
         }
@@ -75,6 +83,7 @@ namespace ContentAwareFill
             this.SampleSize = cloneMe.SampleSize;
             this.SampleFrom = cloneMe.SampleFrom;
             this.FillDirection = cloneMe.FillDirection;
+            this.Seed = cloneMe.Seed;
             this.RenderAutomatically = cloneMe.RenderAutomatically;
             this.Output = cloneMe.Output;
         }
