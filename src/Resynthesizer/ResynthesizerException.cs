@@ -35,9 +35,5 @@ namespace ContentAwareFill
         public ResynthesizerException(string message, Exception inner) : base(message, inner)
         {
         }
-
-        private ResynthesizerException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
     }
 }

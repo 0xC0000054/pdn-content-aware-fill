@@ -36,10 +36,7 @@ namespace ContentAwareFill
         /// <exception cref="ArgumentNullException"><paramref name="root"/> is null.</exception>
         public static void UpdateControlBackColor(Control root)
         {
-            if (root == null)
-            {
-                throw new ArgumentNullException(nameof(root));
-            }
+            ArgumentNullException.ThrowIfNull(root);
 
             Color backColor = root.BackColor;
 
@@ -84,10 +81,7 @@ namespace ContentAwareFill
         /// <exception cref="ArgumentNullException"><paramref name="root"/> is null.</exception>
         public static void UpdateControlForeColor(Control root)
         {
-            if (root == null)
-            {
-                throw new ArgumentNullException(nameof(root));
-            }
+            ArgumentNullException.ThrowIfNull(root);
 
             Color foreColor = root.ForeColor;
 

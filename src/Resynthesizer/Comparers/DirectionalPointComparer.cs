@@ -61,10 +61,7 @@ namespace ContentAwareFill
 
         public DirectionalPointComparer(IEnumerable<Point2Int32> targetPoints, bool outward)
         {
-            if (targetPoints == null)
-            {
-                throw new ArgumentNullException(nameof(targetPoints));
-            }
+            ArgumentNullException.ThrowIfNull(targetPoints);
 
             this.maxCartesianAlongRay = ArrayPool<uint>.Shared.Rent(401);
 
@@ -87,7 +84,7 @@ namespace ContentAwareFill
 
         public int Compare(Point2Int32 point1, Point2Int32 point2)
         {
-            ObjectDisposedException.ThrowIf(Thread.VolatileRead(ref this.disposed) == 1, null);
+            ObjectDisposedException.ThrowIf(Volatile.Read(ref this.disposed) == 1, null);
 
             float point1Proportion = ProportionInward(point1);
             float point2Proportion = ProportionInward(point2);
