@@ -40,3 +40,9 @@ dotnet_style_qualification_for_event                  = true : suggestion
 
 # Code block settings
 csharp_prefer_braces                                  = true : warning
+
+# IDE0290: Use primary constructor
+csharp_style_prefer_primary_constructors = false
+
+# IDE0079: Remove unnecessary suppression
+dotnet_diagnostic.IDE0079.severity = none

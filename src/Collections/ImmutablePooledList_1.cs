@@ -32,7 +32,7 @@ namespace ContentAwareFill.Collections
     {
         private readonly PooledList<T> pooledList;
 
-        public static readonly ImmutablePooledList<T> Empty = new(new PooledList<T>());
+        public static readonly ImmutablePooledList<T> Empty = new([]);
 
         public ImmutablePooledList(PooledList<T> pooledList)
         {

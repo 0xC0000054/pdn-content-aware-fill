@@ -75,7 +75,7 @@ namespace ContentAwareFill
         private readonly int randomSeed;
         private readonly CancellationToken cancellationToken;
         private readonly Action<int> progressCallback;
-        private readonly object progressSync;
+        private readonly Lock progressSync;
 
 #pragma warning disable IDE0032 // Use auto property
         private IBitmap<ColorBgra32> target;
@@ -154,7 +154,7 @@ namespace ContentAwareFill
             this.sourceOf = new PointIndexedArray<Point2Int32>(this.targetSize, new Point2Int32(-1, -1), cancellationToken);
             this.cancellationToken = cancellationToken;
             this.progressCallback = progressCallback;
-            this.progressSync = new object();
+            this.progressSync = new Lock();
         }
 
         private enum BettermentKind
@@ -439,7 +439,7 @@ namespace ContentAwareFill
             int width = sourceSize.Width;
             int height = sourceSize.Height;
 
-            List<List<Point2Int32>> offsetsByDistance = new();
+            List<List<Point2Int32>> offsetsByDistance = [];
 
             for (int y = -height + 1; y < height; y++)
             {
@@ -450,7 +450,7 @@ namespace ContentAwareFill
                     Point2Int32 point = new(x, y);
                     int distance = (point.X * point.X) + (point.Y * point.Y); // can't be negative
                     EnsureCount(offsetsByDistance, distance + 1);
-                    offsetsByDistance[distance] ??= new();
+                    offsetsByDistance[distance] ??= [];
                     offsetsByDistance[distance]!.Add(point);
                 }
             }
