@@ -545,7 +545,7 @@ namespace ContentAwareFill
 
         private Point2Int32 RandomSourcePoint(SynthesizeThreadState state)
         {
-            int index = state.Random.Next(0, this.sourcePoints.Count);
+            int index = state.Random.Next(this.sourcePoints.Count);
 
             return this.sourcePoints[index];
         }
