@@ -62,14 +62,20 @@ namespace ContentAwareFill
 
         public T GetValue(int x, int y)
         {
-            nuint index = ((nuint)checked((uint)y) * this.stride) + checked((uint)x);
+            ArgumentOutOfRangeException.ThrowIfNegative(x, nameof(x));
+            ArgumentOutOfRangeException.ThrowIfNegative(y, nameof(y));
+
+            nuint index = ((nuint)((uint)y) * this.stride) + (uint)x;
 
             return this.items[index];
         }
 
         public void SetValue(int x, int y, T value)
         {
-            nuint index = ((nuint)checked((uint)y) * this.stride) + checked((uint)x);
+            ArgumentOutOfRangeException.ThrowIfNegative(x, nameof(x));
+            ArgumentOutOfRangeException.ThrowIfNegative(y, nameof(y));
+
+            nuint index = ((nuint)((uint)y) * this.stride) + (uint)x;
 
             this.items[index] = value;
         }
