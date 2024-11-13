@@ -65,6 +65,7 @@
             this.seedHeader = new HeaderLabel();
             this.seedUpDown = new System.Windows.Forms.NumericUpDown();
             this.seedResetButton = new System.Windows.Forms.Button();
+            this.seedRandomizeButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)this.sampleSizeTrackBar).BeginInit();
             ((System.ComponentModel.ISupportInitialize)this.sampleSizeUpDown).BeginInit();
             this.statusStrip1.SuspendLayout();
@@ -73,7 +74,7 @@
             // 
             // cancelButton
             // 
-            this.cancelButton.Location = new System.Drawing.Point(251, 246);
+            this.cancelButton.Location = new System.Drawing.Point(251, 256);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(75, 23);
             this.cancelButton.TabIndex = 0;
@@ -83,7 +84,7 @@
             // 
             // okButton
             // 
-            this.okButton.Location = new System.Drawing.Point(170, 246);
+            this.okButton.Location = new System.Drawing.Point(170, 256);
             this.okButton.Name = "okButton";
             this.okButton.Size = new System.Drawing.Size(75, 23);
             this.okButton.TabIndex = 11;
@@ -149,7 +150,7 @@
             // donateLabel
             // 
             this.donateLabel.AutoSize = true;
-            this.donateLabel.Location = new System.Drawing.Point(12, 250);
+            this.donateLabel.Location = new System.Drawing.Point(12, 260);
             this.donateLabel.Name = "donateLabel";
             this.donateLabel.Size = new System.Drawing.Size(48, 15);
             this.donateLabel.TabIndex = 10;
@@ -162,10 +163,10 @@
             this.autoRenderCb.AutoSize = true;
             this.autoRenderCb.Checked = true;
             this.autoRenderCb.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.autoRenderCb.Location = new System.Drawing.Point(12, 221);
+            this.autoRenderCb.Location = new System.Drawing.Point(12, 231);
             this.autoRenderCb.Name = "autoRenderCb";
             this.autoRenderCb.Size = new System.Drawing.Size(138, 19);
-            this.autoRenderCb.TabIndex = 8;
+            this.autoRenderCb.TabIndex = 9;
             this.autoRenderCb.Text = "Render automatically";
             this.autoRenderCb.UseVisualStyleBackColor = true;
             this.autoRenderCb.CheckedChanged += autoRenderCb_CheckedChanged;
@@ -173,10 +174,10 @@
             // applyButton
             // 
             this.applyButton.Enabled = false;
-            this.applyButton.Location = new System.Drawing.Point(251, 217);
+            this.applyButton.Location = new System.Drawing.Point(251, 227);
             this.applyButton.Name = "applyButton";
             this.applyButton.Size = new System.Drawing.Size(75, 23);
-            this.applyButton.TabIndex = 9;
+            this.applyButton.TabIndex = 10;
             this.applyButton.Text = "Apply";
             this.applyButton.UseVisualStyleBackColor = true;
             this.applyButton.Click += applyButton_Click;
@@ -191,7 +192,7 @@
             // statusStrip1
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { this.toolStripStatusLabel1, this.toolStripProgressBar1 });
-            this.statusStrip1.Location = new System.Drawing.Point(0, 272);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 282);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(337, 22);
             this.statusStrip1.SizingGrip = false;
@@ -264,11 +265,22 @@
             this.seedResetButton.UseVisualStyleBackColor = true;
             this.seedResetButton.Click += seedResetButton_Click;
             // 
+            // seedRandomizeButton
+            // 
+            this.seedRandomizeButton.Location = new System.Drawing.Point(251, 186);
+            this.seedRandomizeButton.Name = "seedRandomizeButton";
+            this.seedRandomizeButton.Size = new System.Drawing.Size(75, 23);
+            this.seedRandomizeButton.TabIndex = 8;
+            this.seedRandomizeButton.Text = "Randomize";
+            this.seedRandomizeButton.UseVisualStyleBackColor = true;
+            this.seedRandomizeButton.Click += seedRandomizeButton_Click;
+            // 
             // ContentAwareFillConfigDialog
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
-            this.ClientSize = new System.Drawing.Size(337, 294);
+            this.ClientSize = new System.Drawing.Size(337, 304);
+            this.Controls.Add(this.seedRandomizeButton);
             this.Controls.Add(this.seedResetButton);
             this.Controls.Add(this.seedUpDown);
             this.Controls.Add(this.seedHeader);
@@ -319,5 +331,6 @@
         private HeaderLabel seedHeader;
         private System.Windows.Forms.NumericUpDown seedUpDown;
         private System.Windows.Forms.Button seedResetButton;
+        private System.Windows.Forms.Button seedRandomizeButton;
     }
 }

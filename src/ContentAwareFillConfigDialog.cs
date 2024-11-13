@@ -320,6 +320,11 @@ namespace ContentAwareFill
             this.seedUpDown.Value = Resynthesizer.DefaultSeed;
         }
 
+        private void seedRandomizeButton_Click(object sender, EventArgs e)
+        {
+            this.seedUpDown.Value = Random.Shared.Next();
+        }
+
         private void StartBackgroundWorker()
         {
             if (this.backgroundWorker.IsBusy)
