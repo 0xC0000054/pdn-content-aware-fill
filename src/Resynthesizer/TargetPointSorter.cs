@@ -48,7 +48,6 @@
 using Collections.Pooled;
 using PaintDotNet.Rendering;
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel;
 
