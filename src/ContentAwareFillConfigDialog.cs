@@ -64,6 +64,7 @@ namespace ContentAwareFill
             this.ranFirstAutoRender = false;
             this.output = null;
             this.resynthesizer = null;
+            this.Text += " v" + typeof(ContentAwareFillEffect).Assembly.GetName().Version.ToString();
 
             PluginThemingUtil.UpdateControlBackColor(this);
             PluginThemingUtil.UpdateControlForeColor(this);
