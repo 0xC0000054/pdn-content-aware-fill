@@ -95,11 +95,11 @@ namespace ContentAwareFill
         private static void OrderTargetPointsRandom(PooledList<Point2Int32> points, int randomSeed)
         {
             int count = points.Count;
-            Random random = new(randomSeed);
+            ResynthesizerRandom random = new(randomSeed);
 
             for (int i = 0; i < count; i++)
             {
-                int j = random.Next(0, count);
+                int j = random.Next(count);
 
                 (points[j], points[i]) = (points[i], points[j]);
             }
@@ -125,7 +125,7 @@ namespace ContentAwareFill
         {
             int last = points.Count - 1;
             int halfBand = (int)(points.Count * ResynthesizerConstants.BandFraction);
-            Random random = new(randomSeed);
+            ResynthesizerRandom random = new(randomSeed);
 
             for (int i = 0; i <= last; i++)
             {
@@ -133,7 +133,7 @@ namespace ContentAwareFill
                 int bandEnd = Math.Min(i + halfBand, last);
                 int bandSize = bandEnd - bandStart;
 
-                int j = bandStart + random.Next(0, bandSize);
+                int j = bandStart + random.Next(bandSize);
 
                 (points[j], points[i]) = (points[i], points[j]);
             }

@@ -776,7 +776,7 @@ namespace ContentAwareFill
             public readonly int endIndex;
             public readonly int threadCount;
             private readonly int randomSeed;
-            private Random random;
+            private ResynthesizerRandom random;
 
             public SynthesizeThreadState(RegionPtr<ColorBgra32> sourceRegion,
                                          RegionPtr<ColorAlpha8> sourceMaskRegion,
@@ -796,7 +796,7 @@ namespace ContentAwareFill
                 this.random = null;
             }
 
-            public Random Random => this.random ??= new Random(this.randomSeed);
+            public ResynthesizerRandom Random => this.random ??= new ResynthesizerRandom(this.randomSeed);
         }
     }
 }
