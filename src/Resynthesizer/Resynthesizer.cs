@@ -57,6 +57,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -70,7 +71,7 @@ namespace ContentAwareFill
         private const double SensitivityToOutliers = 0.117;
         private const int Trys = 500;
 
-        private static readonly ImmutableArray<ushort> DiffTable = MakeDiffTable();
+        private static readonly ushort[] DiffTable = MakeDiffTable();
 
         private readonly int randomSeed;
         private readonly CancellationToken cancellationToken;
@@ -292,9 +293,9 @@ namespace ContentAwareFill
                    sourceMaskRegion[point.X, point.Y] != ColorAlpha8.Opaque;
         }
 
-        private static ImmutableArray<ushort> MakeDiffTable()
+        private static ushort[] MakeDiffTable()
         {
-            ImmutableArray<ushort>.Builder diffTable = ImmutableArray.CreateBuilder<ushort>(512);
+            ushort[] diffTable = new ushort[512];
 
             double valueDivisor = NegLogCauchy(1.0 / SensitivityToOutliers);
 
@@ -302,12 +303,12 @@ namespace ContentAwareFill
             {
                 double value = NegLogCauchy(i / 256.0 / SensitivityToOutliers) / valueDivisor * ResynthesizerConstants.MaxWeight;
 
-                diffTable.Add((ushort)value);
+                diffTable[256 + i] = (ushort)value;
                 // The original code populated a map diff table array that is used to when mapping between images.
                 // This is not required for the content aware fill functionality.
             }
 
-            return diffTable.MoveToImmutable();
+            return diffTable;
         }
 
         private static double NegLogCauchy(double d)
@@ -686,6 +687,8 @@ namespace ContentAwareFill
         {
             uint sum = 0;
 
+            ref ushort diffTableStart = ref MemoryMarshal.GetArrayDataReference(DiffTable);
+
             for (int i = 0; i < neighborCount; i++)
             {
                 this.cancellationToken.ThrowIfCancellationRequested();
@@ -708,9 +711,9 @@ namespace ContentAwareFill
 
                     if (i > 0)
                     {
-                        sum += DiffTable[256 + targetPixel.B - sourcePixel.B];
-                        sum += DiffTable[256 + targetPixel.G - sourcePixel.G];
-                        sum += DiffTable[256 + targetPixel.R - sourcePixel.R];
+                        sum += Unsafe.Add(ref diffTableStart, 256 + targetPixel.B - sourcePixel.B);
+                        sum += Unsafe.Add(ref diffTableStart, 256 + targetPixel.G - sourcePixel.G);
+                        sum += Unsafe.Add(ref diffTableStart, 256 + targetPixel.R - sourcePixel.R);
                     }
                     // The original code would add the map_diff_table values to the sum when
                     // the map image is used.
