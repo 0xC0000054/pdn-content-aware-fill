@@ -128,12 +128,13 @@
             this.sampleSizeTrackBar.ValueChanged += sampleSizeTrackBar_ValueChanged;
             // 
             // sampleSizeUpDown
-            // 
+            //
             this.sampleSizeUpDown.Location = new System.Drawing.Point(233, 37);
             this.sampleSizeUpDown.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             this.sampleSizeUpDown.Name = "sampleSizeUpDown";
             this.sampleSizeUpDown.Size = new System.Drawing.Size(61, 23);
             this.sampleSizeUpDown.TabIndex = 2;
+            this.sampleSizeUpDown.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.sampleSizeUpDown.Value = new decimal(new int[] { 50, 0, 0, 0 });
             this.sampleSizeUpDown.ValueChanged += sampleSizeUpDown_ValueChanged;
             // 
@@ -253,6 +254,7 @@
             this.seedUpDown.Name = "seedUpDown";
             this.seedUpDown.Size = new System.Drawing.Size(152, 23);
             this.seedUpDown.TabIndex = 6;
+            this.seedUpDown.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.seedUpDown.ValueChanged += seedUpDown_ValueChanged;
             // 
             // seedResetButton
