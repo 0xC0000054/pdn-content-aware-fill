@@ -30,7 +30,7 @@ namespace ContentAwareFill
 {
     internal sealed unsafe class PointIndexedArray<T> : Disposable where T : unmanaged
     {
-        private NativeArray<T> items;
+        private readonly NativeArray<T> items;
         private readonly uint stride;
 
         public PointIndexedArray(SizeInt32 size, T defaultValue, CancellationToken cancellationToken)
@@ -78,6 +78,16 @@ namespace ContentAwareFill
             nuint index = ((nuint)((uint)y) * this.stride) + (uint)x;
 
             this.items[index] = value;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                this.items.Dispose();
+            }
+
+            base.Dispose(disposing);
         }
     }
 }

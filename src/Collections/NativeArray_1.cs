@@ -20,13 +20,14 @@
 *
 */
 
+using PaintDotNet;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace ContentAwareFill.Collections
 {
-    internal unsafe struct NativeArray<T> : IDisposable where T : unmanaged
+    internal unsafe sealed class NativeArray<T> : Disposable where T : unmanaged
     {
         private T* pointer;
         private readonly nuint elementCount;
@@ -57,7 +58,18 @@ namespace ContentAwareFill.Collections
             }
         }
 
-        public void Dispose()
+        public T* GetAddress(nuint index)
+        {
+            if (index >= this.elementCount)
+            {
+                ThrowArgumentOutOfRangeException(index);
+            }
+            ObjectDisposedException.ThrowIf(this.pointer is null, null);
+
+            return this.pointer + index;
+        }
+
+        protected override void Dispose(bool disposing)
         {
             T* ptr = this.pointer;
             this.pointer = null;
@@ -73,17 +85,7 @@ namespace ContentAwareFill.Collections
                     GC.RemoveMemoryPressure((long)sizeInBytes);
                 }
             }
-        }
-
-        public T* GetAddress(nuint index)
-        {
-            if (index >= this.elementCount)
-            {
-                ThrowArgumentOutOfRangeException(index);
-            }
-            ObjectDisposedException.ThrowIf(this.pointer is null, null);
-
-            return this.pointer + index;
+            base.Dispose(disposing);
         }
 
         [DoesNotReturn]
